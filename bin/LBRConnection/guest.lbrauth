@@ -1,0 +1,11 @@
+# the IPv4 address of the LBR
+lbrAddr  = lbr.dustnetworks.com
+
+# the TCP port of the LBR
+lbrPort  = 80
+
+# username
+username = guest
+
+# security level
+seclevel = 0
