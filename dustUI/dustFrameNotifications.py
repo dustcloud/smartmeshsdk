@@ -1,21 +1,24 @@
 #!/usr/bin/python
 
+#============================ adjust path =====================================
+
 import sys
 import os
 if __name__ == '__main__':
-    temp_path = sys.path[0]
-    sys.path.insert(0, os.path.join(temp_path, '..', 'SmartMeshSDK'))
+    here = sys.path[0]
+    sys.path.insert(0, os.path.join(here, '..'))
+
+#============================ imports =========================================
     
 import Tkinter
+
 import dustFrameFields
-from ApiDefinition import ApiDefinition
+
+from   SmartMeshSDK.ApiDefinition import ApiDefinition
+
+#============================ body ============================================
 
 class dustFrameNotifications(dustFrameFields.dustFrameFields):
-    '''
-    \ingroup guiLib
-    
-    \brief A frame which displays notification fields graphically.
-    '''
     
     ## refresh period, in ms
     REFRESHPERIOD = 200

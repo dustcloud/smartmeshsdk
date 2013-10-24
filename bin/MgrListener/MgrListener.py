@@ -1,52 +1,72 @@
 #!/usr/bin/python
 
-# add the SmartMeshSDK/ folder to the path
+#============================ adjust path =====================================
+
 import sys
 import os
+if __name__ == "__main__":
+    here = sys.path[0]
+    sys.path.insert(0, os.path.join(here, '..', '..'))
 
-temp_path = sys.path[0]
-if temp_path:
-    sys.path.insert(0, os.path.join(temp_path, '..', '..', 'dustUI'))
-    sys.path.insert(0, os.path.join(temp_path, '..', '..', 'SmartMeshSDK'))
+#============================ verify installation =============================
 
-# verify installation
-import SmsdkInstallVerifier
+from SmartMeshSDK import SmsdkInstallVerifier
 (goodToGo,reason) = SmsdkInstallVerifier.verifyComponents(
-                            [
-                                SmsdkInstallVerifier.PYTHON,
-                                SmsdkInstallVerifier.PYSERIAL,
-                            ]
-                        )
+    [
+        SmsdkInstallVerifier.PYTHON,
+        SmsdkInstallVerifier.PYSERIAL,
+    ]
+)
 if not goodToGo:
     print "Your installation does not allow this application to run:\n"
     print reason
     raw_input("Press any button to exit")
     sys.exit(1)
 
-import Tkinter
+#============================ imports =========================================
+
 import threading
+from   optparse                        import OptionParser
+
+from   SmartMeshSDK                    import AppUtils,                   \
+                                              FormatUtils
+from   SmartMeshSDK.ApiDefinition      import IpMgrDefinition
+from   SmartMeshSDK.IpMgrConnectorMux  import IpMgrConnectorMux,          \
+                                              IpMgrSubscribe
+from   dustUI                          import dustWindow,                 \
+                                              dustFrameConnection,        \
+                                              dustFrameTable
+
+#============================ logging =========================================
+
+# local
+
 import logging
-import logging.handlers
+class NullHandler(logging.Handler):
+    def emit(self, record):
+        pass
+log = logging.getLogger('App')
+log.setLevel(logging.ERROR)
+log.addHandler(NullHandler())
 
-from dustWindow           import dustWindow
-from dustFrameConnection  import dustFrameConnection
-from dustFrameTable       import dustFrameTable
+# global
 
-from ApiDefinition  import IpMgrDefinition
+AppUtils.configureLogging()
 
-from IpMgrConnectorMux  import IpMgrConnectorMux
-from IpMgrConnectorMux  import IpMgrSubscribe
-
-from optparse import OptionParser
+#============================ defines =========================================
 
 UPDATEPERIOD = 500 # in ms
 DEFAULT_HOST = '127.0.0.1'
 DEFAULT_PORT = 9900
 
+#============================ body ============================================
+
+##
+# \addtogroup MgrListener
+# \{
+# 
+
 class notifClient(object):
-    '''
-    \ingroup MgrListener
-    '''
     
     def __init__(self, connector, disconnectedCallback):
         
@@ -122,10 +142,7 @@ class notifClient(object):
         
 
 class notifGui(object):
-    '''
-    \ingroup MgrListener
-    '''
-   
+    
     def __init__(self):
         
         # variables
@@ -134,11 +151,11 @@ class notifGui(object):
         self.notifClientHandler = None
         
         # create window
-        self.window = dustWindow('MgrListener',
+        self.window = dustWindow.dustWindow('MgrListener',
                                  self._windowCb_close)
                                  
         # add a connection frame
-        self.connectionFrame = dustFrameConnection(
+        self.connectionFrame = dustFrameConnection.dustFrameConnection(
                                     self.window,
                                     self.guiLock,
                                     self._connectionFrameCb_connected,
@@ -148,7 +165,7 @@ class notifGui(object):
         self.connectionFrame.show()
         
         # add a table frame
-        self.tableFrame = dustFrameTable(self.window,
+        self.tableFrame = dustFrameTable.dustFrameTable(self.window,
                                          self.guiLock,
                                          frameName="received notifications",
                                          row=1,column=0)
@@ -160,7 +177,11 @@ class notifGui(object):
         
         # TODO: how to use connect_params?
         
-        # start Tkinter's main thead
+        '''
+        This command instructs the GUI to start executing and reacting to 
+        user interactions. It never returns and should therefore be the last
+        command called.
+        '''
         try:
             self.window.mainloop()
         except SystemExit:
@@ -198,6 +219,8 @@ class notifGui(object):
         self.connectionFrame.updateGuiDisconnected()
         
         # delete the connector
+        if self.connector:
+            self.connector.disconnect()
         self.connector = None
     
     def _updateTable(self):
@@ -210,31 +233,15 @@ class notifGui(object):
         
         # schedule the next update
         self.tableFrame.after(UPDATEPERIOD,self._updateTable)
-        
-    
+
+#============================ main ============================================
+
 def main(connect_params):
     notifGuiHandler = notifGui()
     notifGuiHandler.start(connect_params)
 
 if __name__ == '__main__':
-    # logging
-    LOG_FILENAME       = 'MgrListener.log'
-    LOG_FORMAT         = "%(asctime)s [%(name)s:%(levelname)s] %(message)s"
-    logHandler = logging.handlers.RotatingFileHandler(LOG_FILENAME,
-                                                   maxBytes=2000000,
-                                                   backupCount=5,
-                                                   mode='w'
-                                                   )
-    logHandler.setFormatter(logging.Formatter(LOG_FORMAT))
-    for loggerName in ['ByteArraySerializer',
-                       'SerialConnector',
-                       'IpMoteConnectorInternal',
-                       'Hdlc',
-                       ]:
-        temp = logging.getLogger(loggerName)
-        temp.setLevel(logging.DEBUG)
-        temp.addHandler(logHandler)
-
+    
     # Parse the command line
     parser = OptionParser("usage: %prog [options]", version="%prog 1.0")
     parser.add_option("--host", dest="host", 
@@ -245,6 +252,13 @@ if __name__ == '__main__':
                       help="Mux port to connect to")
     (options, args) = parser.parse_args()
     
-    connect_params = {'host': options.host,
-                      'port': int(options.port)}
+    connect_params = {
+        'host': options.host,
+        'port': int(options.port),
+    }
     main(connect_params)
+
+##
+# end of MgrListener
+# \}
+# 

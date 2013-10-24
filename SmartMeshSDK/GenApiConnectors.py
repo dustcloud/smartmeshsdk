@@ -1,19 +1,18 @@
-'''
-Created on Mar 12, 2012
-
-@author: alushin
-'''
+#============================ adjust path =====================================
 
 import sys
 import os
-sys.path.insert(0, os.path.join(sys.path[0], '..'))
+if __name__ == "__main__":
+    here = sys.path[0]
+    sys.path.insert(0, os.path.join(here, '..'))
 
-import ApiException
-from   ApiDefinition.IpMgrDefinition import IpMgrDefinition
-from   ApiDefinition.IpMoteDefinition import IpMoteDefinition
-from   ApiDefinition.HartMgrDefinition import HartMgrDefinition
-from   ApiDefinition.HartMoteDefinition import HartMoteDefinition
+#============================ imports =========================================
 
+from   SmartMeshSDK import ApiException
+from   SmartMeshSDK.ApiDefinition.IpMgrDefinition    import IpMgrDefinition
+from   SmartMeshSDK.ApiDefinition.IpMoteDefinition   import IpMoteDefinition
+from   SmartMeshSDK.ApiDefinition.HartMgrDefinition  import HartMgrDefinition
+from   SmartMeshSDK.ApiDefinition.HartMoteDefinition import HartMoteDefinition
 
 #============================ templates =======================================
 
@@ -22,12 +21,16 @@ This module was generated automatically. Do not edit directly.
 \'\'\'
 
 import collections
-import ApiException
+from   SmartMeshSDK import ApiException
 from   {MODULE_NAME} import {BASE_CLASS_NAME}
+
+##
+# \\addtogroup {GEN_CLASS_NAME}
+# \\{{
+# 
 
 class {GEN_CLASS_NAME}({BASE_CLASS_NAME}):
     \'\'\'
-    \ingroup ApiConnector
     \\brief {BRIEF_DESCRIPTION}
     \'\'\'
 '''
@@ -148,6 +151,13 @@ START_LOCATION_PAYLOAD = '''
         res = {BASE_CLASS_NAME}.send(self, ['startLocation'], {{"numFrames" : numFrames, "mobileMote" : mobileMote, "fixedMotes" : payload}})
 '''
 
+TMPL_ENDCLASSDEF = '''
+##
+# end of {GEN_CLASS_NAME}
+# \\}}
+# 
+'''
+
 def printStartLocation(names, respFieldsName, reqFieldsName, 
                        CMD_NAME, CMD_PARMS, DESCR, 
                        TUPLE_PARAMS, NAMES, PARAMS_DICT, 
@@ -245,8 +255,9 @@ class GenApiConnectors(object):
         
     #======================== public ==========================================
     
-    def __init__(self, apiDefName, myClassName, baseClassName, baseModuleName, outputFileName = None, briefDescription = ''):
-        apiDefClass = globals()[apiDefName]
+    def __init__(self, apiDefName, myClassName, baseClassName, baseModuleName, outputFileName = None, briefDescription = '', apiDefClass=None):
+        if apiDefName:
+            apiDefClass = globals()[apiDefName]
         self.apiDef           = apiDefClass() 
         self.myClassName      = myClassName
         self.baseClassName    = baseClassName 
@@ -267,6 +278,8 @@ class GenApiConnectors(object):
         self.genCmd()
         self.outFile.write('\n    #======================== notifications ===================================\n')
         self.genNotif()
+        s = TMPL_ENDCLASSDEF.format(GEN_CLASS_NAME    = self.myClassName)
+        self.outFile.write(s)
         self.genFinish()
         
     #======================== private =========================================
@@ -463,14 +476,20 @@ class GenApiConnectors(object):
         return s
 
 def genFile(srcFileName, dstFileName, comment):
-    apiDefName = os.path.splitext(os.path.basename(srcFileName))[0]
+    if isinstance(srcFileName, str):
+        apiDefClass = None
+        apiDefName = os.path.splitext(os.path.basename(srcFileName))[0]
+    else:
+        apiDefClass = srcFileName
+        apiDefName = None
     baseName   = os.path.splitext(os.path.basename(dstFileName))[0]
-    gen = GenApiConnectors(apiDefName, 
-                           baseName,
-                           baseName + "Internal",
-                           baseName + "Internal",
-                           dstFileName,
-                           comment)
+    gen = GenApiConnectors(apiDefName=apiDefName,
+                           apiDefClass=apiDefClass,
+                           myClassName=baseName,
+                           baseClassName=baseName + "Internal",
+                           baseModuleName=baseName + "Internal",
+                           outputFileName=dstFileName,
+                           briefDescription=comment)
     gen.gen()
         
 def main() :

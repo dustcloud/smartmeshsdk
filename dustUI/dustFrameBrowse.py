@@ -1,12 +1,15 @@
 #!/usr/bin/python
 
+#============================ adjust path =====================================
+
 import sys
 import os
 if __name__ == '__main__':
-    temp_path = sys.path[0]
-    sys.path.insert(0, os.path.join(temp_path, '..', 'SmartMeshSDK'))
+    here = sys.path[0]
+    sys.path.insert(0, os.path.join(here, '..'))
 
-# setup logging for this module
+#============================ logging =========================================
+
 import logging
 class NullHandler(logging.Handler):
     def emit(self, record):
@@ -15,19 +18,18 @@ log = logging.getLogger('dustFrameBrowse')
 log.setLevel(logging.INFO)
 log.addHandler(NullHandler())
 
+#============================ imports =========================================
+
 import Tkinter
-import dustGuiLib
 import tkFileDialog
 
+import dustGuiLib
 import dustFrame
 from dustStyle     import dustStyle
 
+#============================ body ============================================
+
 class dustFrameBrowse(dustFrame.dustFrame):
-    '''
-    \ingroup guiLib
-    
-    \brief A frame which allows the user to connect to an LBR.
-    '''
     
     def __init__(self,parentElem,guiLock,selected_cb,allowMultipleFiles=True,frameName="browse",row=0,column=0):
         

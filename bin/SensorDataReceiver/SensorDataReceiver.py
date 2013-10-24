@@ -1,50 +1,72 @@
 #!/usr/bin/python
 
-# add the SmartMeshSDK/ folder to the path
+#============================ adjust path =====================================
+
 import sys
 import os
+if __name__ == "__main__":
+    here = sys.path[0]
+    sys.path.insert(0, os.path.join(here, '..', '..'))
 
-temp_path = sys.path[0]
-if temp_path:
-    sys.path.insert(0, os.path.join(temp_path, '..', '..', 'dustUI'))
-    sys.path.insert(0, os.path.join(temp_path, '..', '..', 'SmartMeshSDK'))
+#============================ verify installation =============================
 
-# verify installation
-import SmsdkInstallVerifier
+from SmartMeshSDK import SmsdkInstallVerifier
 (goodToGo,reason) = SmsdkInstallVerifier.verifyComponents(
-                            [
-                                SmsdkInstallVerifier.PYTHON,
-                                SmsdkInstallVerifier.PYSERIAL,
-                            ]
-                        )
+    [
+        SmsdkInstallVerifier.PYTHON,
+        SmsdkInstallVerifier.PYSERIAL,
+    ]
+)
 if not goodToGo:
     print "Your installation does not allow this application to run:\n"
     print reason
     raw_input("Press any button to exit")
     sys.exit(1)
 
-import Tkinter
+#============================ imports =========================================
+
 import threading
+from   optparse                        import OptionParser
 
-from dustWindow           import dustWindow
-from dustFrameConnection  import dustFrameConnection
-from dustFrameSensorData  import dustFrameSensorData
+from   SmartMeshSDK                    import AppUtils,                   \
+                                              FormatUtils
+from   SmartMeshSDK.ApiDefinition      import IpMgrDefinition
+from   SmartMeshSDK.IpMgrConnectorMux  import IpMgrConnectorMux,          \
+                                              IpMgrSubscribe
+from   dustUI                          import dustWindow,                 \
+                                              dustFrameConnection,        \
+                                              dustFrameSensorData
 
-from ApiDefinition  import IpMgrDefinition
+#============================ logging =========================================
 
-from IpMgrConnectorMux  import IpMgrConnectorMux
-from IpMgrConnectorMux  import IpMgrSubscribe
+# local
 
-from optparse import OptionParser
+import logging
+class NullHandler(logging.Handler):
+    def emit(self, record):
+        pass
+log = logging.getLogger('App')
+log.setLevel(logging.ERROR)
+log.addHandler(NullHandler())
+
+# global
+
+AppUtils.configureLogging()
+
+#============================ defines =========================================
 
 UPDATEPERIOD = 500 # in ms
 DEFAULT_HOST = '127.0.0.1'
 DEFAULT_PORT = 9900
 
+#============================ body ============================================
+
+##
+# \addtogroup SensorDataReceiver
+# \{
+# 
+
 class notifClient(object):
-    '''
-    \ingroup MgrListener
-    '''
     
     def __init__(self, connector, disconnectedCallback):
         
@@ -105,10 +127,7 @@ class notifClient(object):
         self.dataLock.release()
 
 class dataGui(object):
-    '''
-    \ingroup MgrListener
-    '''
-   
+    
     def __init__(self):
         
         # local variables
@@ -117,11 +136,11 @@ class dataGui(object):
         self.notifClientHandler = None
         
         # create window
-        self.window = dustWindow('SensorDataReceiver',
+        self.window = dustWindow.dustWindow('SensorDataReceiver',
                                  self._windowCb_close)
                                  
         # add a connection frame
-        self.connectionFrame = dustFrameConnection(
+        self.connectionFrame = dustFrameConnection.dustFrameConnection(
                                     self.window,
                                     self.guiLock,
                                     self._connectionFrameCb_connected,
@@ -131,7 +150,7 @@ class dataGui(object):
         self.connectionFrame.show()
         
         # add a sensor data frame
-        self.sensorDataFrame = dustFrameSensorData(self.window,
+        self.sensorDataFrame = dustFrameSensorData.dustFrameSensorData(self.window,
                                          self.guiLock,
                                          frameName="received sensor data",
                                          row=1,column=0)
@@ -141,7 +160,11 @@ class dataGui(object):
     
     def start(self, connect_params):
         
-        # start Tkinter's main thead
+        '''
+        This command instructs the GUI to start executing and reacting to 
+        user interactions. It never returns and should therefore be the last
+        command called.
+        '''
         try:
             self.window.mainloop()
         except SystemExit:
@@ -179,6 +202,8 @@ class dataGui(object):
         self.connectionFrame.updateGuiDisconnected()
         
         # delete the connector
+        if self.connector:
+            self.connector.disconnect()
         self.connector = None
     
     def _updateSensorData(self):
@@ -192,8 +217,9 @@ class dataGui(object):
         
         # schedule the next update
         self.sensorDataFrame.after(UPDATEPERIOD,self._updateSensorData)
-        
-    
+
+#============================ main ============================================
+
 def main(connect_params):
     dataGuiHandler = dataGui()
     dataGuiHandler.start(connect_params)
@@ -209,6 +235,13 @@ if __name__ == '__main__':
                       help="Mux port to connect to")
     (options, args) = parser.parse_args()
     
-    connect_params = {'host': options.host,
-                      'port': int(options.port)}
+    connect_params = {
+        'host': options.host,
+        'port': int(options.port),
+    }
     main(connect_params)
+
+##
+# end of SensorDataReceiver
+# \}
+# 

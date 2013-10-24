@@ -1,23 +1,25 @@
 #!/usr/bin/python
 
+#============================ adjust path =====================================
+
 import sys
 import os
 if __name__ == '__main__':
-    temp_path = sys.path[0]
-    sys.path.insert(0, os.path.join(temp_path, '..', 'SmartMeshSDK'))
+    here = sys.path[0]
+    sys.path.insert(0, os.path.join(here, '..'))
+
+#============================ imports =========================================
 
 import Tkinter
+import time
+
 import dustGuiLib
 import dustFrame
-import time
-from dustStyle import dustStyle
+from   dustStyle import dustStyle
+
+#============================ body ============================================
 
 class dustFrameSensorData(dustFrame.dustFrame):
-    '''
-    \ingroup guiLib
-    
-    \brief A frame which displays a tooltip.
-    '''
     
     def __init__(self,parentElem,guiLock,frameName="sensor data",row=0,column=0):
         

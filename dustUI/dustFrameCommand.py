@@ -1,29 +1,30 @@
 #!/usr/bin/python
 
+#============================ adjust path =====================================
+
 import sys
 import os
 if __name__ == '__main__':
-    temp_path = sys.path[0]
-    sys.path.insert(0, os.path.join(temp_path, '..', 'SmartMeshSDK'))
+    here = sys.path[0]
+    sys.path.insert(0, os.path.join(here, '..'))
 
-from ApiDefinition import ApiDefinition
+#============================ imports =========================================
 
 import Tkinter
+import traceback
+
 import dustGuiLib
 import dustFrame
-import traceback
-from dustStyle import dustStyle
+from   dustStyle import dustStyle
 
-from ApiException import CommandError, \
-                         ConnectionError, \
-                         APIError
+from   SmartMeshSDK.ApiDefinition import ApiDefinition
+from   SmartMeshSDK.ApiException  import CommandError, \
+                                         ConnectionError, \
+                                         APIError
+
+#============================ body ============================================
 
 class dustFrameCommand(dustFrame.dustFrame):
-    '''
-    \ingroup guiLib
-    
-    \brief Allows the user to select a command, set its payload, and send it.
-    '''
     
     def __init__(self,parentElem,guiLock,
                                  selectedCb,responseCb,responseErrorCb,
@@ -459,5 +460,5 @@ class exampleApp(object):
 if __name__ == '__main__':
     import threading
     from dustWindow import dustWindow
-    from ApiDefinition import IpMoteDefinition
+    from SmartMeshSDK.ApiDefinition import IpMoteDefinition
     exampleApp()

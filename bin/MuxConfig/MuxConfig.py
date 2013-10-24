@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 
-import os
+#============================ adjust path =====================================
+
 import sys
+import os
+if __name__ == "__main__":
+    here = sys.path[0]
+    sys.path.insert(0, os.path.join(here, '..', '..'))
 
-# add the SmartMeshSDK packages to the path
-temp_path = sys.path[0]
-if temp_path:
-    sys.path.append(os.path.join(temp_path, '..', '..', 'SmartMeshSDK'))
-    sys.path.append(os.path.join(temp_path, '..', '..', 'dustUI'))
+#============================ verify installation =============================
 
-# verify installation
-import SmsdkInstallVerifier
+from SmartMeshSDK import SmsdkInstallVerifier
 (goodToGo,reason) = SmsdkInstallVerifier.verifyComponents(
                             [
                                 SmsdkInstallVerifier.PYTHON,
@@ -24,26 +24,28 @@ if not goodToGo:
     raw_input("Press any button to exit")
     sys.exit(1)
 
+#============================ imports =========================================
+
 import Tkinter
 try:
     import ttk
 except ImportError:
     ttk = Tkinter
-
 import re
 import threading
 
 import SerialMuxConfigs
 import ProcessManager
 
-import dustWindow
+from SmartMeshSDK import sdk_version
+from dustUI       import dustWindow
 
-import sdk_version
+#============================ defines =========================================
 
-EXPAND_ALL = Tkinter.N + Tkinter.E + Tkinter.S + Tkinter.W
-EXPAND_HORIZ = Tkinter.E + Tkinter.W
+EXPAND_ALL    = Tkinter.N + Tkinter.E + Tkinter.S + Tkinter.W
+EXPAND_HORIZ  = Tkinter.E + Tkinter.W
 
-DESCRIPTION = '''The Serial Mux Configurator provides a simple editor for Serial Mux configurations.'''
+DESCRIPTION   = '''The Serial Mux Configurator provides a simple editor for Serial Mux configurations.'''
 
 
 def serial_port_key(sp):
@@ -53,6 +55,7 @@ def serial_port_key(sp):
     else:
         return sp
 
+#============================ body ============================================
 
 class dustStatusWindow(dustWindow.dustWindow):
     def __init__(self, appname, closeCallback):
@@ -444,6 +447,7 @@ class SerialMuxController(object):
         # update UI
         self.ui.update_row_values(sm_config)
 
+#============================ main ============================================
 
 def main():
     # Create the UI
@@ -463,3 +467,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

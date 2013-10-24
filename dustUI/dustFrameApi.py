@@ -1,26 +1,28 @@
 #!/usr/bin/python
 
+#============================ adjust path =====================================
+
 import sys
 import os
 if __name__ == '__main__':
-    temp_path = sys.path[0]
-    sys.path.insert(0, os.path.join(temp_path, '..', 'SmartMeshSDK'))
+    here = sys.path[0]
+    sys.path.insert(0, os.path.join(here, '..'))
+
+#============================ imports =========================================
 
 import Tkinter
+
 import dustGuiLib
 import dustFrame
 
-from ApiDefinition import IpMgrDefinition
-from ApiDefinition import IpMoteDefinition
-from ApiDefinition import HartMgrDefinition
-from ApiDefinition import HartMoteDefinition
+from SmartMeshSDK.ApiDefinition   import IpMgrDefinition,       \
+                                         IpMoteDefinition,      \
+                                         HartMgrDefinition,     \
+                                         HartMoteDefinition
+
+#============================ body ============================================
 
 class dustFrameApi(dustFrame.dustFrame):
-    '''
-    \ingroup guiLib
-    
-    \brief A frame which allows the user to select the API to use.
-    '''
     
     # acceptable network types
     IP        = 'SmartMesh IP'

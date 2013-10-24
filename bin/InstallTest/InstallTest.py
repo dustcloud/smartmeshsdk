@@ -1,14 +1,19 @@
 #!/usr/bin/python
 
+#============================ adjust path =====================================
+
 import sys
 import os
+if __name__ == "__main__":
+    here = sys.path[0]
+    sys.path.insert(0, os.path.join(here, '..', '..'))
 
-dev_path = sys.path[0]
-if dev_path:
-    sys.path.insert(0, os.path.join(dev_path, '..', '..', 'SmartMeshSDK'))
+#============================ imports =========================================
 
-import SmsdkInstallVerifier
-import sdk_version
+from SmartMeshSDK import SmsdkInstallVerifier,   \
+                         sdk_version
+
+#============================ main ============================================
 
 def verifyOneComponent(name):
     print "\nTesting installation of "+name+"..."
@@ -22,7 +27,6 @@ def verifyOneComponent(name):
             print "Note: {0} is only required to run the MuxConfig application.".format(SmsdkInstallVerifier.PYWIN32)
         print reason
     return goodToGo
-    
 
 def main():
     version_str = '.'.join([str(v) for v in sdk_version.VERSION])

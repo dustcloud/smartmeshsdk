@@ -3,12 +3,16 @@ This module was generated automatically. Do not edit directly.
 '''
 
 import collections
-import ApiException
+from   SmartMeshSDK import ApiException
 from   HartMgrConnectorInternal import HartMgrConnectorInternal
+
+##
+# \addtogroup HartMgrConnector
+# \{
+# 
 
 class HartMgrConnector(HartMgrConnectorInternal):
     '''
-    \ingroup ApiConnector
     \brief Public class for the HART Manager connector using the XML API.
     '''
 
@@ -253,8 +257,10 @@ class HartMgrConnector(HartMgrConnectorInternal):
     #     There is no restriction on the value of this field.
     # - <tt>numLostPackets</tt>: 4-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
+    # - <tt>latencyToMote</tt>: 4-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
     # 
-    Tuple_dn_getMoteStatistics = collections.namedtuple("Tuple_dn_getMoteStatistics", ['index', 'startTime', 'avgLatency', 'reliability', 'numJoins', 'voltage', 'chargeConsumption', 'temperature', 'numLostPackets'])
+    Tuple_dn_getMoteStatistics = collections.namedtuple("Tuple_dn_getMoteStatistics", ['index', 'startTime', 'avgLatency', 'reliability', 'numJoins', 'voltage', 'chargeConsumption', 'temperature', 'numLostPackets', 'latencyToMote'])
 
     ##
     # Get the Mote Statistics
@@ -275,6 +281,30 @@ class HartMgrConnector(HartMgrConnectorInternal):
     def dn_getMoteStatistics(self, macAddr, period, index) :
         res = HartMgrConnectorInternal.send(self, ['getMoteStatistics'], {"macAddr" : macAddr, "period" : period, "index" : index})
         return HartMgrConnector.Tuple_dn_getMoteStatistics(**res)
+
+    ##
+    # The named tuple returned by the dn_getSourceRoute() function.
+    # 
+    # - <tt>destMacAddr</tt>: 25-byte field formatted as a string.<br/>
+    #     There is no restriction on the value of this field.
+    # - <tt>primaryPath</tt>: 16-byte field formatted as a list.<br/>
+    #     There is no restriction on the value of this field.
+    # - <tt>secondaryPath</tt>: 16-byte field formatted as a list.<br/>
+    #     There is no restriction on the value of this field.
+    # 
+    Tuple_dn_getSourceRoute = collections.namedtuple("Tuple_dn_getSourceRoute", ['destMacAddr', 'primaryPath', 'secondaryPath'])
+
+    ##
+    # Get the Source Route for a specific Mote
+    # 
+    # \param destMacAddr 25-byte field formatted as a string.<br/>
+    #     There is no restriction on the value of this field.
+    # 
+    # \returns The response to the command, formatted as a #Tuple_dn_getSourceRoute named tuple.
+    # 
+    def dn_getSourceRoute(self, destMacAddr) :
+        res = HartMgrConnectorInternal.send(self, ['getSourceRoute'], {"destMacAddr" : destMacAddr})
+        return HartMgrConnector.Tuple_dn_getSourceRoute(**res)
 
     ##
     # The named tuple returned by the dn_getMotes() function.
@@ -439,7 +469,7 @@ class HartMgrConnector(HartMgrConnectorInternal):
     ##
     # The named tuple returned by the dn_getSecurity() function.
     # 
-    # - <tt>securityMode</tt>: 16-byte field formatted as a string.<br/>
+    # - <tt>securityMode</tt>: 20-byte field formatted as a string.<br/>
     #     This field can only take one of the following values:
     #      - acceptACL: Accept ACL
     #      - acceptCommonJoinKey: Accept common join key
@@ -826,15 +856,13 @@ class HartMgrConnector(HartMgrConnectorInternal):
     #     There is no restriction on the value of this field.
     # \param name 16-byte field formatted as a string.<br/>
     #     There is no restriction on the value of this field.
-    # \param powerSource 16-byte field formatted as a string.<br/>
-    #     There is no restriction on the value of this field.
     # \param enableRouting 1-byte field formatted as a bool.<br/>
     #     There is no restriction on the value of this field.
     # 
     # \returns The response to the command, formatted as a #Tuple_dn_setMote named tuple.
     # 
-    def dn_setMote(self, macAddr, name, powerSource, enableRouting) :
-        res = HartMgrConnectorInternal.send(self, ['setMote'], {"macAddr" : macAddr, "name" : name, "powerSource" : powerSource, "enableRouting" : enableRouting})
+    def dn_setMote(self, macAddr, name, enableRouting) :
+        res = HartMgrConnectorInternal.send(self, ['setMote'], {"macAddr" : macAddr, "name" : name, "enableRouting" : enableRouting})
         return HartMgrConnector.Tuple_dn_setMote(**res)
 
     ##
@@ -872,7 +900,7 @@ class HartMgrConnector(HartMgrConnectorInternal):
     ##
     # The named tuple returned by the dn_setSecurity() function.
     # 
-    # - <tt>securityMode</tt>: 16-byte field formatted as a string.<br/>
+    # - <tt>securityMode</tt>: 20-byte field formatted as a string.<br/>
     #     This field can only take one of the following values:
     #      - acceptACL: Accept ACL
     #      - acceptCommonJoinKey: Accept common join key
@@ -884,7 +912,7 @@ class HartMgrConnector(HartMgrConnectorInternal):
     ##
     # Set security configuration
     # 
-    # \param securityMode 16-byte field formatted as a string.<br/>
+    # \param securityMode 20-byte field formatted as a string.<br/>
     #     This field can only take one of the following values:
     #      - acceptACL: Accept ACL
     #      - acceptCommonJoinKey: Accept common join key
@@ -1309,12 +1337,70 @@ class HartMgrConnector(HartMgrConnectorInternal):
         return HartMgrConnector.Tuple_dn_activateAdvertising(**res)
 
     ##
-    # The named tuple returned by the dn_decommission() function.
+    # The named tuple returned by the dn_startOtap() function.
     # 
     # - <tt>result</tt>: 32-byte field formatted as a string.<br/>
     #     There is no restriction on the value of this field.
     # 
-    Tuple_dn_decommission = collections.namedtuple("Tuple_dn_decommission", ['result'])
+    Tuple_dn_startOtap = collections.namedtuple("Tuple_dn_startOtap", ['result'])
+
+    ##
+    # This command initiates the OTAP (Over-The-Air-Programming) process to upgrade software on motes and the Access Point. By default, the process will retry the OTAP file transmission 100 times.
+    # 
+    # 
+    # 
+    # \returns The response to the command, formatted as a #Tuple_dn_startOtap named tuple.
+    # 
+    def dn_startOtap(self, ) :
+        res = HartMgrConnectorInternal.send(self, ['startOtap'], {})
+        return HartMgrConnector.Tuple_dn_startOtap(**res)
+
+    ##
+    # The named tuple returned by the dn_startOtapWithRetries() function.
+    # 
+    # - <tt>result</tt>: 32-byte field formatted as a string.<br/>
+    #     There is no restriction on the value of this field.
+    # 
+    Tuple_dn_startOtapWithRetries = collections.namedtuple("Tuple_dn_startOtapWithRetries", ['result'])
+
+    ##
+    # This command initiates the OTAP (Over-The-Air-Programming) process to upgrade software for motes and the Access Point, using the specified number of retries.
+    # 
+    # \param retries 1-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    # 
+    # \returns The response to the command, formatted as a #Tuple_dn_startOtapWithRetries named tuple.
+    # 
+    def dn_startOtapWithRetries(self, retries) :
+        res = HartMgrConnectorInternal.send(self, ['startOtapWithRetries'], {"retries" : retries})
+        return HartMgrConnector.Tuple_dn_startOtapWithRetries(**res)
+
+    ##
+    # The named tuple returned by the dn_cancelOtap() function.
+    # 
+    # - <tt>result</tt>: 32-byte field formatted as a string.<br/>
+    #     There is no restriction on the value of this field.
+    # 
+    Tuple_dn_cancelOtap = collections.namedtuple("Tuple_dn_cancelOtap", ['result'])
+
+    ##
+    # This command cancels the OTAP (Over-The-Air-Programming) process to upgrade software on motes and the access point.
+    # 
+    # 
+    # 
+    # \returns The response to the command, formatted as a #Tuple_dn_cancelOtap named tuple.
+    # 
+    def dn_cancelOtap(self, ) :
+        res = HartMgrConnectorInternal.send(self, ['cancelOtap'], {})
+        return HartMgrConnector.Tuple_dn_cancelOtap(**res)
+
+    ##
+    # The named tuple returned by the dn_decommissionDevice() function.
+    # 
+    # - <tt>result</tt>: 32-byte field formatted as a string.<br/>
+    #     There is no restriction on the value of this field.
+    # 
+    Tuple_dn_decommissionDevice = collections.namedtuple("Tuple_dn_decommissionDevice", ['result'])
 
     ##
     # Decommission a device in the network
@@ -1322,19 +1408,39 @@ class HartMgrConnector(HartMgrConnectorInternal):
     # \param macAddr 25-byte field formatted as a string.<br/>
     #     There is no restriction on the value of this field.
     # 
-    # \returns The response to the command, formatted as a #Tuple_dn_decommission named tuple.
+    # \returns The response to the command, formatted as a #Tuple_dn_decommissionDevice named tuple.
     # 
-    def dn_decommission(self, macAddr) :
-        res = HartMgrConnectorInternal.send(self, ['decommission'], {"macAddr" : macAddr})
-        return HartMgrConnector.Tuple_dn_decommission(**res)
+    def dn_decommissionDevice(self, macAddr) :
+        res = HartMgrConnectorInternal.send(self, ['decommissionDevice'], {"macAddr" : macAddr})
+        return HartMgrConnector.Tuple_dn_decommissionDevice(**res)
 
     ##
-    # The named tuple returned by the dn_ping() function.
+    # The named tuple returned by the dn_promoteToOperational() function.
+    # 
+    # - <tt>result</tt>: 32-byte field formatted as a string.<br/>
+    #     There is no restriction on the value of this field.
+    # 
+    Tuple_dn_promoteToOperational = collections.namedtuple("Tuple_dn_promoteToOperational", ['result'])
+
+    ##
+    # Promote a quarantined device to operational
+    # 
+    # \param macAddr 25-byte field formatted as a string.<br/>
+    #     There is no restriction on the value of this field.
+    # 
+    # \returns The response to the command, formatted as a #Tuple_dn_promoteToOperational named tuple.
+    # 
+    def dn_promoteToOperational(self, macAddr) :
+        res = HartMgrConnectorInternal.send(self, ['promoteToOperational'], {"macAddr" : macAddr})
+        return HartMgrConnector.Tuple_dn_promoteToOperational(**res)
+
+    ##
+    # The named tuple returned by the dn_pingMote() function.
     # 
     # - <tt>callbackId</tt>: 4-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
     # 
-    Tuple_dn_ping = collections.namedtuple("Tuple_dn_ping", ['callbackId'])
+    Tuple_dn_pingMote = collections.namedtuple("Tuple_dn_pingMote", ['callbackId'])
 
     ##
     # Ping the specified mote. A Net Ping Reply event notification will contain the mote's response.
@@ -1342,11 +1448,11 @@ class HartMgrConnector(HartMgrConnectorInternal):
     # \param macAddr 25-byte field formatted as a string.<br/>
     #     There is no restriction on the value of this field.
     # 
-    # \returns The response to the command, formatted as a #Tuple_dn_ping named tuple.
+    # \returns The response to the command, formatted as a #Tuple_dn_pingMote named tuple.
     # 
-    def dn_ping(self, macAddr) :
-        res = HartMgrConnectorInternal.send(self, ['ping'], {"macAddr" : macAddr})
-        return HartMgrConnector.Tuple_dn_ping(**res)
+    def dn_pingMote(self, macAddr) :
+        res = HartMgrConnectorInternal.send(self, ['pingMote'], {"macAddr" : macAddr})
+        return HartMgrConnector.Tuple_dn_pingMote(**res)
 
     ##
     # The named tuple returned by the dn_getLicense() function.
@@ -1495,6 +1601,26 @@ class HartMgrConnector(HartMgrConnectorInternal):
     def dn_unsubscribe(self, ) :
         res = HartMgrConnectorInternal.send(self, ['unsubscribe'], {})
         return HartMgrConnector.Tuple_dn_unsubscribe(**res)
+
+    ##
+    # The named tuple returned by the dn_cli() function.
+    # 
+    # - <tt>result</tt>: 32-byte field formatted as a string.<br/>
+    #     There is no restriction on the value of this field.
+    # 
+    Tuple_dn_cli = collections.namedtuple("Tuple_dn_cli", ['result'])
+
+    ##
+    # This command tunnels a given command through to the manager's Command Line Interface (CLI). The CLI command can be called by only one XML API client at a time. The response to the given CLI command is tunneled back to the client via the notifications channel. To receive the CLI notification, the client must be subscribed to CLI notifications (see Notification Channel)
+    # 
+    # \param command 128-byte field formatted as a string.<br/>
+    #     There is no restriction on the value of this field.
+    # 
+    # \returns The response to the command, formatted as a #Tuple_dn_cli named tuple.
+    # 
+    def dn_cli(self, command) :
+        res = HartMgrConnectorInternal.send(self, ['cli'], {"command" : command})
+        return HartMgrConnector.Tuple_dn_cli(**res)
 
     #======================== notifications ===================================
     
@@ -1788,6 +1914,48 @@ class HartMgrConnector(HartMgrConnectorInternal):
     notifTupleTable[MOTELIVE] = Tuple_MoteLive = collections.namedtuple("Tuple_MoteLive", ['timeStamp', 'eventId', 'moteId', 'macAddr', 'reason'])
 
     ##
+    # \brief MOTEQUARANTINE notification.
+    # 
+    # 
+    #
+    # Formatted as a Tuple_MoteQuarantine named tuple. It contains the following fields:
+    #   - <tt>timeStamp</tt> 8-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    #   - <tt>eventId</tt> 4-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    #   - <tt>moteId</tt> 4-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    #   - <tt>macAddr</tt> 32-byte field formatted as a string.<br/>
+    #     There is no restriction on the value of this field.
+    #   - <tt>reason</tt> 64-byte field formatted as a string.<br/>
+    #     There is no restriction on the value of this field.    
+    # 
+    MOTEQUARANTINE = "MoteQuarantine"
+    notifTupleTable[MOTEQUARANTINE] = Tuple_MoteQuarantine = collections.namedtuple("Tuple_MoteQuarantine", ['timeStamp', 'eventId', 'moteId', 'macAddr', 'reason'])
+
+    ##
+    # \brief MOTEJOINQUARANTINE notification.
+    # 
+    # 
+    #
+    # Formatted as a Tuple_MoteJoinQuarantine named tuple. It contains the following fields:
+    #   - <tt>timeStamp</tt> 8-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    #   - <tt>eventId</tt> 4-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    #   - <tt>moteId</tt> 4-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    #   - <tt>macAddr</tt> 32-byte field formatted as a string.<br/>
+    #     There is no restriction on the value of this field.
+    #   - <tt>reason</tt> 64-byte field formatted as a string.<br/>
+    #     There is no restriction on the value of this field.
+    #   - <tt>userData</tt> 64-byte field formatted as a string.<br/>
+    #     There is no restriction on the value of this field.    
+    # 
+    MOTEJOINQUARANTINE = "MoteJoinQuarantine"
+    notifTupleTable[MOTEJOINQUARANTINE] = Tuple_MoteJoinQuarantine = collections.namedtuple("Tuple_MoteJoinQuarantine", ['timeStamp', 'eventId', 'moteId', 'macAddr', 'reason', 'userData'])
+
+    ##
     # \brief MOTEUNKNOWN notification.
     # 
     # 
@@ -2053,6 +2221,28 @@ class HartMgrConnector(HartMgrConnectorInternal):
     notifTupleTable[PINGREPLY] = Tuple_PingReply = collections.namedtuple("Tuple_PingReply", ['timeStamp', 'eventId', 'macAddr', 'callbackId', 'latency', 'temperature', 'voltage', 'hopCount'])
 
     ##
+    # \brief TRANSPORTTIMEOUT notification.
+    # 
+    # 
+    #
+    # Formatted as a Tuple_TransportTimeout named tuple. It contains the following fields:
+    #   - <tt>timeStamp</tt> 8-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    #   - <tt>eventId</tt> 4-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    #   - <tt>srcMacAddr</tt> 32-byte field formatted as a string.<br/>
+    #     There is no restriction on the value of this field.
+    #   - <tt>destMacAddr</tt> 32-byte field formatted as a string.<br/>
+    #     There is no restriction on the value of this field.
+    #   - <tt>timeoutType</tt> 32-byte field formatted as a string.<br/>
+    #     There is no restriction on the value of this field.
+    #   - <tt>callbackId</tt> 4-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.    
+    # 
+    TRANSPORTTIMEOUT = "TransportTimeout"
+    notifTupleTable[TRANSPORTTIMEOUT] = Tuple_TransportTimeout = collections.namedtuple("Tuple_TransportTimeout", ['timeStamp', 'eventId', 'srcMacAddr', 'destMacAddr', 'timeoutType', 'callbackId'])
+
+    ##
     # \brief DATA notification.
     # 
     # 
@@ -2182,3 +2372,8 @@ class HartMgrConnector(HartMgrConnectorInternal):
                 return (ids[-1], None)
         except KeyError :
             raise ApiException.NotificationError(ids, param)
+
+##
+# end of HartMgrConnector
+# \}
+# 

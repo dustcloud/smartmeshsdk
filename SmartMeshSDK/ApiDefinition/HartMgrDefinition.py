@@ -19,6 +19,7 @@ log.addHandler(NullHandler())
 ##
 # \ingroup ApiDefinition
 #
+
 class HartMgrDefinition(ApiDefinition.ApiDefinition):
     '''
     \brief API definition for the HART manager.
@@ -33,10 +34,11 @@ class HartMgrDefinition(ApiDefinition.ApiDefinition):
     BOOL      = ApiDefinition.FieldFormats.BOOL
     INT       = ApiDefinition.FieldFormats.INT
     INTS      = ApiDefinition.FieldFormats.INTS
-    FLOAT     = 'float'
+    FLOAT     = ApiDefinition.FieldFormats.FLOAT
     HEXDATA   = ApiDefinition.FieldFormats.HEXDATA
     RC        = ApiDefinition.ApiDefinition.RC
     SUBID1    = ApiDefinition.ApiDefinition.SUBID1
+    LIST      = 'list'
 
     # Enumerations
     # fieldOptions is a list of [ value, description, ?? ]
@@ -321,6 +323,32 @@ class HartMgrDefinition(ApiDefinition.ApiDefinition):
             },
         },
         {
+            'id'         : 'netMoteQuarantine',
+            'name'       : 'MoteQuarantine',
+            'description': '',
+            'response'   : {
+                'FIELDS':  [
+                    ['moteId',              INT,      4,   None],
+                    ['macAddr',             STRING,   32,  None],
+                    ['reason',              STRING,   64,  None], # TODO: length
+                ],
+            },
+        },
+        {
+            'id'         : 'netMoteJoinQuarantine',
+            'name'       : 'MoteJoinQuarantine',
+            'description': '',
+            'response'   : {
+                'FIELDS':  [
+                    ['moteId',              INT,      4,   None],
+                    ['macAddr',             STRING,   32,  None],
+                    ['reason',              STRING,   64,  None], # TODO: length
+                    ['userData',            STRING,   64,  None], # TODO: length
+                ],
+            },
+        },
+
+        {
             'id'         : 'netMoteUnknown',
             'name'       : 'MoteUnknown',
             'description': '',
@@ -475,6 +503,19 @@ class HartMgrDefinition(ApiDefinition.ApiDefinition):
                     ['temperature',         FLOAT,    8,   None],
                     ['voltage',             FLOAT,    8,   None],
                     ['hopCount',            INT,      4,   None],
+                ],
+            },
+        },
+        {
+            'id'         : 'netTransportTimeout',
+            'name'       : 'TransportTimeout',
+            'description': '',
+            'response'   : {
+                'FIELDS':  [
+                    ['srcMacAddr',          STRING,   32,  None],
+                    ['destMacAddr',         STRING,   32,  None],
+                    ['timeoutType',         STRING,   32,  None], # TODO: timeout type
+                    ['callbackId',          INT,      4,   None],
                 ],
             },
         },
@@ -851,6 +892,19 @@ class HartMgrDefinition(ApiDefinition.ApiDefinition):
                 net_stats[field.name] = ''  # default value
         return net_stats
 
+    def deserialize_getSourceRoute(self, cmd_metadata, xmlrpc_resp):
+        net_stats = {}
+        fields = self.getResponseFields(self.COMMAND, [cmd_metadata['name']])
+        # parse the Statistics element
+        resp_dict = self._parse_xmlobj(xmlrpc_resp, 'SourceRoute', None)
+        # Ug. deserialization for this case is heavily dependant on response structure
+        for path in ['primaryPath', 'secondaryPath']:
+            if path in resp_dict and 'macAddr' in resp_dict[path]:
+                resp_dict[path] = resp_dict[path]['macAddr']
+            else:
+                resp_dict[path] = []            
+        return resp_dict
+
     # Commands
     commands = [
         # Get Config commands
@@ -993,12 +1047,31 @@ class HartMgrDefinition(ApiDefinition.ApiDefinition):
                     ['temperature',         FLOAT,    4,   None], # deg C
                     # added in Manager 4.1.0.2
                     ['numLostPackets',      INT,      4,   None],
+                    # added in Manager 4.1.0.11
+                    ['latencyToMote',       INT,      4,   None],
                 ],
             },
             'serializer' : 'serialize_getMoteStats',
             'deserializer' : 'deserialize_getStats',
         },
-
+        {
+            'id'         : 'getConfig',
+            'name'       : 'getSourceRoute',
+            'description': 'Get the Source Route for a specific Mote',
+            'request'    : [
+                ['destMacAddr',             STRING,   25,  None],
+            ],
+            'response'   : {
+                'SourceRoute':  [
+                    ['destMacAddr',         STRING,   25,  None],
+                    ['primaryPath',         LIST,     16,  None], 
+                    ['secondaryPath',       LIST,     16,  None], 
+                ],
+            },
+            'serializer' : 'serialize_getConfig',
+            'serializerParam': ['config', 'SourceRoutes', 'SourceRoute'],
+            'deserializer' : 'deserialize_getSourceRoute',
+        },
         # getMotes -- return LIST of motess
         {
             'id'         : 'getConfig',
@@ -1094,7 +1167,7 @@ class HartMgrDefinition(ApiDefinition.ApiDefinition):
             ],
             'response'   : { 
                 'Security':  [
-                    ['securityMode',        STRING,   16,  'securityMode'],
+                    ['securityMode',        STRING,   20,  'securityMode'],
                     ['acceptHARTDevicesOnly', BOOL,   1,   None],
                 ],
             },
@@ -1303,7 +1376,6 @@ class HartMgrDefinition(ApiDefinition.ApiDefinition):
             'request'    : [
                 ['macAddr',                 STRING,   25,  None],
                 ['name',                    STRING,   16,  None],
-                ['powerSource',             STRING,   16,  None], # TODO: enum
                 ['enableRouting',           BOOL,     1,   None],
             ],
             'response'   : { 
@@ -1369,13 +1441,13 @@ class HartMgrDefinition(ApiDefinition.ApiDefinition):
             'name'       : 'setSecurity',
             'description': 'Set security configuration',
             'request'    : [
-                ['securityMode',            STRING,   16,  'securityMode'],
+                ['securityMode',            STRING,   20,  'securityMode'],
                 ['commonJoinKey',           HEXDATA,  16,  None],
                 ['acceptHARTDevicesOnly',   BOOL,     1,   None],
             ],
             'response'   : { 
                 'Security':  [
-                    ['securityMode',        STRING,   16,  'securityMode'],
+                    ['securityMode',        STRING,   20,  'securityMode'],
                     ['acceptHARTDevicesOnly', BOOL,   1,   None],
                 ],
             },
@@ -1485,7 +1557,7 @@ class HartMgrDefinition(ApiDefinition.ApiDefinition):
             'serializer' : 'serialize_setConfig',
             'serializerParam' : ['config', 'Motes', 'Mote'],
         },
-                
+        
         # Send packet commands
         {
             'id'         : 'sendRequest',
@@ -1496,7 +1568,7 @@ class HartMgrDefinition(ApiDefinition.ApiDefinition):
                 ['domain',                  STRING,   16,  'appDomain'],
                 ['priority',                STRING,   16,  'packetPriority'],
                 ['reliable',                BOOL,     0,   None],
-                ['data',                    HEXDATA, None, None],
+                ['data',                    HEXDATA,  None,None],
             ],
             'response'   : { 
                 FIELDS : [
@@ -1672,7 +1744,7 @@ class HartMgrDefinition(ApiDefinition.ApiDefinition):
                 ],
             },
         },
-
+        
         # activateAdvertising
         {
             'id'         : 'activateAdvertising',
@@ -1688,12 +1760,70 @@ class HartMgrDefinition(ApiDefinition.ApiDefinition):
                 ],
             },
         },
-
+        
+        # startOtap
+        {
+            'id'         : 'startOtap',
+            'name'       : 'startOtap',
+            'description': 'This command initiates the OTAP (Over-The-Air-Programming) process to upgrade software on motes and the Access Point. By default, the process will retry the OTAP file transmission 100 times.',
+            'request'    : [
+            ],
+            'response'   : { 
+                FIELDS : [ 
+                          ['result',        STRING,   32,  None],
+                ],
+            },
+        },
+        
+        # startOtapWithRetries 
+        {
+            'id'         : 'startOtapWithRetries',
+            'name'       : 'startOtapWithRetries',
+            'description': 'This command initiates the OTAP (Over-The-Air-Programming) process to upgrade software for motes and the Access Point, using the specified number of retries.',
+            'request'    : [
+                ['retries',                 INT,      1,   None]
+            ],
+            'response'   : { 
+                FIELDS : [ 
+                          ['result',        STRING,   32,  None],
+                ],
+            },
+        },
+        
+        # cancelOtap
+        {
+            'id'         : 'cancelOtap',
+            'name'       : 'cancelOtap',
+            'description': 'This command cancels the OTAP (Over-The-Air-Programming) process to upgrade software on motes and the access point.',
+            'request'    : [
+            ],
+            'response'   : { 
+                FIELDS : [ 
+                          ['result',        STRING,   32,  None],
+                ],
+            },
+        },
+        
         # decommissionDevice
         {
             'id'         : 'decommissionDevice',
-            'name'       : 'decommission',
+            'name'       : 'decommissionDevice',
             'description': 'Decommission a device in the network',
+            'request'    : [
+                ['macAddr',                 STRING,   25,  None],
+            ],
+            'response'   : {
+                FIELDS : [ 
+                          ['result',        STRING,   32,  None],
+                ],
+            },
+        },
+
+        # promoteToOperational
+        {
+            'id'         : 'promoteToOperational',
+            'name'       : 'promoteToOperational',
+            'description': 'Promote a quarantined device to operational',
             'request'    : [
                 ['macAddr',                 STRING,   25,  None],
             ],
@@ -1707,7 +1837,7 @@ class HartMgrDefinition(ApiDefinition.ApiDefinition):
         # pingMote
         {
             'id'         : 'pingMote',
-            'name'       : 'ping',
+            'name'       : 'pingMote',
             'description': '''Ping the specified mote. A Net Ping Reply event notification will contain the mote's response.''',
             'request'    : [
                 ['macAddr',                 STRING,   25,  None],
@@ -1745,9 +1875,7 @@ class HartMgrDefinition(ApiDefinition.ApiDefinition):
                 ],
             },
         },
-                
-        # TODO startLocation stopLocation
-                
+        
         # reset
         {
             'id'         : 'reset',
@@ -1829,4 +1957,18 @@ class HartMgrDefinition(ApiDefinition.ApiDefinition):
         },
 
         # cli -- the CLI command is deprecated
+        
+        {
+            'id'         : 'cli',
+            'name'       : 'cli',
+            'description': 'This command tunnels a given command through to the manager\'s Command Line Interface (CLI). The CLI command can be called by only one XML API client at a time. The response to the given CLI command is tunneled back to the client via the notifications channel. To receive the CLI notification, the client must be subscribed to CLI notifications (see Notification Channel)',
+            'request'    : [
+                ['command',                 STRING,   128, None],
+            ],
+            'response'   : {
+                FIELDS : [ 
+                    ['result',              STRING,   32,  None],
+                ],
+            },
+        },
     ]

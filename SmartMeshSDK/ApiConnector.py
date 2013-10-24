@@ -39,9 +39,9 @@ def logDump(buf, msg = None, level=logging.DEBUG):
 class ApiConnector(object):
     '''
     \ingroup ApiConnector
+    
     \brief Base class for all connector objects.
     '''
-    
     
     def __init__(self, maxQSize = DEFAULT_Q_SIZE):
         self.maxQSize = maxQSize

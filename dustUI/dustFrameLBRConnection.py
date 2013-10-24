@@ -1,31 +1,30 @@
 #!/usr/bin/python
 
+#============================ adjust path =====================================
+
 import sys
 import os
 if __name__ == '__main__':
-    temp_path = sys.path[0]
-    sys.path.insert(0, os.path.join(temp_path, '..', 'SmartMeshSDK'))
+    here = sys.path[0]
+    sys.path.insert(0, os.path.join(here, '..'))
+
+#============================ imports =========================================
 
 import re
-
-import Tkinter
-import dustGuiLib
 import tkFileDialog
 
+import dustGuiLib
 import dustFrame
-from dustStyle          import dustStyle
+from   dustStyle                       import dustStyle
 
-from LbrConnector       import LbrConnector
-from ApiException       import ConnectionError
+from   SmartMeshSDK.LbrConnector       import LbrConnector
+from   SmartMeshSDK.ApiException       import ConnectionError
+
+#============================ body ============================================
 
 UPDATEPERIOD = 500 # in ms
 
 class dustFrameLBRConnection(dustFrame.dustFrame):
-    '''
-    \ingroup guiLib
-    
-    \brief A frame which allows the user to connect to an LBR.
-    '''
     
     def __init__(self,parentElem,guiLock,connectedCb,frameName="br connection",row=0,column=0):
         

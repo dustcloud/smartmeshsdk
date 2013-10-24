@@ -7,7 +7,6 @@ import sys
 if os.name in ['nt']:
     from WindowsServices import scan_services, get_virtual_serial_ports
 
-
 class SerialMuxConfig(object):
     '''The Serial Mux configuration has the following properties:
     - com port
@@ -126,8 +125,8 @@ def find_available_name(config_dir):
 
 
 import socket
-import ApiException
-from IpMgrConnectorMux import IpMgrConnectorMux
+from SmartMeshSDK                      import ApiException
+from SmartMeshSDK.IpMgrConnectorMux    import IpMgrConnectorMux
 
 def check_device(sm_data):
     if (sm_data.com_port and sm_data.listener_port
@@ -135,9 +134,9 @@ def check_device(sm_data):
         mgr = IpMgrConnectorMux.IpMgrConnectorMux()
         try: 
             mgr.connect({'port': int(sm_data.listener_port)})
-            sys_info = mgr.dn_getSysInfo()
+            sys_info = mgr.dn_getSystemInfo()
             sm_data.device_type = SerialMuxConfig.DEVICE_MANAGER
-            sm_data.identifier = sys_info.mac
+            sm_data.identifier = sys_info.macAddress
             mgr.disconnect()
         except ApiException.ConnectionError:
             sm_data.identifier = ''

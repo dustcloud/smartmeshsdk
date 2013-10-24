@@ -1,25 +1,27 @@
 #!/usr/bin/python
 
-import os
-import sys
+#============================ adjust path =====================================
 
-temp_path = sys.path[0]
-if temp_path:
-    sys.path.insert(0, os.path.join(temp_path, '..', '..', 'SmartMeshSDK'))
+import sys
+import os
+if __name__ == '__main__':
+    here = sys.path[0]
+    sys.path.insert(0, os.path.join(here, '..'))
+
+#============================ imports =========================================
 
 import Tkinter
+
 import dustGuiLib
 import dustFrame
-from dustStyle import dustStyle
-from ApiDefinition import ApiDefinition
-from ApiException import CommandError
+from   dustStyle import dustStyle
+
+from SmartMeshSDK.ApiDefinition import ApiDefinition
+from SmartMeshSDK.ApiException  import CommandError
+
+#============================ body ============================================
 
 class dustFrameFields(dustFrame.dustFrame):
-    '''
-    \ingroup guiLib
-    
-    \brief A frame which displays fields graphically.
-    '''
     
     def __init__(self,parentElem,guiLock,type,frameName="fields",row=0,column=0):
         
@@ -158,6 +160,8 @@ class dustFrameFields(dustFrame.dustFrame):
                 
             if c['fieldFormats'][i]=='hex':
                 fieldString = self._hexdata2string(fieldValue,0,len(fieldValue))
+            elif fieldValue==None:
+                fieldString = 'missing'
             else:
                 fieldString = str(fieldValue)
             try:
@@ -230,4 +234,16 @@ class dustFrameFields(dustFrame.dustFrame):
         self.guiElems.append(c)
     
     #======================== helpers =========================================
+
+#============================ sample app ======================================
+# The following gets called only if you run this module as a standalone app, by
+# double-clicking on this source file. This code is NOT executed when importing
+# this module is a larger application
+#
+class exampleApp(object):
     
+    def __init__(self):
+        raw_input("No sample app. Press enter to close.")
+
+if __name__ == '__main__':
+    exampleApp()

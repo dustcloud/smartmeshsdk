@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+from SmartMeshSDK import FormatUtils
+
 import logging
 class NullHandler(logging.Handler):
     def emit(self, record):
@@ -48,7 +50,10 @@ class Crc():
     #======================== public ==========================================
     
     def calculate(self,data):
-        log.debug('calculating for data='+str(data))
+        
+        if log.isEnabledFor(logging.DEBUG):
+            log.debug('calculating for data={0}'.format(FormatUtils.formatBuffer(data)))
+        
         ptr = 0
         tempfcs = 0xffff
         while ptr<len(data):
@@ -58,7 +63,10 @@ class Crc():
         fcs  = []
         fcs.append( (tempfcs>>0) & 0xff )
         fcs.append( (tempfcs>>8) & 0xff )
-        log.debug('fcs=0x%2x%2x',fcs[0],fcs[1])
+        
+        if log.isEnabledFor(logging.DEBUG):
+            log.debug('fcs=0x%2x%2x',fcs[0],fcs[1])
+        
         return fcs
     
     #======================== private =========================================

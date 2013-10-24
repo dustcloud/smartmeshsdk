@@ -1,10 +1,14 @@
 #!/usr/bin/python
 
+#============================ adjust path =====================================
+
 import sys
 import os
 if __name__ == '__main__':
-    temp_path = sys.path[0]
-    sys.path.insert(0, os.path.join(temp_path, '..', 'SmartMeshSDK'))
+    here = sys.path[0]
+    sys.path.insert(0, os.path.join(here, '..'))
+
+#============================ imports =========================================
 
 import Tkinter
 try:
@@ -12,16 +16,19 @@ try:
 except ImportError:
     ttk = Tkinter
 from dustStyle import dustStyle
-import sdk_version
+
+from SmartMeshSDK import sdk_version
+
+#============================ body ============================================
 
 class dustWindow(Tkinter.Tk):
-    '''
-    \ingroup guiLib
     
-    \brief A Tkinter window with a Dust look-and-feel.
-    '''
-    
-    DUSTICON = '../../dustUI/dust.ico'
+    # possible locations of icon
+    DUSTICON = [
+        '../../dustUI/dust.ico',  # if running from src/
+        'dustUI/dust.ico',        # if running from win/
+        'dust.ico',               # if running from dustUI/
+    ]
     
     def __init__(self,appName,closeCb):
         
@@ -32,10 +39,13 @@ class dustWindow(Tkinter.Tk):
         Tkinter.Tk.__init__(self)
         
         # icon displayed in the upper-left
-        try:
-            self.iconbitmap(default=self.DUSTICON)
-        except:
-            pass # works on Windows only
+        for icon in self.DUSTICON:
+            try:
+                self.iconbitmap(default=icon)
+            except Exception as err:
+                pass # works on Windows only
+            else:
+                break
         
         # name of the window. unichr(169) is the copyright sign
         self.title(appName+' '+unichr(169)+' Dust Networks')

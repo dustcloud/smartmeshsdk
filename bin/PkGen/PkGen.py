@@ -1,58 +1,72 @@
 #!/usr/bin/python
 
-# add the SmartMeshSDK/ folder to the path
-import os
+#============================ adjust path =====================================
+
 import sys
-import traceback
+import os
+if __name__ == "__main__":
+    here = sys.path[0]
+    sys.path.insert(0, os.path.join(here, '..', '..'))
 
-temp_path = sys.path[0]
-if temp_path:
-    sys.path.insert(0, os.path.join(temp_path, '..', '..', 'protocols'))
-    sys.path.insert(0, os.path.join(temp_path, '..', '..', 'dustUI'))
-    sys.path.insert(0, os.path.join(temp_path, '..', '..', 'SmartMeshSDK'))
+#============================ verify installation =============================
 
-# verify installation
-import SmsdkInstallVerifier
+from SmartMeshSDK import SmsdkInstallVerifier
 (goodToGo,reason) = SmsdkInstallVerifier.verifyComponents(
-                            [
-                                SmsdkInstallVerifier.PYTHON,
-                                SmsdkInstallVerifier.PYSERIAL,
-                            ]
-                        )
+    [
+        SmsdkInstallVerifier.PYTHON,
+        SmsdkInstallVerifier.PYSERIAL,
+    ]
+)
 if not goodToGo:
     print "Your installation does not allow this application to run:\n"
     print reason
     raw_input("Press any button to exit")
     sys.exit(1)
 
-import Tkinter
+#============================ imports =========================================
+
 import threading
 import copy
 import time
+import traceback
+
+from   SmartMeshSDK                    import AppUtils,                   \
+                                              FormatUtils,                \
+                                              RateCalculator
+
+from   SmartMeshSDK.ApiDefinition      import IpMgrDefinition,            \
+                                              HartMgrDefinition
+from   SmartMeshSDK.ApiException       import APIError
+from   SmartMeshSDK.IpMgrConnectorMux  import IpMgrSubscribe,             \
+                                              IpMgrConnectorMux
+from   SmartMeshSDK.protocols.oap      import OAPDispatcher,              \
+                                              OAPClient,                  \
+                                              OAPMessage,                 \
+                                              OAPNotif
+from   dustUI                          import dustWindow,                 \
+                                              dustFrameApi,               \
+                                              dustFrameConnection,        \
+                                              dustFrameMoteList,          \
+                                              dustFrameText,              \
+                                              dustStyle
+
+#============================ logging =========================================
+
+# local
 
 import logging
-import logging.handlers
+class NullHandler(logging.Handler):
+    def emit(self, record):
+        pass
+log = logging.getLogger('App')
+log.setLevel(logging.ERROR)
+log.addHandler(NullHandler())
 
-import dustStyle
-from dustWindow              import dustWindow
-from dustFrameApi            import dustFrameApi
-from dustFrameConnection     import dustFrameConnection
-from dustFrameMoteList       import dustFrameMoteList
-from dustFrameText           import dustFrameText
+# global
 
-from ApiDefinition           import IpMgrDefinition
-from ApiDefinition           import HartMgrDefinition
-from ApiException            import APIError
+AppUtils.configureLogging()
 
-from IpMgrConnectorMux       import IpMgrSubscribe, \
-                                    IpMgrConnectorMux
-
-from oap                     import OAPDispatcher
-from oap                     import OAPClient
-from oap                     import OAPMessage
-from oap                     import OAPNotif
-
-import RateCalculator
+#============================ defines =========================================
 
 GUI_UPDATEPERIOD        = 250   # in ms
 DEPTH_RATE_CALCULATOR   = 30
@@ -63,13 +77,12 @@ COL_PKGEN_PPS           = 'pk./sec'
 COL_PKGEN_CLR           = 'clear pkgen'
 COL_PKGEN_RATE          = 'pkgen (num/rate/size)'
 
-import logging
-class NullHandler(logging.Handler):
-    def emit(self, record):
-        pass
-log = logging.getLogger('PkGen')
-log.setLevel(logging.ERROR)
-log.addHandler(NullHandler())
+#============================ body ============================================
+
+##
+# \addtogroup PkGen
+# \{
+# 
 
 class HartMgrSubscriber(threading.Thread):
     
@@ -115,9 +128,6 @@ class HartMgrSubscriber(threading.Thread):
         self.disconnectedCb()
 
 class notifClient(object):
-    '''
-    \ingroup MgrListener
-    '''
     
     def __init__(self, apiDef, connector, disconnectedCallback):
         
@@ -135,6 +145,10 @@ class notifClient(object):
         self.data                 = {}
         self.updates              = {}
         self.rateCalc             = {}
+        
+        # OAP dispatcher
+        self.oap_dispatch = OAPDispatcher.OAPDispatcher()
+        self.oap_dispatch.register_notif_handler(self._handle_oap_notif)
         
         # subscriber
         if   isinstance(self.apiDef,IpMgrDefinition.IpMgrDefinition):
@@ -179,10 +193,6 @@ class notifClient(object):
             log.critical(output)
             print output
             raise SystemError(output)
-        
-        # OAP dispatcher
-        self.oap_dispatch = OAPDispatcher.OAPDispatcher()
-        self.oap_dispatch.register_notif_handler(self._handle_oap_notif)
     
     #======================== public ==========================================
     
@@ -235,8 +245,29 @@ class notifClient(object):
     def _dataCallback(self, notifName, notifParams):
     
         # log
-        log.debug("notifClient._dataCallback {0} {1}".format(notifName, notifParams))
+        if   isinstance(self.apiDef,IpMgrDefinition.IpMgrDefinition):
+            # IpMgrSubscribe generates a named tuple
+            log.debug(
+                "notifClient._dataCallback {0}:\n{1}".format(
+                    notifName,
+                    FormatUtils.formatNamedTuple(notifParams)
+                )
+            )
+        elif isinstance(self.apiDef,HartMgrDefinition.HartMgrDefinition):
+            # HartMgrSubscriber generates a dictionary
+            log.debug(
+                "notifClient._dataCallback {0}:\n{1}".format(
+                    notifName,
+                    FormatUtils.formatDictionnary(notifParams)
+                )
+            )
+        else:
+            output = "apiDef of type {0} unexpected".format(type(self.apiDef))
+            log.critical(output)
+            print output
+            raise SystemError(output)
         
+        # record current time
         timeNow = time.time()
         
         # read MAC address from notification
@@ -397,20 +428,20 @@ class PkGenGui(object):
         self.oap_clients        = {}
         
         # create window
-        self.window = dustWindow('PkGen',
+        self.window = dustWindow.dustWindow('PkGen',
                                  self._windowCb_close)
         
         # add a API selection frame
-        self.apiFrame = dustFrameApi(
+        self.apiFrame = dustFrameApi.dustFrameApi(
                                     self.window,
                                     self.guiLock,
                                     self._apiFrameCb_apiLoaded,
                                     row=0,column=0,
-                                    deviceType=dustFrameApi.MANAGER)
+                                    deviceType=dustFrameApi.dustFrameApi.MANAGER)
         self.apiFrame.show()
         
         # add a connection frame
-        self.connectionFrame = dustFrameConnection(
+        self.connectionFrame = dustFrameConnection.dustFrameConnection(
                                     self.window,
                                     self.guiLock,
                                     self._connectionFrameCb_connected,
@@ -423,30 +454,30 @@ class PkGenGui(object):
                                 # PkGen
                                 {
                                     'name': COL_PKGEN_NUM,
-                                    'type': dustFrameMoteList.LABEL,
+                                    'type': dustFrameMoteList.dustFrameMoteList.LABEL,
                                 },
                                 {
                                     'name': COL_PKGEN_PPS,
-                                    'type': dustFrameMoteList.LABEL,
+                                    'type': dustFrameMoteList.dustFrameMoteList.LABEL,
                                 },
                                 {
                                     'name': COL_PKGEN_CLR,
-                                    'type': dustFrameMoteList.ACTION,
+                                    'type': dustFrameMoteList.dustFrameMoteList.ACTION,
                                 },
                                 {
                                     'name': COL_PKGEN_RATE,
-                                    'type': dustFrameMoteList.SETTHREEVAL,
+                                    'type': dustFrameMoteList.dustFrameMoteList.SETTHREEVAL,
                                 },
                             ]
         
-        self.moteListFrame = dustFrameMoteList(self.window,
+        self.moteListFrame = dustFrameMoteList.dustFrameMoteList(self.window,
                                                self.guiLock,
                                                columnnames,
                                                row=2,column=0)
         self.moteListFrame.show()
         
         # add a status (text) frame
-        self.statusFrame   = dustFrameText(
+        self.statusFrame   = dustFrameText.dustFrameText(
                                     self.window,
                                     self.guiLock,
                                     frameName="status",
@@ -460,7 +491,11 @@ class PkGenGui(object):
         # log
         log.debug("Starting PkGenGui")
         
-        # start Tkinter's main thead
+        '''
+        This command instructs the GUI to start executing and reacting to 
+        user interactions. It never returns and should therefore be the last
+        command called.
+        '''
         try:
             self.window.mainloop()
         except SystemExit:
@@ -532,7 +567,7 @@ class PkGenGui(object):
         # update status
         self.statusFrame.write(
                 "pkGen counters for mote {0} cleared successfully.".format(
-                    dustStyle.formatMacAddress(mac),
+                    FormatUtils.formatMacString(mac),
                 )
             )
     
@@ -558,7 +593,7 @@ class PkGenGui(object):
             self.statusFrame.write(
                 "PkGen request ({0} packets, to be sent each {1}ms, with a {2} byte payload) sent successfully to mote {3}.".format(
                     val1,val2,val3,
-                    dustStyle.formatMacAddress(mac),
+                    FormatUtils.formatMacString(mac),
                 )
             )
     
@@ -574,6 +609,8 @@ class PkGenGui(object):
         self.connectionFrame.updateGuiDisconnected()
         
         # delete the connector
+        if self.connector:
+            self.connector.disconnect()
         self.connector = None
     
     def _windowCb_close(self):
@@ -714,26 +751,6 @@ class PkGenGui(object):
             print output
             raise SystemError(output)
 
-#============================ logging =========================================
-
-## Name of the log file
-LOG_FILENAME       = 'PkGen.log'
-## Format of the lines printed into the log file.
-LOG_FORMAT         = "%(asctime)s [%(name)s:%(levelname)s] %(message)s"
-## Handler called when a module logs some activity.
-logHandler = logging.handlers.RotatingFileHandler(LOG_FILENAME,
-                                               maxBytes=2000000,
-                                               backupCount=5,
-                                               mode='w'
-                                               )
-logHandler.setFormatter(logging.Formatter(LOG_FORMAT))
-for loggerName in ['PkGen',
-                   'SerialConnector',
-                   'Hdlc']:
-    temp = logging.getLogger(loggerName)
-    temp.setLevel(logging.DEBUG)
-    temp.addHandler(logHandler)
-
 #============================ main ============================================
 
 def main():
@@ -742,3 +759,8 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+##
+# end of PkGen
+# \}
+# 

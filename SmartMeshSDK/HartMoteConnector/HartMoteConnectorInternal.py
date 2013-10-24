@@ -1,19 +1,16 @@
-import sys
-import os
 
-sys.path.insert(0, os.path.join(sys.path[0], '..'))
-
-from SerialConnector import SerialConnector
-import ApiDefinition.HartMoteDefinition
+from SmartMeshSDK.ApiDefinition   import HartMoteDefinition
+from SmartMeshSDK.SerialConnector import SerialConnector
 
 class HartMoteConnectorInternal(SerialConnector.SerialConnector):
     '''
     \ingroup ApiConnector
+    
     \brief Internal class for HART mote connector, over Serial.
     '''
     
     def __init__(self, maxQSize=100):
-        api_def = ApiDefinition.HartMoteDefinition.HartMoteDefinition()
+        api_def = HartMoteDefinition.HartMoteDefinition()
         SerialConnector.SerialConnector.__init__(self,api_def, maxQSize)
     
     #======================== TX ==============================================

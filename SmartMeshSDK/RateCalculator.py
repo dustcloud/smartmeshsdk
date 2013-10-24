@@ -60,29 +60,24 @@ class RateCalculator(object):
         # log
         log.debug("adding event at {0}".format(ts))
         
-        self.tsBufLock.acquire()
-        self.tsBuf.append(ts)
-        while len(self.tsBuf)>self.tsBufSize:
-            self.tsBuf.pop(0)
-        self.tsBufLock.release()
+        with self.tsBufLock:
+            self.tsBuf.append(ts)
+            while len(self.tsBuf)>self.tsBufSize:
+                self.tsBuf.pop(0)
     
     def clearBuf(self) :
-        self.tsBufLock.acquire()
-        self.tsBuf = []
-        self.tsBufLock.release()
+        with self.tsBufLock:
+            self.tsBuf = []
         
     def getRate(self):
         
         returnVal = None
         
-        self.tsBufLock.acquire()
-        if  len(self.tsBuf)>self.tsBufSize:
-            ouput = "rate buffer has {0} elements, expected at most {1}".format(len(self.tsBuf),self.tsBufSize)
-            self.tsBufLock.release()
-            raise SystemError(ouput)
-        if len(self.tsBuf)==self.tsBufSize:
-            returnVal = float(self.tsBufSize-1)/(self.tsBuf[-1]-self.tsBuf[0])
-        self.tsBufLock.release()
+        with self.tsBufLock:
+            if  len(self.tsBuf)>self.tsBufSize:
+                raise SystemError("rate buffer has {0} elements, expected at most {1}".format(len(self.tsBuf),self.tsBufSize))
+            if len(self.tsBuf)==self.tsBufSize:
+                returnVal = float(self.tsBufSize-1)/(self.tsBuf[-1]-self.tsBuf[0])
         
         if not returnVal:
             raise RateCalculatorError(RateCalculatorError.NOT_ENOUGH_DATA)

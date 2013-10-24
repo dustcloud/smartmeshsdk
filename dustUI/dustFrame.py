@@ -1,32 +1,36 @@
 #!/usr/bin/python
 
+#============================ adjust path =====================================
+
 import sys
 import os
 if __name__ == '__main__':
-    temp_path = sys.path[0]
-    sys.path.insert(0, os.path.join(temp_path, '..', 'SmartMeshSDK'))
+    here = sys.path[0]
+    sys.path.insert(0, os.path.join(here, '..'))
+
+#============================ imports =========================================
 
 import Tkinter
-import dustGuiLib
-from dustStyle import dustStyle
 
-from ApiException import CommandError
-from ApiDefinition import ApiDefinition
+import dustGuiLib
+from   dustStyle import dustStyle
+
+#============================ body ============================================
 
 class AutoHideScrollbar(Tkinter.Scrollbar):
     def set(self, lo, hi):
-        if float(lo) <= 0.0 and float(hi) >= 1.0:
-            self.tk.call("grid", "remove", self)
-        else:
-            self.grid()
-        Tkinter.Scrollbar.set(self, lo, hi)
+        try:
+            if float(lo) <= 0.0 and float(hi) >= 1.0:
+                self.tk.call("grid", "remove", self)
+            else:
+                self.grid()
+            Tkinter.Scrollbar.set(self, lo, hi)
+        except ValueError as err:
+            # can happen when closing the application
+            print err
+            pass
 
 class dustFrame(Tkinter.Frame):
-    '''
-    \ingroup guiLib
-    
-    \brief A Tkinter frame with a Dust look-and-feel.
-    '''
     
     MAX_HEIGHT      = 400
     MAX_WIDTH       = 900

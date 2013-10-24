@@ -189,7 +189,7 @@ class GenApiDocbook(object):
             r = self.apiDef.getResponseFieldNames(self.apiDef.COMMAND, nameArray) 
             responseFieldsName += [n for n in r if n not in self.apiDef.RESERVED]
         except (ApiException.CommandError) as err:
-            # means that this function has no reponse fields, which is OK
+            # means that this function has no response fields, which is OK
             pass
         
         if self.apiDef.hasSubcommands(self.apiDef.COMMAND, nameArray):
@@ -240,7 +240,7 @@ class GenApiDocbook(object):
             r = self.apiDef.getResponseFieldNames(self.apiDef.NOTIFICATION,nameArray) 
             responseFieldsName += [n for n in r if n not in self.apiDef.RESERVED]
         except (ApiException.CommandError) as err:
-            # means that this function has no reponse fields, which is NOT OK
+            # means that this function has no response fields, which is NOT OK
             raise
             pass
         

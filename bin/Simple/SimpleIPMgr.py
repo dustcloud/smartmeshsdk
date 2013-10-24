@@ -1,15 +1,25 @@
 #!/usr/bin/python
 
-# add the SmartMeshSDK/ folder to the path
+#============================ adjust path =====================================
+
 import sys
 import os
-sys.path.insert(0, os.path.join(sys.path[0], '..','..','SmartMeshSDK'))
+if __name__ == "__main__":
+    here = sys.path[0]
+    sys.path.insert(0, os.path.join(here, '..', '..'))
 
-from IpMgrConnectorMux import IpMgrConnectorMux
-from ApiException      import CommandError, ConnectionError, CommandTimeoutError
+#============================ imports =========================================
+
+from SmartMeshSDK.IpMgrConnectorMux import IpMgrConnectorMux
+from SmartMeshSDK.ApiException      import ConnectionError,  \
+                                           CommandTimeoutError
+
+#============================ defines =========================================
 
 DEFAULT_MUXHOST = '127.0.0.1'
 DEFAULT_MUXPORT = 9900
+
+#============================ main ============================================
 
 print 'Simple Application which interacts with the IP manager - (c) Dust Networks'
 

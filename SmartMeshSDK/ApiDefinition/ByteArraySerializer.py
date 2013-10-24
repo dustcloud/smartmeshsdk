@@ -2,9 +2,11 @@
 
 import struct
 import operator
-import ApiDefinition
-from   ApiException import CommandError
 import types
+
+import ApiDefinition
+from   SmartMeshSDK.ApiException import CommandError
+from   SmartMeshSDK import FormatUtils
 
 import logging
 class NullHandler(logging.Handler):
@@ -17,6 +19,7 @@ log.addHandler(NullHandler())
 class ByteArraySerializer(object):
     '''
     \ingroup ApiDefinition
+    
     \brief Serializer/deserializer for byte arrays.
     '''
 
@@ -25,23 +28,33 @@ class ByteArraySerializer(object):
     
     def serialize(self,commandArray,fieldsToFill):
         
-        log.debug(  "serialize ...\n" + \
-                    " - commandArray="+str(commandArray)+"\n" \
-                    " - fieldsToFill="+str(fieldsToFill))
+        # log
+        if log.isEnabledFor(logging.DEBUG):
+            output  = []
+            output += ["serialize ..."]
+            output += ["- commandArray:     {0}".format(commandArray)]
+            output += ["- fieldsToFill:     {0}".format(fieldsToFill)]
+            output  = '\n'.join(output)
+            log.debug(output)
         
+        # validate input
         if type(commandArray)!=types.ListType and type(commandArray)!=types.TupleType:
             raise TypeError("First parameter should be a list or tuple, not "+str(type(commandArray)))
         
+        # initialize the output
         byteArray  = []
         
         for cmdCounter in range(len(commandArray)):
         
             # packet payload
-            definition = self.ApiDef.getDefinition(ApiDefinition.ApiDefinition.COMMAND,
-                                                   commandArray[:cmdCounter+1])
+            definition = self.ApiDef.getDefinition(
+                ApiDefinition.ApiDefinition.COMMAND,
+                commandArray[:cmdCounter+1]
+            )
             
             fields = [ApiDefinition.Field(fieldRaw,self.ApiDef.fieldOptions)
                          for fieldRaw in definition['request']]
+            
             for field in fields:
                 thisFieldByteArray = []
                 if field.name in ApiDefinition.ApiDefinition.RESERVED:
@@ -53,17 +66,16 @@ class ByteArraySerializer(object):
                         )
                     )
                 else:
-                    val                = fieldsToFill[field.name]
+                    val                          = fieldsToFill[field.name]
                     
                     if   field.format==ApiDefinition.FieldFormats.STRING:
-                        for car in val:
-                           thisFieldByteArray += [ord(car) for car in val]
+                        thisFieldByteArray      += [ord(car) for car in val]
                     
                     elif field.format==ApiDefinition.FieldFormats.BOOL:
                         thisFieldByteArray.append(val)
                     
                     elif field.format==ApiDefinition.FieldFormats.INT:
-                        thisFieldByteArray    += [operator.mod(int(val>>(8*i)), 0x100) for i in xrange(field.length-1, -1, -1)]
+                        thisFieldByteArray      += [operator.mod(int(val>>(8*i)), 0x100) for i in xrange(field.length-1, -1, -1)]
                     
                     elif field.format==ApiDefinition.FieldFormats.INTS:
                         if   field.length==1:
@@ -82,7 +94,8 @@ class ByteArraySerializer(object):
                     
                     else:
                         raise SystemError('unknown field format='+field.format)
-                        
+                    
+                    # padding
                     while len(thisFieldByteArray)<field.length:
                         thisFieldByteArray  = [0x00]+thisFieldByteArray
                 
@@ -90,9 +103,13 @@ class ByteArraySerializer(object):
         
         cmdId = self.ApiDef.nameToId(ApiDefinition.ApiDefinition.COMMAND,commandArray)
         
-        log.debug(  "... serialize into\n"+ \
-                    " - cmdId="+str(cmdId)+"\n" \
-                    " - byteArray="+str(byteArray) )
+        if log.isEnabledFor(logging.DEBUG):
+            output  = []
+            output += ["... serialize into"]
+            output += ["- cmdId:            {0}".format(cmdId)]
+            output += ["- byteArray:        {0}".format(FormatUtils.formatBuffer(byteArray))]
+            output  = '\n'.join(output)
+            log.debug(output)
         
         return cmdId,byteArray
 
@@ -102,10 +119,15 @@ class ByteArraySerializer(object):
         nameArray       = [self.ApiDef.idToName(type,id)]
         index           = 0
         
-        log.debug(  "deserialize ...\n" +\
-                    " - type="+str(type)+"\n" \
-                    " - id="+str(id)+"\n" \
-                    " - byteArray="+str(byteArray))
+        # log
+        if log.isEnabledFor(logging.DEBUG):
+            output  = []
+            output += ["deserialize ..."]
+            output += ["- type:             {0}".format(type)]
+            output += ["- id:               {0}".format(id)]
+            output += ["- byteArray:        {0}".format(FormatUtils.formatBuffer(byteArray))]
+            output  = '\n'.join(output)
+            log.debug(output)
         
         continueParsing  = True
         while continueParsing:
@@ -113,64 +135,88 @@ class ByteArraySerializer(object):
             fieldDefs   = self.ApiDef.getResponseFields(type,nameArray)
             
             for fieldDef in fieldDefs:
-            
+                
+                fieldMissing = False
+                
                 # isolate the piece of the byteArray corresponding to this field
                 if fieldDef.length:
+                    # this field has an expected length
+                    
                     thisFieldArray = byteArray[index:index+fieldDef.length]
-                    if len(thisFieldArray)!=fieldDef.length:
-                        raise CommandError(CommandError.TOO_FEW_BYTES,
-                                            "fieldName="+str(fieldDef.name)
-                                          )
                     index         += fieldDef.length
+                    
+                    if   len(thisFieldArray)==0:
+                        # field missing: allowed
+                        fieldMissing   = True
+                    elif len(thisFieldArray)<fieldDef.length:
+                        # incomplete field: not allowed
+                        raise CommandError(
+                            CommandError.TOO_FEW_BYTES,
+                            "incomplete field {0}".format(fieldDef.name),
+                        )
+                    
                 else:
                     thisFieldArray = byteArray[index:]
-                    if len(thisFieldArray)<1:
-                        raise CommandError(CommandError.TOO_FEW_BYTES,
-                                            "fieldName="+str(fieldDef.name)
-                                          )
                     index          = len(byteArray)
-                
-                # turn thisFieldArray into thisFieldValue
-                if   fieldDef.format==ApiDefinition.FieldFormats.STRING:
-                    thisFieldValue = ''
-                    for byte in thisFieldArray:
-                        thisFieldValue += chr(byte)
-                elif fieldDef.format==ApiDefinition.FieldFormats.BOOL:
-                    if    len(thisFieldArray)==1 and thisFieldArray[0]==0x00:
-                        thisFieldValue = False
-                    elif  len(thisFieldArray)==1 and thisFieldArray[0]==0x01:
-                        thisFieldValue = True
-                    else:
-                        raise CommandError(CommandError.VALUE_NOT_IN_OPTIONS,
-                                           "field="+fieldDef.name+" value="+str(thisFieldValue))
-                elif fieldDef.format==ApiDefinition.FieldFormats.INT:
-                    thisFieldValue = 0
-                    for i in range(len(thisFieldArray)):
-                        thisFieldValue += thisFieldArray[i]*pow(2,8*(len(thisFieldArray)-i-1))
-                elif fieldDef.format==ApiDefinition.FieldFormats.INTS:
-                    tempList = [chr(i) for i in thisFieldArray]
-                    tempString = ''.join(tempList)
-                    if   len(thisFieldArray)==1:
-                        (thisFieldValue,) = struct.unpack_from('>b',tempString)
-                    elif len(thisFieldArray)==2:
-                        (thisFieldValue,) = struct.unpack_from('>h',tempString)
-                    elif len(thisFieldArray)==4:
-                        (thisFieldValue,) = struct.unpack_from('>i',tempString)
-                    else:
-                        raise SystemError('field with format='+fieldDef.format+' and length='+str(fieldDef.length)+' unsupported.')
                     
-                elif fieldDef.format==ApiDefinition.FieldFormats.HEXDATA:
-                    thisFieldValue = thisFieldArray
-                else:
-                    raise SystemError('unknown field format='+fieldDef.format)
+                    if len(thisFieldArray)<1:
+                        # too few bytes
+                        fieldMissing    = True
                 
-                # make sure thisFieldValue in fieldDef.options
-                if fieldDef.options.validOptions:
-                    if thisFieldValue not in fieldDef.options.validOptions:
-                        raise CommandError(CommandError.VALUE_NOT_IN_OPTIONS,
-                                           "field="+fieldDef.name+" value="+str(thisFieldValue))
+                # find thisFieldValue
+                if fieldMissing:
+                    thisFieldValue = None
+                else:
+                    if   fieldDef.format==ApiDefinition.FieldFormats.STRING:
+                        thisFieldValue = ''
+                        for byte in thisFieldArray:
+                            thisFieldValue += chr(byte)
+                    
+                    elif fieldDef.format==ApiDefinition.FieldFormats.BOOL:
+                        if    len(thisFieldArray)==1 and thisFieldArray[0]==0x00:
+                            thisFieldValue = False
+                        elif  len(thisFieldArray)==1 and thisFieldArray[0]==0x01:
+                            thisFieldValue = True
+                        else:
+                            raise CommandError(CommandError.VALUE_NOT_IN_OPTIONS,
+                                               "field="+fieldDef.name+" value="+str(thisFieldValue))
+                    
+                    elif fieldDef.format==ApiDefinition.FieldFormats.INT:
+                        thisFieldValue = 0
+                        for i in range(len(thisFieldArray)):
+                            thisFieldValue += thisFieldArray[i]*pow(2,8*(len(thisFieldArray)-i-1))
+                    
+                    elif fieldDef.format==ApiDefinition.FieldFormats.INTS:
+                        tempList = [chr(i) for i in thisFieldArray]
+                        tempString = ''.join(tempList)
+                        if   len(thisFieldArray)==1:
+                            (thisFieldValue,) = struct.unpack_from('>b',tempString)
+                        elif len(thisFieldArray)==2:
+                            (thisFieldValue,) = struct.unpack_from('>h',tempString)
+                        elif len(thisFieldArray)==4:
+                            (thisFieldValue,) = struct.unpack_from('>i',tempString)
+                        else:
+                            raise SystemError('field with format='+fieldDef.format+' and length='+str(fieldDef.length)+' unsupported.')
+                    
+                    elif fieldDef.format==ApiDefinition.FieldFormats.HEXDATA:
+                        thisFieldValue = thisFieldArray
+                    
+                    else:
+                        raise SystemError('unknown field format='+fieldDef.format)
+                    
+                    # make sure thisFieldValue in fieldDef.options
+                    if fieldDef.options.validOptions:
+                        if thisFieldValue not in fieldDef.options.validOptions:
+                            raise CommandError(CommandError.VALUE_NOT_IN_OPTIONS,
+                                               "field="+fieldDef.name+" value="+str(thisFieldValue))
                 
                 if fieldDef.name in ApiDefinition.ApiDefinition.RESERVED:
+                    # the subcommand specifier cannot be missing
+                    if thisFieldValue==None:
+                        raise CommandError(
+                            CommandError.TOO_FEW_BYTES,
+                            "reserved field missing {0}".format(fieldDef.name),
+                        )
                     idNextCommand = thisFieldValue
                 else:
                     returnFields[fieldDef.name] = thisFieldValue
@@ -197,6 +243,8 @@ class ByteArraySerializer(object):
                                                                 nameArray,
                                                                 idNextCommand))
                 continueParsing = True
+            else:
+                continueParsing = False
             
             # stop if not RC_OK
             if  (
@@ -211,17 +259,13 @@ class ByteArraySerializer(object):
                     index>=len(byteArray)
                 ):
                 continueParsing = False
-            
         
-        if  (
-                (not notRcOk)               and
-                (index!=len(byteArray))
-            ):
-            raise CommandError(CommandError.TOO_MANY_BYTES,index)
-        
-        log.debug(  "... deserialized into\n"+ \
-                    " - nameArray="   +str(nameArray)+"\n" \
-                    " - returnFields="+str(returnFields) )
+        if log.isEnabledFor(logging.DEBUG):
+            output  = []
+            output += ["... deserialized into"]
+            output += ["- nameArray:        {0}".format(nameArray)]
+            output += ["- returnFields:     {0}".format(returnFields)]
+            output  = '\n'.join(output)
+            log.debug(output)
         
         return nameArray,returnFields
-    

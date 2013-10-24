@@ -1,28 +1,32 @@
 #!/usr/bin/python
 
+#============================ adjust path =====================================
+
 import sys
 import os
 if __name__ == '__main__':
-    temp_path = sys.path[0]
-    sys.path.insert(0, os.path.join(temp_path, '..', 'SmartMeshSDK'))
+    here = sys.path[0]
+    sys.path.insert(0, os.path.join(here, '..'))
+
+#============================ imports =========================================
 
 import Tkinter
+
 import dustGuiLib
 import dustFrame
-from dustStyle import dustStyle
-import ApiException
+from   dustStyle import dustStyle
+
+from   SmartMeshSDK import ApiException
+
+#============================ defines =========================================
 
 WELL_KNOWN_ADDR_MANAGER      = 'ff020000000000000000000000000002'
 DEFAULT_DEST_PORT            = '61000'
 DEFAULT_HOST_ADDR            = '20010470006600170000000000000002'
 
+#============================ body ============================================
+
 class dustFrameSensorTx(dustFrame.dustFrame):
-    '''
-    \ingroup guiLib
-    
-    \brief A frame which emulates a sensor application: select the sensor
-           value, the destination and send the data.
-    '''
     
     ERROR   = 'error'
     NOERROR = 'noerror'

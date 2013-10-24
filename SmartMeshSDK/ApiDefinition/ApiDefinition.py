@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import types
-from ApiException import CommandError
+from SmartMeshSDK.ApiException import CommandError
 
 import logging
 class NullHandler(logging.Handler):
@@ -20,6 +20,7 @@ class FieldFormats(object):
     INT                 = 'int'
     INTS                = 'ints'
     HEXDATA             = 'hex'
+    FLOAT               = 'float'
 
 class FieldOptions(object):
     '''
@@ -74,7 +75,7 @@ class Field(object):
     def isValidValue(self,val):
         # check format and length
         if   self.format==FieldFormats.STRING:
-            if ( type(val)!=types.StringType or
+            if ( (type(val) not in [types.StringType,types.UnicodeType]) or
                  len(val)>self.length
                ):
                 return False
@@ -85,14 +86,12 @@ class Field(object):
             if ( (type(val)!=types.IntType and  type(val)!=types.LongType)  or
                  val>pow(2,8*self.length)
                ):
-                print "****", type(val), types.IntType, val, pow(2,8*self.length), val>pow(2,8*self.length)
                 return False
         elif self.format==FieldFormats.INTS:
             if ( (type(val)!=types.IntType and  type(val)!=types.LongType)  or
                  val>(pow(2,8*self.length)/2) or
                  val<(-pow(2,8*self.length)/2)
                ):
-                print "****", type(val), types.IntType, val, pow(2,8*self.length), val>pow(2,8*self.length)
                 return False
         elif self.format==FieldFormats.HEXDATA:
             if type(val)!=types.ListType and type(val)!=types.TupleType:
@@ -104,6 +103,9 @@ class Field(object):
                     return False
                 if i>=pow(2,8):
                     return False
+        elif self.format==FieldFormats.FLOAT:
+            if ( (type(val)!=types.IntType and type(val)!=types.FloatType) ):
+                return False
         else:
             raise SystemError('unknown field format='+self.format)
         
@@ -116,6 +118,7 @@ class Field(object):
 class ApiDefinition(object):
     '''
     \ingroup ApiDefinition
+    
     \brief Base class for all API definitions objects.
     '''
     
@@ -540,10 +543,10 @@ class ApiDefinition(object):
         
         # check whether this value is valid
         if thisField.isValidValue(fieldValue)==False:
-           raise CommandError(CommandError.MALFORMED_FIELD,
-                              ' commandArray='+str(commandArray)+\
-                              ' fieldName='+fieldName+\
-                              ' value='+str(fieldValue))
+            raise CommandError(
+                CommandError.MALFORMED_FIELD,
+                'commandArray={0} fieldName={1} fieldValue={2}'.format(commandArray,fieldName,fieldValue)
+            )
     
     def validateRequest(self,commandArray,fields):
         '''

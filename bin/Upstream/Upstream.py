@@ -1,70 +1,79 @@
 #!/usr/bin/python
 
-# add the SmartMeshSDK/ folder to the path
+#============================ adjust path =====================================
+
 import sys
 import os
-temp_path = sys.path[0]
-if temp_path:
-    sys.path.insert(0, os.path.join(temp_path, '..', '..', 'dustUI'))
-    sys.path.insert(0, os.path.join(temp_path, '..', '..', 'SmartMeshSDK'))
+if __name__ == "__main__":
+    here = sys.path[0]
+    sys.path.insert(0, os.path.join(here, '..', '..'))
 
-# verify installation
-import SmsdkInstallVerifier
+#============================ verify installation =============================
+
+from SmartMeshSDK import SmsdkInstallVerifier
 (goodToGo,reason) = SmsdkInstallVerifier.verifyComponents(
-                            [
-                                SmsdkInstallVerifier.PYTHON,
-                                SmsdkInstallVerifier.PYSERIAL,
-                            ]
-                        )
+    [
+        SmsdkInstallVerifier.PYTHON,
+        SmsdkInstallVerifier.PYSERIAL,
+    ]
+)
 if not goodToGo:
     print "Your installation does not allow this application to run:\n"
     print reason
     raw_input("Press any button to exit")
     sys.exit(1)
 
-import Tkinter
+#============================ imports =========================================
+
 import threading
 import time
-import logging
-import logging.handlers
 import traceback
 
-from ApiException         import APIError
-from ApiDefinition        import IpMoteDefinition
-from IpMoteConnector      import IpMoteConnector
-from dustStyle            import dustStyle
-from dustWindow           import dustWindow
-from dustFrameSensorTx    import dustFrameSensorTx
-from dustFrameTable       import dustFrameTable
-from dustFrameConnection  import dustFrameConnection
-from dustFrameText        import dustFrameText
+from   SmartMeshSDK                    import AppUtils,                   \
+                                              FormatUtils
+from   SmartMeshSDK.ApiDefinition      import IpMoteDefinition
+from   SmartMeshSDK.IpMoteConnector    import IpMoteConnector
+from   SmartMeshSDK.ApiException       import APIError,                   \
+                                              ConnectionError,            \
+                                              QueueError
+from   dustUI                          import dustWindow,                 \
+                                              dustFrameSensorTx,          \
+                                              dustFrameTable,             \
+                                              dustFrameConnection,        \
+                                              dustFrameText,              \
+                                              dustStyle
 
-from ApiException import ConnectionError, QueueError
+#============================ logging =========================================
+
+# local
+
+import logging
+class NullHandler(logging.Handler):
+    def emit(self, record):
+        pass
+log = logging.getLogger('App')
+log.setLevel(logging.ERROR)
+log.addHandler(NullHandler())
+
+# global
+
+AppUtils.configureLogging()
+
+#============================ defines =========================================
 
 GUIUPDATEPERIOD    = 500
 SOURCE_PORT        = 60000
 BW_REQUESTED       = 5000
 
-log = logging.getLogger('Upstream')
+#============================ body ============================================
 
-LOG_FILENAME       = 'Upstream.log'
-LOG_FORMAT         = "%(asctime)s [%(name)s:%(levelname)s] %(message)s"
-logHandler = logging.handlers.RotatingFileHandler(LOG_FILENAME,
-                                               maxBytes=2000000,
-                                               backupCount=5,
-                                               mode='w'
-                                               )
-logHandler.setFormatter(logging.Formatter(LOG_FORMAT))
-for loggerName in ['SerialConnector','ByteArraySerializer','Hdlc','Upstream']:
-    temp = logging.getLogger(loggerName)
-    temp.setLevel(logging.DEBUG)
-    temp.addHandler(logHandler)
+##
+# \addtogroup Upstream
+# \{
+# 
 
 class FsmState(object):
-    '''
-    \ingroup Upstream
-    '''
-        
+    
     def __init__(self):
         self.states  = []
         self.varLock = threading.Lock()
@@ -172,9 +181,6 @@ class NotifListener(threading.Thread):
         self.disconnectedCb()
 
 class MoteClient(threading.Thread):
-    '''
-    \ingroup Upstream
-    '''
     
     def __init__(self,readyToSendCb,disconnectedCb,textFrame):
     
@@ -559,10 +565,7 @@ class MoteClient(threading.Thread):
         log.error(errorText)
 
 class UpstreamGui(object):
-    '''
-    \ingroup Upstream
-    '''
-   
+    
     def __init__(self):
         
         # variables
@@ -570,10 +573,10 @@ class UpstreamGui(object):
         self.apiDef             = IpMoteDefinition.IpMoteDefinition()
         
         # initialize GUI window
-        self.window = dustWindow('Upstream',self._windowCb_close)
+        self.window = dustWindow.dustWindow('Upstream',self._windowCb_close)
         
         # create a sensor frame (don't show yet)
-        self.sensorFrame = dustFrameSensorTx(
+        self.sensorFrame = dustFrameSensorTx.dustFrameSensorTx(
                                     self.window,
                                     self.guiLock,
                                     frameName="sensor data to send",
@@ -581,14 +584,14 @@ class UpstreamGui(object):
         self.sensorFrame.show()
         
         # create a table frame
-        self.tableFrame = dustFrameTable(
+        self.tableFrame = dustFrameTable.dustFrameTable(
                                     self.window,
                                     self.guiLock,
                                     frameName="join state machine",
                                     row=1,column=0)
         
         # add a connection frame
-        self.connectionFrame = dustFrameConnection(
+        self.connectionFrame = dustFrameConnection.dustFrameConnection(
                                     self.window,
                                     self.guiLock,
                                     self._connectionFrameCb_connected,
@@ -598,7 +601,7 @@ class UpstreamGui(object):
         self.connectionFrame.show()
         
         # create a table frame
-        self.textFrame = dustFrameText(
+        self.textFrame = dustFrameText.dustFrameText(
                                     self.window,
                                     self.guiLock,
                                     frameName="tip",
@@ -621,7 +624,11 @@ class UpstreamGui(object):
         # schedule the GUI to update itself in GUIUPDATEPERIOD ms
         self.window.after(GUIUPDATEPERIOD,self._updateGui)
         
-        # start Tkinter's main thead
+        '''
+        This command instructs the GUI to start executing and reacting to 
+        user interactions. It never returns and should therefore be the last
+        command called.
+        '''
         try:
             self.window.mainloop()
         except SystemExit:
@@ -682,11 +689,11 @@ class UpstreamGui(object):
             displayOptions['rowColors'] = []
             for i in rawData:
                 if   i['active']=='active':
-                    displayOptions['rowColors'].append(dustStyle.COLOR_PRIMARY2)
+                    displayOptions['rowColors'].append(dustStyle.dustStyle.COLOR_PRIMARY2)
                 elif i['active']=='done':
-                    displayOptions['rowColors'].append(dustStyle.COLOR_PRIMARY2_LIGHT)
+                    displayOptions['rowColors'].append(dustStyle.dustStyle.COLOR_PRIMARY2_LIGHT)
                 else:
-                    displayOptions['rowColors'].append(dustStyle.COLOR_BG)
+                    displayOptions['rowColors'].append(dustStyle.dustStyle.COLOR_BG)
             
         except AttributeError:
             # happens when not connected
@@ -714,11 +721,17 @@ class UpstreamGui(object):
             returnVal ='%.3fs'%totalTime
         
         return returnVal
-    
+
+#============================ main ============================================
+
 def main():
-    log.debug("application started")
     UpstreamGuiHandler = UpstreamGui()
     UpstreamGuiHandler.start()
 
 if __name__ == '__main__':
     main()
+
+##
+# end of Upstream
+# \}
+# 

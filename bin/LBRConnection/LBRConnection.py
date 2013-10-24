@@ -1,45 +1,68 @@
 #!/usr/bin/python
 
-# add the SmartMeshSDK/ folder to the path
+#============================ adjust path =====================================
+
 import sys
 import os
+if __name__ == "__main__":
+    here = sys.path[0]
+    sys.path.insert(0, os.path.join(here, '..', '..'))
 
-temp_path = sys.path[0]
-if temp_path:
-    sys.path.insert(0, os.path.join(temp_path, '..', '..', 'dustUI'))
-    sys.path.insert(0, os.path.join(temp_path, '..', '..', 'SmartMeshSDK'))
+#============================ verify installation =============================
 
-# verify installation
-import SmsdkInstallVerifier
+from SmartMeshSDK import SmsdkInstallVerifier
 (goodToGo,reason) = SmsdkInstallVerifier.verifyComponents(
-                            [
-                                SmsdkInstallVerifier.PYTHON,
-                                SmsdkInstallVerifier.PYSERIAL,
-                            ]
-                        )
+    [
+        SmsdkInstallVerifier.PYTHON,
+        SmsdkInstallVerifier.PYSERIAL,
+    ]
+)
 if not goodToGo:
     print "Your installation does not allow this application to run:\n"
     print reason
     raw_input("Press any button to exit")
     sys.exit(1)
 
+#============================ imports =========================================
+
 import threading
+
+from   SmartMeshSDK                    import AppUtils,                   \
+                                              FormatUtils
+from   SmartMeshSDK.ApiDefinition      import IpMgrDefinition
+from   SmartMeshSDK.IpMgrConnectorMux  import IpMgrConnectorMux,          \
+                                              IpMgrSubscribe
+from   SmartMeshSDK.LbrConnector       import LbrConnector
+from   SmartMeshSDK.ApiException       import ConnectionError,            \
+                                              QueueError
+from   dustUI                          import dustWindow,                 \
+                                              dustFrameLBRConnection,     \
+                                              dustFrameConnection
+
+#============================ logging =========================================
+
+# local
+
 import logging
-import logging.handlers
+class NullHandler(logging.Handler):
+    def emit(self, record):
+        pass
+log = logging.getLogger('App')
+log.setLevel(logging.ERROR)
+log.addHandler(NullHandler())
 
-from dustWindow              import dustWindow
-from dustFrameLBRConnection  import dustFrameLBRConnection
-from dustFrameConnection     import dustFrameConnection
-from dustFrameTable          import dustFrameTable
+# global
 
-from ApiDefinition      import IpMgrDefinition
+AppUtils.configureLogging()
 
-from IpMgrConnectorMux  import IpMgrConnectorMux
-from IpMgrConnectorMux  import IpMgrSubscribe
+#============================ defines =========================================
 
-from LbrConnector       import LbrConnector
+#============================ body ============================================
 
-from ApiException       import ConnectionError, QueueError
+##
+# \addtogroup LBRConnection
+# \{
+# 
 
 class lbrsubscriber(threading.Thread):
     
@@ -71,10 +94,7 @@ class lbrsubscriber(threading.Thread):
         self.disconnectedCb()
 
 class LBRConnectionGui(object):
-    '''
-    \ingroup LBRConnection
-    '''
-   
+    
     def __init__(self):
         
         # local variables
@@ -84,11 +104,11 @@ class LBRConnectionGui(object):
         self.lbrconnector       = None
         
         # create window
-        self.window = dustWindow('LBRConnection',
+        self.window = dustWindow.dustWindow('LBRConnection',
                                  self._windowCb_close)
         
         # add an LBR connection frame
-        self.LBRConnectionFrame = dustFrameLBRConnection(
+        self.LBRConnectionFrame = dustFrameLBRConnection.dustFrameLBRConnection(
                                     self.window,
                                     self.guiLock,
                                     self._LBRConnectionFrameCb_connected,
@@ -97,7 +117,7 @@ class LBRConnectionGui(object):
         self.LBRConnectionFrame.show()
         
         # add a manager connection frame
-        self.mgrconnectionFrame = dustFrameConnection(
+        self.mgrconnectionFrame = dustFrameConnection.dustFrameConnection(
                                     self.window,
                                     self.guiLock,
                                     self._mgrconnectionFrameCb_connected,
@@ -109,7 +129,11 @@ class LBRConnectionGui(object):
     #======================== public ==========================================
     
     def start(self):
-        # start Tkinter's main thead
+        '''
+        This command instructs the GUI to start executing and reacting to 
+        user interactions. It never returns and should therefore be the last
+        command called.
+        '''
         try:
             self.window.mainloop()
         except SystemExit:
@@ -177,6 +201,8 @@ class LBRConnectionGui(object):
         self.mgrconnectionFrame.updateGuiDisconnected()
         
         # delete the connector
+        if self.mgrconnector:
+            self.mgrconnector.disconnect()
         self.mgrconnector = None
     
     def _LBRConnectionFrameCb_connected(self,lbrconnector):
@@ -210,24 +236,6 @@ class LBRConnectionGui(object):
         
         self.LBRConnectionFrame.updateGuiDisconnected()
 
-#============================ logging =========================================
-
-## Name of the log file
-LOG_FILENAME       = 'LBRConnection.log'
-## Format of the lines printed into the log file.
-LOG_FORMAT         = "%(asctime)s [%(name)s:%(levelname)s] %(message)s"
-## Handler called when a module logs some activity.
-logHandler = logging.handlers.RotatingFileHandler(LOG_FILENAME,
-                                               maxBytes=2000000,
-                                               backupCount=5,
-                                               mode='w'
-                                               )
-logHandler.setFormatter(logging.Formatter(LOG_FORMAT))
-for loggerName in ['LbrConnector']:
-    temp = logging.getLogger(loggerName)
-    temp.setLevel(logging.DEBUG)
-    temp.addHandler(logHandler)
-
 #============================ main ============================================
 
 def main():
@@ -236,3 +244,8 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+##
+# end of LBRConnection
+# \}
+# 

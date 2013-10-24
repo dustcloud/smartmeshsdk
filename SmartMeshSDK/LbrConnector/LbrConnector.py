@@ -1,11 +1,10 @@
 import os
-import sys
 import threading
 import socket
 import ssl
 
-from  ApiConnector import ApiConnector
-from  ApiException import ConnectionError
+from  SmartMeshSDK.ApiConnector import ApiConnector
+from  SmartMeshSDK.ApiException import ConnectionError
 
 AUTHTIMEOUT   = 10.0 # max number of seconds to wait for response during connection
 TCPRXBUFSIZE  = 4096 # size of the TCP reception buffer
@@ -66,11 +65,6 @@ class LbrListener(threading.Thread):
         self.disconnectedCb()
     
 class LbrConnector(ApiConnector):
-    '''
-    \ingroup lbr
-    
-    \brief A connector module for the Low-power Border Router.
-    '''
     
     # possible values for the lbrConnector's status
     STATUS_DISCONNECTED      = 'disconnected'

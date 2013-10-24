@@ -1,51 +1,65 @@
 #!/usr/bin/python
 
-import imp
+#============================ adjust path =====================================
+
 import sys
 import os
+if __name__ == "__main__":
+    here = sys.path[0]
+    sys.path.insert(0, os.path.join(here, '..', '..'))
 
-def main_is_frozen():
-    return (hasattr(sys, "frozen") or # new py2exe
-            hasattr(sys, "importers") # old py2exe
-            or imp.is_frozen("__main__")) # tools/freeze
+#============================ verify installation =============================
 
-# in dev mode, add the SmartMeshSDK/ folder to the path
-dev_path = sys.path[0]
-if dev_path:
-    sys.path.insert(0, os.path.join(dev_path, '..', '..', 'dustUI'))
-    sys.path.insert(0, os.path.join(dev_path, '..', '..', 'SmartMeshSDK'))
-
-# verify installation
-import SmsdkInstallVerifier
+from SmartMeshSDK import SmsdkInstallVerifier
 (goodToGo,reason) = SmsdkInstallVerifier.verifyComponents(
-                            [
-                                SmsdkInstallVerifier.PYTHON,
-                                SmsdkInstallVerifier.PYSERIAL,
-                            ]
-                        )
+    [
+        SmsdkInstallVerifier.PYTHON,
+        SmsdkInstallVerifier.PYSERIAL,
+    ]
+)
 if not goodToGo:
     print "Your installation does not allow this application to run:\n"
     print reason
     raw_input("Press any button to exit")
     sys.exit(1)
-        
-# we use the lock from the threading module to arbitrate access to the GUI
-import threading
-import logging
-import logging.handlers
 
-# API definitions
-from ApiDefinition           import  ApiDefinition
-# exceptions
-from ApiException            import  CommandError,ConnectionError,QueueError
-# GUI elements from the lib/
-from dustWindow              import dustWindow
-from dustFrameApi            import dustFrameApi
-from dustFrameConnection     import dustFrameConnection
-from dustFrameCommand        import dustFrameCommand
-from dustFrameResponse       import dustFrameResponse
-from dustFrameNotifications  import dustFrameNotifications
-from dustFrameText           import dustFrameText
+#============================ imports =========================================
+
+import threading
+
+from   SmartMeshSDK               import AppUtils,                   \
+                                         FormatUtils
+from   SmartMeshSDK.ApiDefinition import ApiDefinition
+from   SmartMeshSDK.ApiException  import CommandError,               \
+                                         ConnectionError,            \
+                                         QueueError
+from   dustUI                     import dustWindow,                 \
+                                         dustFrameApi,               \
+                                         dustFrameConnection,        \
+                                         dustFrameCommand,           \
+                                         dustFrameResponse,          \
+                                         dustFrameNotifications,     \
+                                         dustFrameText
+
+#============================ logging =========================================
+
+# local
+
+import logging
+class NullHandler(logging.Handler):
+    def emit(self, record):
+        pass
+log = logging.getLogger('App')
+log.setLevel(logging.ERROR)
+log.addHandler(NullHandler())
+
+# global
+
+AppUtils.configureLogging()
+
+#============================ defines =========================================
+
+#============================ body ============================================
 
 ##
 # \addtogroup APIExplorer
@@ -93,38 +107,38 @@ class APIExplorer(object):
         self.connector          = None
         
         # create window
-        self.window = dustWindow(
+        self.window = dustWindow.dustWindow(
                                     'APIExplorer',
                                     self._windowCb_close)
         
         # fill window with frames
-        self.apiFrame = dustFrameApi(
+        self.apiFrame = dustFrameApi.dustFrameApi(
                                     self.window,
                                     self.guiLock,
                                     self._apiFrameCb_apiLoaded,
                                     row=0,column=0)
-        self.connectionFrame = dustFrameConnection(
+        self.connectionFrame = dustFrameConnection.dustFrameConnection(
                                     self.window,
                                     self.guiLock,
                                     self._connectionFrameCb_connected,
                                     row=1,column=0)
-        self.commandFrame = dustFrameCommand(
+        self.commandFrame = dustFrameCommand.dustFrameCommand(
                                     self.window,
                                     self.guiLock,
                                     self._commandFrameCb_selected,
                                     self._commandFrameCb_response,
                                     self._commandFrameCb_responseError,
                                     row=2,column=0)
-        self.responseFrame = dustFrameResponse(
+        self.responseFrame = dustFrameResponse.dustFrameResponse(
                                     self.window,
                                     self.guiLock,
                                     row=3,column=0)
-        self.notifFrame = dustFrameNotifications(
+        self.notifFrame = dustFrameNotifications.dustFrameNotifications(
                                     self._getLastNotif,
                                     self.window,
                                     self.guiLock,
                                     row=4,column=0)
-        self.toolTipFrame = dustFrameText(
+        self.toolTipFrame = dustFrameText.dustFrameText(
                                     self.window,
                                     self.guiLock,
                                     frameName="tooltip",
@@ -137,9 +151,9 @@ class APIExplorer(object):
     
     def run(self):
         '''
-        This command instructs Tkinter to start executing and reacting to 
-        user interactions with the GUI. It never returns and should therefore
-        be the last command called.
+        This command instructs the GUI to start executing and reacting to 
+        user interactions. It never returns and should therefore be the last
+        command called.
         '''
         self.window.mainloop()
     
@@ -244,25 +258,8 @@ class APIExplorer(object):
         self.connectionFrame.updateGuiDisconnected()
         
         # delete the connector
+        self.connector.disconnect()
         self.connector = None
-    
-#============================ logging =========================================
-
-## Name of the log file
-LOG_FILENAME       = 'APIExplorer.log'
-## Format of the lines printed into the log file.
-LOG_FORMAT         = "%(asctime)s [%(name)s:%(levelname)s] %(message)s"
-## Handler called when a module logs some activity.
-logHandler = logging.handlers.RotatingFileHandler(LOG_FILENAME,
-                                               maxBytes=2000000,
-                                               backupCount=5,
-                                               mode='w'
-                                               )
-logHandler.setFormatter(logging.Formatter(LOG_FORMAT))
-for loggerName in ['HartManager', 'SerialConnector','ByteArraySerializer','Hdlc','Crc']:
-    temp = logging.getLogger(loggerName)
-    temp.setLevel(logging.DEBUG)
-    temp.addHandler(logHandler)
 
 #============================ main ============================================
 

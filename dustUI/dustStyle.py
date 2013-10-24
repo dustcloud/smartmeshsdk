@@ -3,11 +3,6 @@
 import platform
 
 class dustStyle(object):
-    '''
-    \ingroup guiLib
-    
-    \brief Colors used in the different GUI applications.
-    '''
     
     # colors
     COLOR_BG                           = '#ffffff'
@@ -22,6 +17,7 @@ class dustStyle(object):
     COLOR_SECONDARY4                   = '#008aad'
     
     COLOR_ERROR                        = 'red'
+    COLOR_WARNING                      = 'orange'
     COLOR_WARNING_NOTWORKING           = 'orange'
     COLOR_WARNING_FORMATTING           = 'yellow'
     COLOR_NOERROR                      = 'green'
@@ -32,12 +28,21 @@ class dustStyle(object):
 
     # font (only customize font on Windows)
     if platform.system() in ['Windows']:
-        FONT_HEADER = ('Helvetica','8','bold')
-        FONT_BODY   = ('Helvetica','8')
+        FONT_HEADER     = ('Helvetica','8','bold')
+        FONT_BODY       = ('Helvetica','8')
     else:
-        FONT_HEADER = 'TkDefaultFont'
-        FONT_BODY   = 'TkDefaultFont'
+        FONT_HEADER     = 'TkDefaultFont'
+        FONT_BODY       = 'TkDefaultFont'
 
-        
-def formatMacAddress(mac):
-    return '-'.join("%.2x"%b for b in mac)
+#============================ sample app ======================================
+# The following gets called only if you run this module as a standalone app, by
+# double-clicking on this source file. This code is NOT executed when importing
+# this module is a larger application
+#
+class exampleApp(object):
+    
+    def __init__(self):
+        raw_input("No sample app. Press enter to close.")
+
+if __name__ == '__main__':
+    exampleApp()

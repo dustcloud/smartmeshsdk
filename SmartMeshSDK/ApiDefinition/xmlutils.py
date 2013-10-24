@@ -28,7 +28,13 @@ def xml_obj_to_dict(xml_obj):
                 ch2_node = ch2_node.nextSibling
 
             # populate the attributes dict with the value
-            attrs[n] = v
+            # create a list of values if the child name already exists
+            if n in attrs:
+                if not type(attrs[n]) is list:
+                    attrs[n] = [attrs[n]]
+                attrs[n].append(v)
+            else:
+                attrs[n] = v
             if ch_node.hasAttributes():
                 for name, val in ch_node.attributes.items():
                     attr_name = n + name.capitalize()

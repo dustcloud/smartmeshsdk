@@ -1,92 +1,75 @@
 #!/usr/bin/python
 
-# add the SmartMeshSDK/ folder to the path
+#============================ adjust path =====================================
+
 import sys
 import os
+if __name__ == "__main__":
+    here = sys.path[0]
+    sys.path.insert(0, os.path.join(here, '..', '..'))
 
-temp_path = sys.path[0]
-if temp_path:
-    sys.path.insert(0, os.path.join(temp_path, '..', '..', 'dustUI'))
-    sys.path.insert(0, os.path.join(temp_path, '..', '..', 'SmartMeshSDK'))
+#============================ verify installation =============================
 
-import random
-
-# verify installation
-import SmsdkInstallVerifier
+from SmartMeshSDK import SmsdkInstallVerifier
 (goodToGo,reason) = SmsdkInstallVerifier.verifyComponents(
-                            [
-                                SmsdkInstallVerifier.PYTHON,
-                                SmsdkInstallVerifier.PYSERIAL,
-                            ]
-                        )
+    [
+        SmsdkInstallVerifier.PYTHON,
+        SmsdkInstallVerifier.PYSERIAL,
+    ]
+)
 if not goodToGo:
     print "Your installation does not allow this application to run:\n"
     print reason
     raw_input("Press any button to exit")
     sys.exit(1)
 
-import Tkinter
+#============================ imports =========================================
+
 import threading
 
-from dustWindow           import dustWindow
-from dustFrameConnection  import dustFrameConnection
-from dustFrameLEDPing     import dustFrameLEDPing
-from dustFrameText        import dustFrameText
+from   SmartMeshSDK                    import AppUtils,                   \
+                                              FormatUtils,                \
+                                              RateCalculator
+from   SmartMeshSDK.ApiDefinition      import IpMgrDefinition
+from   SmartMeshSDK.IpMgrConnectorMux  import IpMgrSubscribe
+from   SmartMeshSDK.protocols.oap      import OAPDispatcher,              \
+                                              OAPClient,                  \
+                                              OAPMessage
+from   dustUI                          import dustWindow,                 \
+                                              dustFrameConnection,        \
+                                              dustFrameLEDPing,           \
+                                              dustFrameText
 
-from ApiDefinition        import IpMgrDefinition
-from ApiException         import APIError
+#============================ logging =========================================
 
-from IpMgrConnectorMux    import IpMgrConnectorMux
-from IpMgrConnectorMux    import IpMgrSubscribe
+# local
 
-from optparse import OptionParser
+import logging
+class NullHandler(logging.Handler):
+    def emit(self, record):
+        pass
+log = logging.getLogger('App')
+log.setLevel(logging.ERROR)
+log.addHandler(NullHandler())
 
-UPDATEPERIOD = 100 # in ms
-OAP_PORT     = 0xf0b9
+# global
 
-class notifClient(object):
-    '''
-    \ingroup MgrListener
-    '''
-    
-    def __init__(self, connector, notifDataCallback, disconnectedCallback):
-        
-        # store params
-        self.connector            = connector
-        self.notifDataCallback    = notifDataCallback
-        self.disconnectedCallback = disconnectedCallback
-        
-        # variables
-        self.data      = None
-        self.dataLock  = threading.Lock()
-        
-        # subscriber
-        self.subscriber = IpMgrSubscribe.IpMgrSubscribe(self.connector)
-        self.subscriber.start()
-        self.subscriber.subscribe(
-            notifTypes =    [
-                               IpMgrSubscribe.IpMgrSubscribe.NOTIFDATA,
-                            ],
-            fun =           self.notifDataCallback,
-            isRlbl =        False,
-        )
-        self.subscriber.subscribe(
-            notifTypes =    [
-                                IpMgrSubscribe.IpMgrSubscribe.ERROR,
-                                IpMgrSubscribe.IpMgrSubscribe.FINISH,
-                            ],
-            fun =           self.disconnectedCallback,
-            isRlbl =        True,
-        )
-    
-    #======================== public ==========================================
-    
-    def disconnect(self):
-        self.connector.disconnect()
-    
-    #======================== private =========================================
+AppUtils.configureLogging()
 
-class LEDPingGui(object):
+#============================ defines =========================================
+
+LEDUPDATEPERIOD    = 100     # in ms
+RATEUPDATEPERIOD   = 500     # in ms
+OAP_PORT           = 0xf0b9
+
+#============================ body ============================================
+
+##
+# \addtogroup LEDPing
+# \{
+# 
+
+class LEDPingApp(object):
    
     def __init__(self):
         
@@ -94,57 +77,96 @@ class LEDPingGui(object):
         self.guiLock            = threading.Lock()
         self.apiDef             = IpMgrDefinition.IpMgrDefinition()
         self.ledOn              = False
-        self.handshakeDone      = False
-        self.mac                = None
-        self.notifClientHandler = None
-        self.ledPingStarted     = False
+        self.pingOngoing        = False
+        self.oap_client         = None
+        self.ratecalculator     = RateCalculator.RateCalculator()
+        self.connector          = None
         
         # create window
-        self.window = dustWindow('LEDPing',
-                                 self._windowCb_close)
+        self.window = dustWindow.dustWindow(
+            'LEDPing',
+            self._windowCb_close
+        )
                                  
         # add a connection frame
-        self.connectionFrame = dustFrameConnection(
-                                    self.window,
-                                    self.guiLock,
-                                    self._connectionFrameCb_connected,
-                                    frameName="manager connection",
-                                    row=0,column=0)
+        self.connectionFrame = dustFrameConnection.dustFrameConnection(
+            self.window,
+            self.guiLock,
+            self._connectionFrameCb_connected,
+            frameName="manager connection",
+            row=0,column=0
+        )
         self.connectionFrame.apiLoaded(self.apiDef)
         self.connectionFrame.show()
         
         # add a LEDPing frame
-        self.LEDPingFrame = dustFrameLEDPing(self.window,
-                                         self.guiLock,
-                                         self._LEDPingFrameCb_startPressed,
-                                         self._LEDPingFrameCb_stopPressed,
-                                         frameName="LED ping",
-                                         row=1,column=0)
+        self.LEDPingFrame = dustFrameLEDPing.dustFrameLEDPing(
+            self.window,
+            self.guiLock,
+            self._LEDPingFrameCb_startPressed,
+            self._LEDPingFrameCb_stopPressed,
+            frameName="LED ping",
+            row=1,column=0
+        )
         self.LEDPingFrame.show()
         
         # add a text frame
-        self.textFrame = dustFrameText(self.window,
-                                         self.guiLock,
-                                         frameName="Notes",
-                                         row=2,column=0)
+        self.textFrame = dustFrameText.dustFrameText(
+            self.window,
+            self.guiLock,
+            frameName="Notes",
+            row=2,column=0
+        )
         self.textFrame.show()
-        self.textFrame.write("The mote this application drives needs to run the\ndefault firmware, and operate in master mode.\n\nThe start button is only active when the\napplication is connected to a SmartMesh IP manager.")
+        
+        # put information in text frame
+        output  = []
+        output += ['The mote this application drives needs to run the']
+        output += ['default firmware, and operate in master mode.']
+        output += ['']
+        output += ['']
+        output += ['The start button is only active when the']
+        output += ['application is connected to a SmartMesh IP manager.']
+        output  = '\n'.join(output)
+        self.textFrame.write(output)
     
     #======================== public ==========================================
     
     def start(self):
-        
-        # start Tkinter's main thread
+        '''
+        This command instructs the GUI to start executing and reacting to 
+        user interactions. It never returns and should therefore be the last
+        command called.
+        '''
         try:
             self.window.mainloop()
         except SystemExit:
             sys.exit()
-
+    
     #======================== private =========================================
     
-    def _windowCb_close(self):
-        if self.notifClientHandler:
-            self.notifClientHandler.disconnect()
+    #===== GUI refresh
+    
+    def _gui_refresh_led(self):
+        
+        # ask LED frame to update
+        self.LEDPingFrame.updateLed(self.ledOn)
+        
+        # schedule the next update
+        self.LEDPingFrame.after(LEDUPDATEPERIOD,self._gui_refresh_led)
+    
+    def _gui_refresh_rate(self):
+        
+        # ask rate calculator for rate
+        try:
+            self.LEDPingFrame.updateRttLabel(1.0/float(self.ratecalculator.getRate()))
+        except RateCalculator.RateCalculatorError:
+            self.LEDPingFrame.updateRttLabel(None)
+        
+        # schedule the next update
+        self.LEDPingFrame.after(RATEUPDATEPERIOD,self._gui_refresh_rate)
+    
+    #===== GUI interaction
     
     def _connectionFrameCb_connected(self,connector):
         '''
@@ -154,120 +176,76 @@ class LEDPingGui(object):
         # store the connector
         self.connector = connector
         
-        # schedule the GUI to update itself in UPDATEPERIOD ms
-        self.LEDPingFrame.after(UPDATEPERIOD,self._updateLedState)
+        # schedule the GUI to update
+        self.LEDPingFrame.after(LEDUPDATEPERIOD,self._gui_refresh_led)
+        self.LEDPingFrame.after(RATEUPDATEPERIOD,self._gui_refresh_rate)
         
         # have LEDPingFrame enable button
         self.LEDPingFrame.enableButton()
         
-        # start a notification client
-        self.notifClientHandler = notifClient(
-                    self.connector,
-                    self._notifClientCb_notifdata,
-                    self._notifClientCb_disconnected
-                )
+        # OAP dispatcher
+        self.oap_dispatch = OAPDispatcher.OAPDispatcher()
+        
+        # create a subscriber
+        self.subscriber           = IpMgrSubscribe.IpMgrSubscribe(self.connector)
+        self.subscriber.start()
+        self.subscriber.subscribe(
+            notifTypes =    [
+                               IpMgrSubscribe.IpMgrSubscribe.NOTIFDATA,
+                            ],
+            fun =           self.oap_dispatch.dispatch_pkt,
+            isRlbl =        False,
+        )
+        self.subscriber.subscribe(
+            notifTypes =    [
+                                IpMgrSubscribe.IpMgrSubscribe.ERROR,
+                                IpMgrSubscribe.IpMgrSubscribe.FINISH,
+                            ],
+            fun =           self._notifClientCb_disconnected,
+            isRlbl =        True,
+        )
     
     def _LEDPingFrameCb_startPressed(self,mac):
-    
-        # store params
-        self.mac = mac
         
         # remember that the app is started
-        self.ledPingStarted = True
+        self.pingOngoing = True
+        
+        # disable further editing of MAC address
+        self.LEDPingFrame.disableMacText()
+        
+        # create OAPClient
+        if not self.oap_client:
+            self.oap_client = OAPClient.OAPClient(
+                mac,
+                self.connector.dn_sendData,
+                self.oap_dispatch
+            )
         
         # initiate first LED toggle
         self._toggleLed()
     
     def _LEDPingFrameCb_stopPressed(self):
-    
+        
         # remember that the app is stopped
-        self.ledPingStarted = False
+        self.pingOngoing = False
+        
+        # stop measuring rate
+        self.ratecalculator.clearBuf()
     
-    def _toggleLed(self):
-        
-        payload = []
-        
-        #=== header
-        
-        # control byte
-        if self.handshakeDone:
-            payload.append(1)                              # ACK'ed transport
-            self.seqnum  +=1
-        else:
-            payload.append(5)                              # ACK'ed transport, resync connection
-            self.seqnum   = random.randint(0x0,0xf)
-            self.session  = 0
-        # id byte
-        payload.append(self.seqnum+(self.session<<4))
-        
-        #=== payload
-        
-        payload.append(0x02)                               # "PUT" command
-        payload.append(0xff)                               # ==TLV== address (0xff)
-        payload.append(0x02)                               #         length (2)
-        payload.append(0x03)                               #         digital_out (3)
-        payload.append(0x02)                               #         Actuate LED (2)
-        payload.append(0x00)                               # ==TLV== Value (0x00)
-        payload.append(0x01)                               #         length (1)
-        if self.ledOn:
-            payload.append(0x00)                           # set pin to 0
-        else:
-            payload.append(0x01)                           # set pin to 1
-        
-        try:
-            self.connector.dn_sendData(
-                macAddress   = self.mac,
-                priority     = 1,
-                srcPort      = OAP_PORT,
-                dstPort      = OAP_PORT,
-                options      = 0,
-                data         = payload,
-            )
-        
-        except APIError as err:
-            # print error on GUI
-            self.textFrame.write(str(err))
-        
-        else:
-            # update my local view of the LED
-            self.ledOn = not self.ledOn
-        
-    def _notifClientCb_notifdata(self,notifName,notifParams):
+    def _windowCb_close(self):
         '''
-        \brief This function is called when we receive a notification from the
-               manager.
-        
-        This notification will be an OAP-level ACK for the "setLED" command if
-        if has the following characteristics:
-         - notification type: data
-         - macAddress: MAC address of the mote we specified
-         - srcPort: 0xf0b9 (OAP)
-         - dstPort: 0xf0b9 (OAP)
-         - data (8 bytes):
-            - 0x07: OAP control byte (ACK'ed transport, response, sync)
-            - 0x--: OAP id
-            - 0x02: "PUT" command
-            - 0x00: RC=0 (success)
-            - 0xff: ==TLV== address (0xff)
-            - 0x02:         length (2)
-            - 0x03:         digital_out (3)
-            - 0x02:         Actuate LED (2)
-        
+        \brief Called when the window is closed.
         '''
         
-        mac = [b for b in notifParams.macAddress]
+        if self.connector:
+            self.connector.disconnect()
+    
+    #===== notifications
+    
+    def _oap_response(self,mac,oap_resp):
         
-        if (self.mac!=None                                                and
-            notifName==IpMgrSubscribe.IpMgrSubscribe.NOTIFDATA            and
-            mac==self.mac                                                 and
-            notifParams.srcPort==OAP_PORT                                 and 
-            notifParams.dstPort==OAP_PORT                                 and
-            len(notifParams.data)==8                                      and
-            tuple(notifParams.data[-6:])==(0x02,0x00,0xff,0x02,0x03,0x02) and
-            self.ledPingStarted
-            ):
-            
-            # initiate next LED toggle
+        # initiate next LED toggle
+        if self.pingOngoing:
             self._toggleLed()
     
     def _notifClientCb_disconnected(self,notifName,notifParams):
@@ -280,22 +258,47 @@ class LEDPingGui(object):
         self.LEDPingFrame.disableButton()
         
         # delete the connector
+        if self.connector:
+            self.connector.disconnect()
         self.connector = None
         
         # the app is stopped
-        self.ledPingStarted = False
+        self.pingOngoing = False
     
-    def _updateLedState(self):
-        
-        # ask LED frame to update
-        self.LEDPingFrame.updateLed(self.ledOn)
-        
-        # schedule the next update
-        self.LEDPingFrame.after(UPDATEPERIOD,self._updateLedState)
+    #===== helpers
     
+    def _toggleLed(self):
+        
+        # indicate event
+        self.ratecalculator.signalEvent()
+        
+        # pick the command to send
+        if self.ledOn:
+            ledVal = 0x00                                  # turn LED off
+        else:
+            ledVal = 0x01                                  # turn LED on
+        
+        # send packet
+        self.oap_client.send(
+            OAPMessage.CmdType.PUT,                        # command
+            [3,2],                                         # address (digital_out=3,Actuate LED (2))
+            data_tags=[OAPMessage.TLVByte(t=0,v=ledVal)],  # parameters
+            cb=self._oap_response                          # callback
+        )
+        
+        # update my local view of the LED
+        self.ledOn = not self.ledOn
+
+#============================ main ============================================
+
 def main():
-    LEDPingGuiHandler = LEDPingGui()
-    LEDPingGuiHandler.start()
+    app = LEDPingApp()
+    app.start()
 
 if __name__ == '__main__':
     main()
+
+##
+# end of LEDPing
+# \}
+# 

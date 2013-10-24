@@ -3,7 +3,7 @@
 
 import threading
 
-import ApiException
+from   SmartMeshSDK import ApiException
 
 class IpMgrSubscribe(object):
     '''
@@ -26,11 +26,11 @@ class IpMgrSubscribe(object):
     ALLNOTIF             = [NOTIFEVENT, NOTIFLOG, NOTIFDATA, NOTIFIPDATA, NOTIFHEALTHREPORT]
     EVENTMOTERESET       = "eventMoteReset"
     EVENTNETWORKRESET    = "eventNetworkReset"
-    EVENTCOMMANDFINISH   = "eventCommandFinish"
+    EVENTCOMMANDFINISHED = "eventCommandFinished"
     EVENTMOTEJOIN        = "eventMoteJoin"
     EVENTMOTEOPERATIONAL = "eventMoteOperational"
     EVENTMOTELOST        = "eventMoteLost"
-    EVENTNETTIME         = "eventNetTime"
+    EVENTNETWORKTIME     = "eventNetworkTime"
     EVENTPINGRESPONSE    = "eventPingResponse"
     EVENTPATHCREATE      = "eventPathCreate"
     EVENTPATHDELETE      = "eventPathDelete"
@@ -41,11 +41,11 @@ class IpMgrSubscribe(object):
     _trNotifNameTable = {
     "eventMoteReset" : "notifEvent",
     "eventNetworkReset" : "notifEvent",
-    "eventCommandFinish" : "notifEvent",
+    "eventCommandFinished" : "notifEvent",
     "eventMoteJoin" : "notifEvent",
     "eventMoteOperational" : "notifEvent",
     "eventMoteLost" : "notifEvent",
-    "eventNetTime" : "notifEvent",
+    "eventNetworkTime" : "notifEvent",
     "eventPingResponse" : "notifEvent",
     "eventPathCreate" : "notifEvent",
     "eventPathDelete" : "notifEvent",
@@ -140,11 +140,11 @@ class IpMgrSubscribe(object):
             <tr><td>NOTIFHEALTHREPORT   </td><td>Tuple_notifHealthReport</td>
             <tr><td>EVENTMOTERESET      </td><td>Tuple_eventMoteReset</td>
             <tr><td>EVENTNETWORKRESET   </td><td>Tuple_eventNetworkReset</td>
-            <tr><td>EVENTCOMMANDFINISH  </td><td>Tuple_eventCommandFinish</td>
+            <tr><td>EVENTCOMMANDFINISHED</td><td>Tuple_eventCommandFinished</td>
             <tr><td>EVENTMOTEJOIN       </td><td>Tuple_eventMoteJoin</td>
             <tr><td>EVENTMOTEOPERATIONAL</td><td>Tuple_eventMoteOperational</td>
             <tr><td>EVENTMOTELOST       </td><td>Tuple_eventMoteLost</td>
-            <tr><td>EVENTNETTIME        </td><td>Tuple_eventNetTime</td>
+            <tr><td>EVENTNETWORKTIME    </td><td>Tuple_eventNetworkTime</td>
             <tr><td>EVENTPINGRESPONSE   </td><td>Tuple_eventPingResponse</td>
             <tr><td>EVENTPATHCREATE     </td><td>Tuple_eventPathCreate</td>
             <tr><td>EVENTPATHDELETE     </td><td>Tuple_eventPathDelete</td>

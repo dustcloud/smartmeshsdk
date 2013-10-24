@@ -1,18 +1,15 @@
-import sys
-import os
 
-sys.path.insert(0, os.path.join(sys.path[0], '..'))
-
-from SerialConnector import SerialConnector
-from ApiDefinition import ApiDefinition,IpMgrDefinition
-from  ApiException import ConnectionError
+from SmartMeshSDK.SerialConnector import SerialConnector
+from SmartMeshSDK.ApiDefinition   import ApiDefinition,    \
+                                         IpMgrDefinition
+from SmartMeshSDK.ApiException    import ConnectionError
 
 API_VERSION = [4, 3,]
-
 
 class IpMgrConnectorSerialInternal(SerialConnector.SerialConnector):
     '''
     \ingroup ApiConnector
+    
     \brief Internal class for IP manager connector, over Serial.
     '''
 

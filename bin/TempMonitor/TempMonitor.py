@@ -1,57 +1,71 @@
 #!/usr/bin/python
 
-# add the SmartMeshSDK/ folder to the path
-import os
+#============================ adjust path =====================================
+
 import sys
-import traceback
+import os
+if __name__ == "__main__":
+    here = sys.path[0]
+    sys.path.insert(0, os.path.join(here, '..', '..'))
 
-temp_path = sys.path[0]
-if temp_path:
-    sys.path.insert(0, os.path.join(temp_path, '..', '..', 'protocols'))
-    sys.path.insert(0, os.path.join(temp_path, '..', '..', 'dustUI'))
-    sys.path.insert(0, os.path.join(temp_path, '..', '..', 'SmartMeshSDK'))
+#============================ verify installation =============================
 
-# verify installation
-import SmsdkInstallVerifier
+from SmartMeshSDK import SmsdkInstallVerifier
 (goodToGo,reason) = SmsdkInstallVerifier.verifyComponents(
-                            [
-                                SmsdkInstallVerifier.PYTHON,
-                                SmsdkInstallVerifier.PYSERIAL,
-                            ]
-                        )
+    [
+        SmsdkInstallVerifier.PYTHON,
+        SmsdkInstallVerifier.PYSERIAL,
+    ]
+)
 if not goodToGo:
     print "Your installation does not allow this application to run:\n"
     print reason
     raw_input("Press any button to exit")
     sys.exit(1)
 
-import Tkinter
+#============================ imports =========================================
+
 import threading
 import copy
 import time
+import traceback
+
+from   SmartMeshSDK                    import AppUtils,                   \
+                                              FormatUtils,                \
+                                              LatencyCalculator
+from   SmartMeshSDK.ApiDefinition      import IpMgrDefinition,            \
+                                              HartMgrDefinition
+from   SmartMeshSDK.IpMgrConnectorMux  import IpMgrSubscribe,             \
+                                              IpMgrConnectorMux
+from   SmartMeshSDK.ApiException       import APIError
+from   SmartMeshSDK.protocols.oap      import OAPDispatcher,              \
+                                              OAPClient,                  \
+                                              OAPMessage,                 \
+                                              OAPNotif
+from   dustUI                          import dustWindow,                 \
+                                              dustFrameApi,               \
+                                              dustFrameConnection,        \
+                                              dustFrameMoteList,          \
+                                              dustFrameText,              \
+                                              dustStyle
+
+#============================ logging =========================================
+
+# local
 
 import logging
-import logging.handlers
+class NullHandler(logging.Handler):
+    def emit(self, record):
+        pass
+log = logging.getLogger('App')
+log.setLevel(logging.ERROR)
+log.addHandler(NullHandler())
 
-import dustStyle
-from dustWindow              import dustWindow
-from dustFrameApi            import dustFrameApi
-from dustFrameConnection     import dustFrameConnection
-from dustFrameMoteList       import dustFrameMoteList
-from dustFrameText           import dustFrameText
+# global
 
-from ApiDefinition           import IpMgrDefinition
-from ApiDefinition           import HartMgrDefinition
-from ApiException            import APIError
+AppUtils.configureLogging()
 
-from IpMgrConnectorMux       import IpMgrSubscribe,   \
-                                    IpMgrConnectorMux
-from IpMgrConnectorMux       import LatencyCalculator
-
-from oap                     import OAPDispatcher
-from oap                     import OAPClient
-from oap                     import OAPMessage
-from oap                     import OAPNotif
+#============================ defines =========================================
 
 GUI_UPDATEPERIOD = 250   # in ms
 
@@ -69,13 +83,12 @@ COL_TEMP_NUM     = 'num. temp'
 COL_TEMP_CLR     = 'clear temp'
 COL_TEMP_RATE    = 'publish rate (ms)'
 
-import logging
-class NullHandler(logging.Handler):
-    def emit(self, record):
-        pass
-log = logging.getLogger('TempMonitor')
-log.setLevel(logging.ERROR)
-log.addHandler(NullHandler())
+#============================ body ============================================
+
+##
+# \addtogroup TempMonitor
+# \{
+# 
 
 class HartMgrSubscriber(threading.Thread):
     
@@ -121,9 +134,6 @@ class HartMgrSubscriber(threading.Thread):
         self.disconnectedCb()
 
 class notifClient(object):
-    '''
-    \ingroup MgrListener
-    '''
     
     def __init__(self, apiDef, connector, disconnectedCallback, latencyCalculator):
         
@@ -244,8 +254,29 @@ class notifClient(object):
     def _dataCallback(self, notifName, notifParams):
         
         # log
-        log.debug("notifClient._dataCallback {0} {1}".format(notifName, notifParams))
+        if   isinstance(self.apiDef,IpMgrDefinition.IpMgrDefinition):
+            # IpMgrSubscribe generates a named tuple
+            log.debug(
+                "notifClient._dataCallback {0}:\n{1}".format(
+                    notifName,
+                    FormatUtils.formatNamedTuple(notifParams)
+                )
+            )
+        elif isinstance(self.apiDef,HartMgrDefinition.HartMgrDefinition):
+            # HartMgrSubscriber generates a dictionary
+            log.debug(
+                "notifClient._dataCallback {0}:\n{1}".format(
+                    notifName,
+                    FormatUtils.formatDictionnary(notifParams)
+                )
+            )
+        else:
+            output = "apiDef of type {0} unexpected".format(type(self.apiDef))
+            log.critical(output)
+            print output
+            raise SystemError(output)
         
+        # record current time
         timeNow = time.time()
         
         # read MAC address from notification
@@ -454,7 +485,7 @@ class notifClient(object):
             self.dataLock.release()
 
 class TempMonitorGui(object):
-   
+    
     def __init__(self):
         
         # local variables
@@ -466,20 +497,20 @@ class TempMonitorGui(object):
         self.oap_clients        = {}
         
         # create window
-        self.window = dustWindow('TempMonitor',
+        self.window = dustWindow.dustWindow('TempMonitor',
                                  self._windowCb_close)
         
         # add a API selection frame
-        self.apiFrame = dustFrameApi(
+        self.apiFrame = dustFrameApi.dustFrameApi(
                                     self.window,
                                     self.guiLock,
                                     self._apiFrameCb_apiLoaded,
                                     row=0,column=0,
-                                    deviceType=dustFrameApi.MANAGER)
+                                    deviceType=dustFrameApi.dustFrameApi.MANAGER)
         self.apiFrame.show()
         
         # add a connection frame
-        self.connectionFrame = dustFrameConnection(
+        self.connectionFrame = dustFrameConnection.dustFrameConnection(
                                     self.window,
                                     self.guiLock,
                                     self._connectionFrameCb_connected,
@@ -491,63 +522,63 @@ class TempMonitorGui(object):
                                 # led
                                 {
                                     'name': COL_LED,
-                                    'type': dustFrameMoteList.ACTION,
+                                    'type': dustFrameMoteList.dustFrameMoteList.ACTION,
                                 },
                                 # counters and latency
                                 {
                                     'name': COL_NOTIF_DATA,
-                                    'type': dustFrameMoteList.LABEL,
+                                    'type': dustFrameMoteList.dustFrameMoteList.LABEL,
                                 },
                                 {
                                     'name': COL_NOTIF_IPDATA,
-                                    'type': dustFrameMoteList.LABEL,
+                                    'type': dustFrameMoteList.dustFrameMoteList.LABEL,
                                 },
                                 {
                                     'name': COL_NOTIF_HR,
-                                    'type': dustFrameMoteList.LABEL,
+                                    'type': dustFrameMoteList.dustFrameMoteList.LABEL,
                                 },
                                 {
                                     'name': COL_LAT_MIN,
-                                    'type': dustFrameMoteList.LABEL,
+                                    'type': dustFrameMoteList.dustFrameMoteList.LABEL,
                                 },
                                 {
                                     'name': COL_LAT_CUR,
-                                    'type': dustFrameMoteList.LABEL,
+                                    'type': dustFrameMoteList.dustFrameMoteList.LABEL,
                                 },
                                 {
                                     'name': COL_LAT_MAX,
-                                    'type': dustFrameMoteList.LABEL,
+                                    'type': dustFrameMoteList.dustFrameMoteList.LABEL,
                                 },
                                 {
                                     'name': COL_NOTIF_CLR,
-                                    'type': dustFrameMoteList.ACTION,
+                                    'type': dustFrameMoteList.dustFrameMoteList.ACTION,
                                 },
                                 # temperature
                                 {
                                     'name': COL_TEMPERATURE,
-                                    'type': dustFrameMoteList.LABEL,
+                                    'type': dustFrameMoteList.dustFrameMoteList.LABEL,
                                 },
                                 {
                                     'name': COL_TEMP_NUM,
-                                    'type': dustFrameMoteList.LABEL,
+                                    'type': dustFrameMoteList.dustFrameMoteList.LABEL,
                                 },
                                 {
                                     'name': COL_TEMP_CLR,
-                                    'type': dustFrameMoteList.ACTION,
+                                    'type': dustFrameMoteList.dustFrameMoteList.ACTION,
                                 },
                                 {
                                     'name': COL_TEMP_RATE,
-                                    'type': dustFrameMoteList.GETSETONEVAL,
+                                    'type': dustFrameMoteList.dustFrameMoteList.GETSETONEVAL,
                                 },
                             ]
-        self.moteListFrame = dustFrameMoteList(self.window,
+        self.moteListFrame = dustFrameMoteList.dustFrameMoteList(self.window,
                                                self.guiLock,
                                                columnnames,
                                                row=2,column=0)
         self.moteListFrame.show()
         
         # add a status (text) frame
-        self.statusFrame   = dustFrameText(
+        self.statusFrame   = dustFrameText.dustFrameText(
                                     self.window,
                                     self.guiLock,
                                     frameName="status",
@@ -654,7 +685,7 @@ class TempMonitorGui(object):
                 # update status
                 self.statusFrame.write(
                     "Toggle LED command sent successfully to mote {0}.".format(
-                        dustStyle.formatMacAddress(mac),
+                        FormatUtils.formatMacString(mac),
                     )
                 )
         else:
@@ -669,7 +700,7 @@ class TempMonitorGui(object):
         # update status
         self.statusFrame.write(
                 "Counters for mote {0} cleared successfully.".format(
-                    dustStyle.formatMacAddress(mac),
+                    FormatUtils.formatMacString(mac),
                 )
             )
     
@@ -680,7 +711,7 @@ class TempMonitorGui(object):
         # update status
         self.statusFrame.write(
                 "Temperature data for mote {0} cleared successfully.".format(
-                    dustStyle.formatMacAddress(mac),
+                    FormatUtils.formatMacString(mac),
                 )
             )
     
@@ -699,7 +730,7 @@ class TempMonitorGui(object):
             # update status
             self.statusFrame.write(
                 "Publish rate get request sent successfully to mote {0}.".format(
-                    dustStyle.formatMacAddress(mac),
+                    FormatUtils.formatMacString(mac),
                 )
             )
     
@@ -720,7 +751,7 @@ class TempMonitorGui(object):
             self.statusFrame.write(
                 "Publish rate set({0}) request sent successfully to mote {1}.".format(
                     val,
-                    dustStyle.formatMacAddress(mac),
+                    FormatUtils.formatMacString(mac),
                 )
             )
     
@@ -908,25 +939,6 @@ class TempMonitorGui(object):
             print output
             raise SystemError(output)
 
-#============================ logging =========================================
-
-## Name of the log file
-LOG_FILENAME       = 'TempMonitor.log'
-## Format of the lines printed into the log file.
-LOG_FORMAT         = "%(asctime)s [%(name)s:%(levelname)s] %(message)s"
-## Handler called when a module logs some activity.
-logHandler = logging.handlers.RotatingFileHandler(LOG_FILENAME,
-                                               maxBytes=2000000,
-                                               backupCount=5,
-                                               mode='w'
-                                               )
-logHandler.setFormatter(logging.Formatter(LOG_FORMAT))
-for loggerName in ['LatencyCalculator',
-                   'TempMonitor']:
-    temp = logging.getLogger(loggerName)
-    temp.setLevel(logging.DEBUG)
-    temp.addHandler(logHandler)
-
 #============================ main ============================================
 
 def main():
@@ -935,3 +947,8 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+##
+# end of TempMonitor
+# \}
+# 

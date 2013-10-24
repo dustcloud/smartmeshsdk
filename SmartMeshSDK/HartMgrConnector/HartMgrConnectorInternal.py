@@ -1,15 +1,11 @@
-'''Connector for HART Manager XML API
-
-'''
-
-import os
-import sys
 import copy
 import xmlrpclib
-import ApiException
-from ApiConnector import ApiConnector
-from ApiDefinition import HartMgrDefinition
-from NotifReader import NotifReader
+
+from NotifReader                  import NotifReader
+
+from SmartMeshSDK                 import ApiException
+from SmartMeshSDK.ApiConnector    import ApiConnector
+from SmartMeshSDK.ApiDefinition   import HartMgrDefinition
 
 # Add a log handler for the HART Manager
 

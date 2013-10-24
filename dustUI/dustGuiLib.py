@@ -163,3 +163,16 @@ class Label(Tkinter.Label):
         # arm next iteration
         if self.blinkIterationsRemaining:
             self.after(self.BLINK_PERIOD_MS,self._blinkIteration)
+
+#============================ sample app ======================================
+# The following gets called only if you run this module as a standalone app, by
+# double-clicking on this source file. This code is NOT executed when importing
+# this module is a larger application
+#
+class exampleApp(object):
+    
+    def __init__(self):
+        raw_input("No sample app. Press enter to close.")
+
+if __name__ == '__main__':
+    exampleApp()

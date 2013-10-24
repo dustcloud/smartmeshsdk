@@ -6,6 +6,7 @@ import ByteArraySerializer
 class IpMoteDefinition(ApiDefinition.ApiDefinition):
     '''
     \ingroup ApiDefinition
+    
     \brief  API definition for the IP mote.
    
     \note   This class inherits from ApiDefinition. It redefines the attributes of
@@ -57,6 +58,7 @@ class IpMoteDefinition(ApiDefinition.ApiDefinition):
             [0x0E, 'RC_NOT_FOUND',             'Resource not found'],
             [0x0F, 'RC_INVALID_VALUE',         'Invalid value supplied'],
             [0x10, 'RC_ACCESS_DENIED',         'Access to resource or command is denied'],
+            [0x12, 'RC_ERASE_FAIL',            'Erase operation failed'],
         ],
         'serviceType': [
             [0,    'bandwidth',             'Bandwidth-type service'],
@@ -105,7 +107,7 @@ class IpMoteDefinition(ApiDefinition.ApiDefinition):
         ],
         'packetTransmitStatus': [
             [0x00, 'ok',                    'Packet sent into the network'],
-            [0x01, 'fail',                  'packet was dropped due to timeout or lack of route'],
+            [0x01, 'fail',                  'Packet dropped'],
         ],
         'channel': [
             [0,    '2.405GHz',              ''],
@@ -157,7 +159,7 @@ class IpMoteDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 0x02,
             'name'       : 'joinKey',
-            'description': 'The setParameter<joinKey> command may be used to set the join key in mote\'s persistent storage. Join keys are used by motes to establish secure connection with the network. The join key is used at next join. \n\nReading the joinKey parameter is prohibited for security reasons. \n\n',
+            'description': 'The setParameter<joinKey> command may be used to set the join key in mote\'s persistent storage. Join keys are used by motes to establish secure connection with the network. The join key is used at next join. \n\nReading the joinKey parameter is prohibited for security reasons.',
             'request'    : [
                 ['joinKey',                 HEXDATA,  16,  None],
             ],
@@ -205,7 +207,7 @@ class IpMoteDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 0x06,
             'name'       : 'joinDutyCycle',
-            'description': 'The setParameter<joinDutyCycle> command allows the microprocessor to control the ratio of active listen time to doze time (a low-power radio state) during the period when the mote is searching for the network. If you desire a faster join time at the risk of higher power consumption, use the setParameter<joinDutyCycle> command to increase the join duty cycle up to 100%. This setting is persistent and takes effect immediately.',
+            'description': 'The setParameter<joinDutyCycle> command allows the microprocessor to control the ratio of active listen time to doze time (a low-power radio state) during the period when the mote is searching for the network. If you desire a faster join time at the risk of higher power consumption, use the setParameter<joinDutyCycle> command to increase the join duty cycle up to 100%. This setting is persistent and requires a reset to take effect.',
             'request'    : [
                 ['dutyCycle',               INT,      1,   None],
             ],
@@ -220,7 +222,7 @@ class IpMoteDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 0x0B,
             'name'       : 'eventMask',
-            'description': 'The setParameter<eventMask> command allows the microprocessor to selectively subscribe to event notifications. The default value of eventMask at mote reset is all 1s - all events are enabled. This setting is not persistent.',
+            'description': 'The setParameter<eventMask> command allows the microprocessor to selectively subscribe to event notifications. The default value of eventMask at mote reset is all 1s - all events are enabled. This setting is not persistent.\n\nNew event type may be added in future revisions of mote software. It is recommended that the client code only subscribe to known events and gracefully ignore all unknown events.',
             'request'    : [
                 ['eventMask',               HEXDATA,  4,   None],
             ],
@@ -250,90 +252,6 @@ class IpMoteDefinition(ApiDefinition.ApiDefinition):
             },
         },
         {
-            'id'         : 0x16,
-            'name'       : 'macMicKey',
-            'description': 'Set the key used for MAC authentication.',
-            'request'    : [
-                ['macMicKey',               HEXDATA,  16,  None],
-            ],
-            'response'   : {
-                'FIELDS':  [
-                ],
-            },
-        },
-        {
-            'id'         : 0x17,
-            'name'       : 'moteId',
-            'description': 'Set the mote\'s short address.',
-            'request'    : [
-                ['moteId',                  INT,      2,   None],
-            ],
-            'response'   : {
-                'FIELDS':  [
-                ],
-            },
-        },
-        {
-            'id'         : 0x18,
-            'name'       : 'ipv6Address',
-            'description': 'Set the mote\'s IPv6 address.',
-            'request'    : [
-                ['ipv6Address',             HEXDATA,  16,  None],
-            ],
-            'response'   : {
-                'FIELDS':  [
-                ],
-            },
-        },
-        {
-            'id'         : 0x19,
-            'name'       : 'ccaMode',
-            'description': '',
-            'request'    : [
-                ['ccaMode',                 INT,      1,   True],
-            ],
-            'response'   : {
-                'FIELDS':  [
-                ],
-            },
-        },
-        {
-            'id'         : 0x1A,
-            'name'       : 'Channels',
-            'description': '',
-            'request'    : [
-                ['bitmap',                  INT,      2,   None],
-            ],
-            'response'   : {
-                'FIELDS':  [
-                ],
-            },
-        },
-        {
-            'id'         : 0x1B,
-            'name'       : 'advGraph',
-            'description': '',
-            'request'    : [
-                ['graphId',                 INT,      1,   None],
-            ],
-            'response'   : {
-                'FIELDS':  [
-                ],
-            },
-        },
-        {
-            'id'         : 0x1C,
-            'name'       : 'hrTimer',
-            'description': 'Set the duration (in seconds) between consecutive health reports.',
-            'request'    : [
-                ['hrTimer',                 INT,      2,   None],
-            ],
-            'response'   : {
-                'FIELDS':  [
-                ],
-            },
-        },
-        {
             'id'         : 0x1D,
             'name'       : 'routingMode',
             'description': 'This command allows the microprocessor to control whether the mote will become a router once joined the network. If disabled, the manager will keep the mote a leaf node.',
@@ -347,23 +265,6 @@ class IpMoteDefinition(ApiDefinition.ApiDefinition):
             'responseCodes': {
                'RC_OK'                      : 'Command completed successfully',
                'RC_INVALID_VALUE'           : 'Invalid value of mode parameter',
-            },
-        },
-        {
-            'id'         : 0x1E,
-            'name'       : 'appInfo',
-            'description': '',
-            'request'    : [
-                ['vendorId',                INT,      2,   None],
-                ['appId',                   INT,      1,   None],
-                ['appMajorSwRev',           INT,      1,   None],
-                ['appMinorSwRev',           INT,      1,   None],
-                ['appPatchNum',             INT,      1,   None],
-                ['appBuildNum',             INT,      2,   None],
-            ],
-            'response'   : {
-                'FIELDS':  [
-                ],
             },
         },
         {
@@ -389,30 +290,6 @@ class IpMoteDefinition(ApiDefinition.ApiDefinition):
             },
             'responseCodes': {
                'RC_OK'                      : 'Command completed successfully',
-            },
-        },
-        {
-            'id'         : 0x21,
-            'name'       : 'mobilityType',
-            'description': '',
-            'request'    : [
-                ['mobilityType',            INT,      1,   True],
-            ],
-            'response'   : {
-                'FIELDS':  [
-                ],
-            },
-        },
-        {
-            'id'         : 0x22,
-            'name'       : 'advKey',
-            'description': 'Set the key used by the mote for advertisement packets',
-            'request'    : [
-                ['advKey',                  HEXDATA,  16,  None],
-            ],
-            'response'   : {
-                'FIELDS':  [
-                ],
             },
         },
         {
@@ -503,7 +380,7 @@ class IpMoteDefinition(ApiDefinition.ApiDefinition):
             ],
             'response'   : {
                 'FIELDS':  [
-                    ['eventMask',           INT,      4,   None],
+                    ['eventMask',           HEXDATA,  4,   None],
                 ],
             },
             'responseCodes': {
@@ -685,23 +562,6 @@ class IpMoteDefinition(ApiDefinition.ApiDefinition):
             },
         },
         {
-            'id'         : 0x1E,
-            'name'       : 'appInfo',
-            'description': '',
-            'request'    : [
-            ],
-            'response'   : {
-                'FIELDS':  [
-                    ['vendorId',            INT,      2,   None],
-                    ['appId',               INT,      2,   None],
-                    ['appMajorSwRev',       INT,      1,   None],
-                    ['appMinorSwRev',       INT,      1,   None],
-                    ['appPatchNum',         INT,      1,   None],
-                    ['appBuildNum',         INT,      2,   None],
-                ],
-            },
-        },
-        {
             'id'         : 0x1F,
             'name'       : 'powerSrcInfo',
             'description': 'This command allows the microprocessor to read a mote\'s power source settings.',
@@ -714,7 +574,7 @@ class IpMoteDefinition(ApiDefinition.ApiDefinition):
                     ['currentLimit_0',      INT,      2,   None],
                     ['dischargePeriod_0',   INT,      2,   None],
                     ['rechargePeriod_0',    INT,      2,   None],
-                    ['currrentLimit_1',     INT,      2,   None],
+                    ['currentLimit_1',      INT,      2,   None],
                     ['dischargePeriod_1',   INT,      2,   None],
                     ['rechargePeriod_1',    INT,      2,   None],
                     ['currentLimit_2',      INT,      2,   None],
@@ -724,62 +584,6 @@ class IpMoteDefinition(ApiDefinition.ApiDefinition):
             },
             'responseCodes': {
                'RC_OK'                      : 'Command completed successfully',
-            },
-        },
-        {
-            'id'         : 0x20,
-            'name'       : 'powerCostInfo',
-            'description': '',
-            'request'    : [
-            ],
-            'response'   : {
-                'FIELDS':  [
-                    ['maxTxCost',           INT,      1,   None],
-                    ['maxRxCost',           INT,      1,   None],
-                    ['minTxCost',           INT,      1,   None],
-                    ['minRxCost',           INT,      1,   None],
-                ],
-            },
-        },
-        {
-            'id'         : 0x21,
-            'name'       : 'mobilityType',
-            'description': '',
-            'request'    : [
-            ],
-            'response'   : {
-                'FIELDS':  [
-                    ['mobilityType',        INT,      1,   True],
-                ],
-            },
-        },
-        {
-            'id'         : 0x22,
-            'name'       : 'advKey',
-            'description': 'Get the key used for advertisement packets.',
-            'request'    : [
-            ],
-            'response'   : {
-                'FIELDS':  [
-                    ['advKey',              HEXDATA,  16,  None],
-                ],
-            },
-        },
-        {
-            'id'         : 0x23,
-            'name'       : 'sizeInfo',
-            'description': 'Get information about the mote\'s storage capacity.',
-            'request'    : [
-            ],
-            'response'   : {
-                'FIELDS':  [
-                    ['maxFrames',           INT,      1,   None],
-                    ['maxLinks',            INT,      2,   None],
-                    ['maxNeighbors',        INT,      1,   None],
-                    ['maxRoutes',           INT,      1,   None],
-                    ['maxGraphs',           INT,      1,   None],
-                    ['maxMacQueue',         INT,      1,   None],
-                ],
             },
         },
         {
@@ -835,7 +639,7 @@ class IpMoteDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 0x06,
             'name'       : 'join',
-            'description': 'The join command requests that mote start searching for the network and attempt to join.The mote must be in the IDLE state for this command to be valid. Note that the join time will be affected by the maximum current setting.',
+            'description': 'The join command requests that mote start searching for the network and attempt to join.The mote must be in theIdle state for this command to be valid. Note that the join time will be affected by the maximum current setting.',
             'request'    : [
             ],
             'response'   : {
@@ -897,10 +701,11 @@ class IpMoteDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 0x0C,
             'name'       : 'testRadioRx',
-            'description': 'The testRadioRx command clears all previously collected statistics and initiates a test of radio reception for the specified channel and duration. During the test, the mote keeps statistics about the number of packets received (with and without error). The test results may be retrieved using the getParameter<testRadioRxStats> command. The testRadioRx command may only be issued in Idle mode. The mote must be reset (either hardware or software reset) after radio tests are complete and prior to joining.\n\n\n\nChannel numbering is 0-14, corresponding to IEEE 2.4 GHz channels 11-25.',
+            'description': 'The testRadioRx command clears all previously collected statistics and initiates a test of radio reception for the specified channel and duration. During the test, the mote keeps statistics about the number of packets received (with and without error). Note that the non-zero station id specified in this command must match the transmitter\'s station id. This is necessary to isolate traffic if multiple tests are running in the same radio space. The test results may be retrieved using the getParameter<testRadioRxStats> command. The testRadioRx command may only be issued in Idle mode. The mote must be reset (either hardware or software reset) after radio tests are complete and prior to joining.\n\n\n\nChannel numbering is 0-15, corresponding to IEEE 2.4 GHz channels 11-26.',
             'request'    : [
                 ['channelMask',             HEXDATA,  2,   None],
                 ['time',                    INT,      2,   None],
+                ['stationId',               INT,      1,   None],
             ],
             'response'   : {
                 'FIELDS':  [
@@ -909,7 +714,7 @@ class IpMoteDefinition(ApiDefinition.ApiDefinition):
             },
             'responseCodes': {
                'RC_OK'                      : 'Command was accepted',
-               'RC_INVALID_VALUE'           : 'The mote is not in idle state',
+               'RC_INVALID_VALUE'           : 'The mote is not in Idle state',
                'RC_BUSY'                    : 'Another test operation in progress',
             },
         },
@@ -1047,7 +852,7 @@ class IpMoteDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 0x24,
             'name'       : 'search',
-            'description': 'The searchcommand requests that mote start listening for advertisements and report those heard from any network withoutattempting to join.The mote must be in the IDLE state for this command to be valid. The search state can be exiting by issuing the join command or the reset command.',
+            'description': 'The searchcommand requests that mote start listening for advertisements and report those heard from any network withoutattempting to join.The mote must be in the Idle state for this command to be valid. The search state can be exiting by issuing the join command or the reset command.',
             'request'    : [
             ],
             'response'   : {
@@ -1063,7 +868,7 @@ class IpMoteDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 0x28,
             'name'       : 'testRadioTxExt',
-            'description': 'ThetestRadioTxExtcommand allows the microprocessor to initiate a radio transmission test. This command may only be issued prior to the mote joining the network. Three types of transmission tests are supported:\n\n-Packet transmission\n-Continuous modulation\n-Continuous wave (unmodulated signal)\n\nIn a packet transmission test, the mote generates arepeatCntnumber of packet sequences. Each sequence consists of up to 10 packets with configurable size and delays. Each packet starts with a PHY preamble (5 bytes), followed by a PHY length field (1 byte), followed by data payload of up to 125 bytes, and finally a 2-byte 802.15.4 CRC at the end. Bytes 0 and 1 contain the packet number (in big-endian format) that increments with every packet transmitted. Bytes 2..N contain a counter (from 0..N-2) that increments with every byte inside payload. Transmissions occur on the set of channels defined by chanMask, selected inpseudo-randomorder.\n\nIn a continuous modulation test, the mote generates continuous pseudo-random modulated signal, centered at the specified channel. The test is stopped by resetting the mote.\n\nIn a continuous wave test, the mote generates an unmodulated tone, centered at the specified channel. The test tone is stopped by resetting the mote.\n\nThetestRadioTxExtcommand may only be issued when the mote is in Idle mode, prior to its joining the network. The mote must be reset (either hardware or software reset) after radio tests are complete and prior to joining.\n\n\n\nChannel numbering is 0-14, corresponding to IEEE 2.4 GHz channels 11-25.',
+            'description': 'ThetestRadioTxExtcommand allows the microprocessor to initiate a radio transmission test. This command may only be issued prior to the mote joining the network. Three types of transmission tests are supported:\n\n-Packet transmission\n-Continuous modulation\n-Continuous wave (unmodulated signal)\n\nIn a packet transmission test, the mote generates arepeatCntnumber of packet sequences. Each sequence consists of up to 10 packets with configurable size and delays. Each packet starts with a PHY preamble (5 bytes), followed by a PHY length field (1 byte), followed by data payload of up to 125 bytes, and finally a 2-byte 802.15.4 CRC at the end. Byte 0 of the payload contains stationId of the sender. Bytes 1 and 2 contain the packet number (in big-endian format) that increments with every packet transmitted. Bytes 3..N contain a counter (from 0..N-3) that increments with every byte inside payload. Transmissions occur on the set of channels defined by chanMask, selected inpseudo-randomorder.\n\nIn a continuous modulation test, the mote generates continuous pseudo-random modulated signal, centered at the specified channel. The test is stopped by resetting the mote.\n\nIn a continuous wave test, the mote generates an unmodulated tone, centered at the specified channel. The test tone is stopped by resetting the mote.\n\nThetestRadioTxExtcommand may only be issued when the mote is in Idle mode, prior to its joining the network. The mote must be reset (either hardware or software reset) after radio tests are complete and prior to joining.\n\n\n\nChannel numbering is 0-15, corresponding to IEEE 2.4 GHz channels 11-26.',
             'request'    : [
                 ['testType',                INT,      1,   'radioTestTypes'],
                 ['chanMask',                HEXDATA,  2,   None],
@@ -1090,6 +895,7 @@ class IpMoteDefinition(ApiDefinition.ApiDefinition):
                 ['delay_9',                 INT,      2,   None],
                 ['pkLen_10',                INT,      1,   None],
                 ['delay_10',                INT,      2,   None],
+                ['stationId',               INT,      1,   None],
             ],
             'response'   : {
                 'FIELDS':  [
@@ -1102,6 +908,22 @@ class IpMoteDefinition(ApiDefinition.ApiDefinition):
                'RC_BUSY'                    : 'Mote is executing another radio test operation',
             },
         },
+        {
+            'id'         : 0x29,
+            'name'       : 'zeroize',
+            'description': 'Zeroize (zeroise) command erases flash area that is used to store configuration parameters, such as join keys. This command is intended to satisfy zeroization requirement ofFIPS-140 standard. After the command executes, the mote should be reset.',
+            'request'    : [
+            ],
+            'response'   : {
+                'FIELDS':  [
+                    [RC,                    INT,      1,   True],
+                ],
+            },
+            'responseCodes': {
+               'RC_OK'                      : 'Command completed successfully',
+               'RC_ERASE_FAIL'              : 'Flash could not be erased due to unexpected internal error',
+            },
+        },
     ]
     
     # We redefine this attribute inherited from ApiDefinition. See
@@ -1110,7 +932,7 @@ class IpMoteDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 0x0D,
             'name'       : 'timeIndication',
-            'description': 'The timeIndication notification applies to mote products that support a time interrupt into the mote.  The time packet includes the network time and the current UTC time relative to the manager.\n\nFor LTC5800-IPM based products, driving the TIMEn pin low (assert) wakes the processor. The pin must asserted for a minimum of tstrobe micro-s.  De-asserting the pin latches the time, and a timeIndication will be generated within tresponse ms. Refer to the mote datasheet for product-specific details. The LTC5800-IPM datasheet also provides information about TIME pin usage.\n\nThe processor will remain awake and drawing current while the TIMEn pin is asserted. To avoid drawing excess current, take care to minimize the duration of the TIMEn pin being asserted past tstrobe minimums.',
+            'description': 'ThetimeIndicationnotification applies to mote products that support a time interrupt into the mote. The time packet includes the network time and the current UTC time relative to the manager.\n\nFor LTC5800-IPMbased products, driving the TIMEn pin low (assert) wakes the processor. The pin must asserted for a minimum of tstrobes. De-asserting the pin latches the time, and a timeIndication will be generated within tresponsems.Refer to theLTC5800-IPM Datasheet for additional information about TIME pin usage.The processor will remain awake and drawing current while the TIMEn pin is asserted. To avoid drawing excess current, take care to minimize the duration of the TIMEn pin being asserted past tstrobe minimum.',
             'response'   : {
                 'FIELDS':  [
                     ['uptime',              INT,      4,   None],
@@ -1124,7 +946,7 @@ class IpMoteDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 0x0F,
             'name'       : 'events',
-            'description': 'Informs the application that some new events occurred since the last event notification. If the mote cannot send a packet (due to full queue or lack of buffers), it will retry once a minute until it succeeds.',
+            'description': 'The mote sends an events notification to inform the application of new events that occurred since the previous events notification. The notification also contains up-to-date information about current mote state and any pending alarms.',
             'response'   : {
                 'FIELDS':  [
                     ['events',              INT,      4,   'moteEvents'],
@@ -1159,7 +981,7 @@ class IpMoteDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 0x25,
             'name'       : 'txDone',
-            'description': 'The txDone notification informs the application that the mote has finished sending a packet. This notification will only be generated if the user has provided a valid (0x0000-0xFFFE) packet id when calling the sendTo command.',
+            'description': 'The txDone notification informs the application that the mote has finished sending a packet. This notification will only be generated if the user has provided a valid (0x0000-0xFFFE) packetID when calling the sendTo command.',
             'response'   : {
                 'FIELDS':  [
                     ['packetId',            INT,      2,   None],
@@ -1170,7 +992,7 @@ class IpMoteDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 0x26,
             'name'       : 'advReceived',
-            'description': 'The \'advReceived\' notification is generated by the mote when it is in promiscuous listen state (see the Mote States table) and it receives an advertisement.',
+            'description': 'The advReceived notification is generated by the mote when it is in Promiscuous Listen state (see the Mote States table) and it receives an advertisement.',
             'response'   : {
                 'FIELDS':  [
                     ['netId',             INT,      2,   None],

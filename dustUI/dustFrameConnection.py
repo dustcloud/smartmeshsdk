@@ -1,35 +1,38 @@
 #!/usr/bin/python
 
+#============================ adjust path =====================================
+
 import sys
 import os
 if __name__ == '__main__':
-    temp_path = sys.path[0]
-    sys.path.insert(0, os.path.join(temp_path, '..', 'SmartMeshSDK'))
+    here = sys.path[0]
+    sys.path.insert(0, os.path.join(here, '..'))
+
+#============================ imports =========================================
 
 import Tkinter
+
 import dustGuiLib
 import dustFrame
-from dustStyle               import dustStyle
+from   dustStyle                       import dustStyle
 
-from ApiDefinition           import IpMgrDefinition
-from ApiDefinition           import IpMoteDefinition
-from ApiDefinition           import HartMgrDefinition
-from ApiDefinition           import HartMoteDefinition
+from SmartMeshSDK.ApiDefinition        import IpMgrDefinition,       \
+                                              IpMoteDefinition,      \
+                                              HartMgrDefinition,     \
+                                              HartMoteDefinition
 
-from IpMgrConnectorMux       import IpMgrConnectorMux
-from IpMgrConnectorSerial    import IpMgrConnectorSerial
-from IpMoteConnector         import IpMoteConnector
-from HartMgrConnector        import HartMgrConnector
-from HartMoteConnector       import HartMoteConnector
+from SmartMeshSDK.IpMgrConnectorMux    import IpMgrConnectorMux
+from SmartMeshSDK.IpMgrConnectorSerial import IpMgrConnectorSerial
+from SmartMeshSDK.IpMoteConnector      import IpMoteConnector
+from SmartMeshSDK.HartMgrConnector     import HartMgrConnector
+from SmartMeshSDK.HartMoteConnector    import HartMoteConnector
 
-from ApiException            import ConnectionError, CommandError
+from SmartMeshSDK.ApiException         import ConnectionError,       \
+                                              CommandError
+
+#============================ body ============================================
 
 class dustFrameConnection(dustFrame.dustFrame):
-    '''
-    \ingroup guiLib
-    
-    \brief A frame which allows the user to connect to a device.
-    '''
     
     def __init__(self,parentElem,guiLock,connectCb,frameName="connection",row=0,column=0):
         

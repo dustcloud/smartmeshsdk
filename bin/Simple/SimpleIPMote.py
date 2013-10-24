@@ -1,16 +1,24 @@
 #!/usr/bin/python
 
-# add the SmartMeshSDK/ folder to the path
+#============================ adjust path =====================================
+
 import sys
 import os
-sys.path.insert(0, os.path.join(sys.path[0], '..','..','SmartMeshSDK'))
+if __name__ == "__main__":
+    here = sys.path[0]
+    sys.path.insert(0, os.path.join(here, '..', '..'))
 
-from ApiDefinition   import ApiDefinition, IpMoteDefinition
-from IpMoteConnector import IpMoteConnector
-from ApiException    import CommandError, ConnectionError
+#============================ imports =========================================
+
+from SmartMeshSDK.ApiDefinition   import ApiDefinition,    \
+                                         IpMoteDefinition
+from SmartMeshSDK.IpMoteConnector import IpMoteConnector
+from SmartMeshSDK.ApiException    import CommandError,     \
+                                         ConnectionError
+
+#============================ main ============================================
 
 print 'Simple Application which interacts with the IP mote - (c) Dust Networks'
-
 
 print '\n\n================== Step 1. API exploration ========================'
 

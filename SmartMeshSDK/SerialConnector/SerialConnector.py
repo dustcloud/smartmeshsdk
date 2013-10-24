@@ -10,9 +10,11 @@ import time
 
 import Hdlc
 
-from  ApiException import ConnectionError, APIError, CommandError
-from  ApiConnector import ApiConnector
-from ApiDefinition import ApiDefinition
+from   SmartMeshSDK.ApiException  import ConnectionError, \
+                                         APIError,        \
+                                         CommandError
+from   SmartMeshSDK.ApiConnector  import ApiConnector
+from   SmartMeshSDK.ApiDefinition import ApiDefinition
 
 import logging
 class NullHandler(logging.Handler):
@@ -28,6 +30,7 @@ RX_TIMEOUT    = 0.500 # in seconds
 class SerialConnector(ApiConnector):
     '''
     \ingroup ApiConnector
+    
     \brief The generic serial connector.
     This class is meant to be inherited by connector using a serial link.
     '''
@@ -69,7 +72,10 @@ class SerialConnector(ApiConnector):
             self.hdlc            = Hdlc.Hdlc(self._hdlcRxCb,
                                              self._hdlcConnectCb)
             # connect HDLC module to serial Port
-            self.hdlc.connect(connectParams['port'])
+            if 'baudrate' in connectParams:
+                self.hdlc.connect(connectParams['port'],baudrate=connectParams['baudrate'])
+            else:
+                self.hdlc.connect(connectParams['port'])
             # connect the parent class
             ApiConnector.connect(self)
     
@@ -177,7 +183,7 @@ class SerialConnector(ApiConnector):
                 retry = retry + 1
                     
             if isinstance(self.responseBuf,Exception):
-                log.error("reponseBuf contains exception {0}".format(self.responseBuf))
+                log.error("responseBuf contains exception {0}".format(self.responseBuf))
                 raise self.responseBuf
             
             if  (
@@ -204,7 +210,7 @@ class SerialConnector(ApiConnector):
                         [temp_name],
                     ),
                 )
-                if temp_desc not in ['RC_END_OF_LIST']:
+                if temp_rc not in [11,18]: # rc==11:RC_NOT_FOUND, rc==18:RC_END_OF_LIST
                     log.warning("received RC={0} for command {1}:\n{2}".format(temp_rc,
                                                                                temp_name,
                                                                                temp_desc))
@@ -232,6 +238,9 @@ class SerialConnector(ApiConnector):
                      False otherwise
         '''
         log.info("hdlc notification: connection state="+str(state))
+        if state==False:
+            # we got disconnected
+            self.disconnect("HDLC disconnected")
     
     def _hdlcRxCb(self,frameRx):
         '''

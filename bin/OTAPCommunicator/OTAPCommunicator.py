@@ -17,51 +17,49 @@ $ python -i bin/OTAPCommunicator/OTAPCommunicator.py --nostart
 
 '''
 
-import os
-import sys
+#============================ adjust path =====================================
 
-# Add expected directories to the library path
-# adjust sys.path to allow imports of the Mux Client package(s) 
-# note: sys.path[0] is the directory containing this script
-if os.path.isdir(os.path.join(sys.path[0], '..', '..', 'SmartMeshSDK')):
-    path_to_bin = sys.path[0]
-    # in development, we want to be able to import our local libraries
-    sys.path.append(os.path.join(sys.path[0], '..', '..'))
-    sys.path.append(os.path.join(sys.path[0], '..', '..', 'SmartMeshSDK'))
+import sys
+import os
+if __name__ == "__main__":
+    here = sys.path[0]
+    sys.path.insert(0, os.path.join(here, '..', '..'))
+
+#============================ imports =========================================
 
 # cryptopy.crypto wants to import parts of the crypto module without the
 # cryptopy prefix
 import cryptopy
 sys.path.append(os.path.dirname(cryptopy.__file__)) 
 
-from OTAP import OTAPStructs
-from OTAP import OTAPCommunicator
-from OTAP import otap_version
+import traceback
+
+from SmartMeshSDK.protocols.otap       import OTAPStructs
+from SmartMeshSDK.protocols.otap       import OTAPCommunicator
+from SmartMeshSDK.protocols.otap       import otap_version
 
 # Manager-specific imports
+from SmartMeshSDK                      import ApiException
+from SmartMeshSDK.IpMgrConnectorMux    import IpMgrConnectorMux
+from SmartMeshSDK.IpMgrConnectorMux    import IpMgrSubscribe
 
-from IpMgrConnectorMux import IpMgrConnectorMux
-from IpMgrConnectorMux import IpMgrSubscribe
-import ApiException
-
-import traceback
+#============================ defines =========================================
 
 def version_string():
     return '.'.join([str(v) for v in otap_version.VERSION])
 
+DEFAULT_HOST       = '127.0.0.1'
+DEFAULT_PORT       = 9900
 
-DEFAULT_HOST = '127.0.0.1'
-DEFAULT_PORT = 9900
+OTAP_EXTENSIONS    = ['.otap', '.otap2']
 
-OTAP_EXTENSIONS = ['.otap', '.otap2']
-
-# Set up logging
+#============================ logging =========================================
 
 import logging
 import logging.handlers
 
 LOG_FILENAME = 'otap_communicator.log'
-LOG_FORMAT = "%(asctime)s [%(name)s:%(levelname)s] %(message)s"
+LOG_FORMAT   = "%(asctime)s [%(name)s:%(levelname)s] %(message)s"
 
 # Set up a specific logger with our desired output level
 log = logging.getLogger('otap_communicator')
@@ -83,10 +81,11 @@ for l in LOGGERS:
     logging.getLogger(l).addHandler(handler)
     logging.getLogger(l).setLevel(logging.INFO)
 
-
-# command line options
+#============================ command line options ============================
 
 from optparse import OptionParser
+
+otap_options = OTAPCommunicator.DEFAULT_OPTIONS
 
 # Parse the command line
 parser = OptionParser("usage: %prog [options] <file(s)>...",
@@ -94,12 +93,17 @@ parser = OptionParser("usage: %prog [options] <file(s)>...",
 parser.add_option("-v", "--verbose", dest="verbose", action="store_true",
                   default=False, 
                   help="Print verbose messages")
+parser.add_option("--host", dest="host", 
+                  default=DEFAULT_HOST,
+                  help="Host of Serial Mux")
 parser.add_option("-p", "--port", dest="port", 
                   default=DEFAULT_PORT,
                   help="TCP port of Serial Mux")
 parser.add_option("-m", "--mote", dest="motes", default=[],
                   action="append",
                   help="List of mote(s) to send files")
+parser.add_option("--delay", dest="delay", default=otap_options.inter_command_delay,
+                  help="Length of delay between sending OTAP commands (seconds)")
 parser.add_option("--nostart", dest="autorun", default=True,
                   action="store_false",
                   help="Don't start running the OTAP process automatically (use interactive mode)")
@@ -111,11 +115,14 @@ if options.verbose:
     for l in LOGGERS:
         logging.getLogger(l).addHandler(h)
 
+# update values in OTAP options
+otap_options._replace(inter_command_delay=int(options.delay))
+
+#============================ body ============================================
 
 # create the client
 mgr = IpMgrConnectorMux.IpMgrConnectorMux()
-mgr.connect({'host': DEFAULT_HOST, 'port': int(options.port)})
-
+mgr.connect({'host': options.host, 'port': int(options.port)})
 
 # Wrap a simple adapter around the manager's sendData method
 
@@ -134,7 +141,6 @@ def send_data(mac, msg, port):
         rc = ex.rc
     # always return RC, callbackId
     return (rc, cbid)
-
 
 # Wrap a simple adapter around the IpMgrSubscribe class
 
@@ -163,13 +169,10 @@ class NotifListener(IpMgrSubscribe.IpMgrSubscribe):
             log.error('Exception in handle_data: %s', str(ex))
             #log.error(traceback.format_exc())
 
-
 notif_listener = NotifListener(mgr)
 
-
 # create the OTAP Communicator
-comm = OTAPCommunicator.OTAPCommunicator(send_data, notif_listener)
-
+comm = OTAPCommunicator.OTAPCommunicator(send_data, notif_listener, options=otap_options)
 
 def get_motes(mgr):
     motes = []
@@ -190,6 +193,8 @@ def match_mote(motes, mote_abbrev):
         return input_mac
     else:
         return False
+
+#============================ main ============================================
 
 def main(opts, files):
     global mgr, comm

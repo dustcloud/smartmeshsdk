@@ -1,15 +1,61 @@
 #!/usr/bin/python
 
+#============================ adjust path =====================================
+
 import sys
 import os
 if __name__ == '__main__':
-    temp_path = sys.path[0]
-    sys.path.insert(0, os.path.join(temp_path, '..', 'SmartMeshSDK'))
+    here = sys.path[0]
+    sys.path.insert(0, os.path.join(here, '..'))
+
+#============================ imports =========================================
 
 import Tkinter
+
 import dustGuiLib
 import dustFrame
-from dustStyle import dustStyle
+from   dustStyle import dustStyle
+
+#============================ body ============================================
+
+class SetOneValFrame(Tkinter.Frame):
+    
+    def __init__(self,container,lambda_factory,content,mac,handle_update_set,defaultVal):
+        
+        Tkinter.Frame.__init__(self,container)
+        
+        # text
+        self.textElem = dustGuiLib.Text(self,width=15,height=1)
+        self.textElem.insert(1.0, defaultVal)
+        self.textElem.grid(row=0,column=0)
+        
+        # set button
+        self.setButton = dustGuiLib.Button(
+            self,
+            command=lambda_factory(
+                    handle_update_set,
+                    (
+                        mac,
+                        self.textElem,
+                        content['cb_set']
+                    )
+                ),
+                text="set",
+            )
+        self.setButton.grid(row=0,column=1)
+    
+    def enable(self):
+        self.textElem.configure(state=Tkinter.NORMAL)
+        self.setButton.configure(state=Tkinter.NORMAL)
+    
+    def update(self,val):
+        self.textElem.delete(1.0, Tkinter.END)
+        self.textElem.insert(1.0, str(val))
+        self.textElem.configure(bg=dustStyle.COLOR_BG)
+    
+    def disable(self):
+        self.textElem.configure(state=Tkinter.DISABLED)
+        self.setButton.configure(state=Tkinter.DISABLED)
 
 class GetSetOneValFrame(Tkinter.Frame):
     
@@ -62,7 +108,7 @@ class GetSetOneValFrame(Tkinter.Frame):
         self.textElem.configure(state=Tkinter.DISABLED)
         self.getButton.configure(state=Tkinter.DISABLED)
         self.setButton.configure(state=Tkinter.DISABLED)
- 
+
 class SetThreeValFrame(Tkinter.Frame):
     
     def __init__(self,container,lambda_factory,content,mac,handle_setThreeVal_set):
@@ -125,14 +171,10 @@ class SetThreeValFrame(Tkinter.Frame):
         self.setButton.configure(state=Tkinter.DISABLED)
 
 class dustFrameMoteList(dustFrame.dustFrame):
-    '''
-    \ingroup guiLib
-    
-    \brief A frame which displays a list of motes.
-    '''
     
     LABEL        = 'LABEL'
     ACTION       = 'ACTION'
+    SETONEVAL    = 'SETONEVAL'
     GETSETONEVAL = 'GETSETONEVAL'
     SETTHREEVAL  = 'SETTHREEVAL'
     
@@ -255,6 +297,18 @@ class dustFrameMoteList(dustFrame.dustFrame):
                 temp.configure(text=content['text'])
                 temp.configure(command=self._lambda_factory(content['callback'],(mac,temp)))
             
+            elif type==self.SETONEVAL:
+                if 'defaultVal' in content:
+                    defaultVal = content['defaultVal']
+                else:
+                    defaultVal = ''
+                temp = SetOneValFrame(self.container,
+                                   self._lambda_factory,
+                                   content,
+                                   mac,
+                                   self._handle_setOneVal_set,
+                                   defaultVal)
+            
             elif type==self.GETSETONEVAL:
                 temp = GetSetOneValFrame(self.container,
                                    self._lambda_factory,
@@ -276,6 +330,19 @@ class dustFrameMoteList(dustFrame.dustFrame):
                            len(self.guiElems[-1]),
                            sticky=Tkinter.W+Tkinter.E)
             self.guiElems[-1].append(temp)
+    
+    def _handle_setOneVal_set(self,mac,textField,cb):
+        
+        # retrieve value from text field
+        with self.guiLock:
+            val = textField.get(1.0,Tkinter.END)
+        
+        # if you get here, value is accepted
+        with self.guiLock:
+            textField.configure(bg=dustStyle.COLOR_NOERROR)
+        
+        # call the callback
+        cb(mac,val)
     
     def _handle_getSetOneVal_set(self,mac,textField,min,max,cb):
         
@@ -405,126 +472,139 @@ class dustFrameMoteList(dustFrame.dustFrame):
 class exampleApp(object):
     
     def __init__(self):
-        columnnames = [ {'name':'state',
-                         'type':dustFrameMoteList.LABEL,
-                        },
-                        {'name':'numDataRx',
-                         'type':dustFrameMoteList.LABEL,
-                        },
-                        {'name':'numIpRx',
-                         'type':dustFrameMoteList.LABEL,
-                        },
-                        {'name':'toggle led',
-                         'type':dustFrameMoteList.ACTION,
-                        },
-                        {'name':'rate',
-                         'type':dustFrameMoteList.GETSETONEVAL,
-                        },
-                        {'name':'pkgen (num/rate/size)',
-                         'type':dustFrameMoteList.SETTHREEVAL,
-                        },
-                        ]
+        columnnames = [
+            {
+                'name'  : 'state',
+                'type'  : dustFrameMoteList.LABEL,
+            },
+            {
+                'name'  : 'numDataRx',
+                'type'  : dustFrameMoteList.LABEL,
+            },
+            {
+                'name'  : 'numIpRx',
+                'type'  : dustFrameMoteList.LABEL,
+            },
+            {
+                'name'  : 'toggle led',
+                'type'  : dustFrameMoteList.ACTION,
+            },
+            {
+                'name'  : 'rate',
+                'type'  : dustFrameMoteList.GETSETONEVAL,
+            },
+            {
+                'name'  : 'pkgen (num/rate/size)',
+                'type'  : dustFrameMoteList.SETTHREEVAL,
+            },
+            {
+                'name'  : 'key',
+                'type'  : dustFrameMoteList.SETONEVAL,
+            },
+        ]
         macMote1    = (0x00,0x17,0x0d,0x00,0x00,0x38,0x11,0x11)
         macMote2    = (0x00,0x17,0x0d,0x00,0x00,0x38,0x22,0x22)
     
-        self.window  = dustWindow("dustFrameMoteList",
-                                  self._closeCb)
-        self.guiLock            = threading.Lock()
-        self.frame = dustFrameMoteList(
-                                self.window,
-                                self.guiLock,
-                                columnnames,
-                                row=0,column=0)
+        self.window  = dustWindow(
+            "dustFrameMoteList",
+            self._closeCb,
+        )
+        self.guiLock    = threading.Lock()
+        self.frame      = dustFrameMoteList(
+            self.window,
+            self.guiLock,
+            columnnames,
+            row=0,column=0,
+        )
         self.frame.show()
         
         self.frame.addMote(
-                                macMote1,
-                                { 
-                                    'state':          'operational',
-                                    'numDataRx':      100,
-                                    'numIpRx':        70,
-                                    'toggle led':
-                                                    {
-                                                        'text':      'ON',
-                                                        'callback':  self._toggleLedCb,
-                                                    },
-                                    'rate':
-                                                    {
-                                                        'min':       1000,
-                                                        'max':       60000,
-                                                        'cb_get':    self._rateCbGet,
-                                                        'cb_set':    self._rateCbSet,
-                                                    },
-                                    'pkgen (num/rate/size)':
-                                                    {
-                                                        'min2':      1000,
-                                                        'max2':      60000,
-                                                        'min3':      0,
-                                                        'max3':      90,
-                                                        'cb_set':    self._pkgenCbSet,
-                                                    },
-                                }
-                          )
+            macMote1,
+            { 
+                'state':          'operational',
+                'numDataRx':      100,
+                'numIpRx':        70,
+                'toggle led': {
+                    'text':       'ON',
+                    'callback':   self._toggleLedCb,
+                },
+                'rate': {
+                    'min':        1000,
+                    'max':        60000,
+                    'cb_get':     self._rateCbGet,
+                    'cb_set':     self._rateCbSet,
+                },
+                'pkgen (num/rate/size)': {
+                    'min2':       1000,
+                    'max2':       60000,
+                    'min3':       0,
+                    'max3':       90,
+                    'cb_set':     self._pkgenCbSet,
+                },
+                'key': {
+                    'cb_set':     self._keyCbSet,
+                }
+            }
+      )
         
         self.frame.addMote(
-                                macMote2,
-                                { 
-                                    'state':          'searching',
-                                    'numDataRx':      0,
-                                    'numIpRx':        0,
-                                    'toggle led':
-                                                    {
-                                                        'text':      'ON',
-                                                        'callback':  self._toggleLedCb,
-                                                    },
-                                    'rate':
-                                                    {
-                                                        'min':       1000,
-                                                        'max':       60000,
-                                                        'cb_get':    self._rateCbGet,
-                                                        'cb_set':    self._rateCbSet,
-                                                    },
-                                    'pkgen (num/rate/size)':
-                                                    {  
-                                                        'min2':      16,
-                                                        'max2':      60000,
-                                                        'min3':      0,
-                                                        'max3':      90,
-                                                        'cb_set':    self._pkgenCbSet,
-                                                    },
-                                }
-                            )
+            macMote2,
+            { 
+                'state':          'searching',
+                'numDataRx':      0,
+                'numIpRx':        0,
+                'toggle led': {
+                    'text':       'ON',
+                    'callback':   self._toggleLedCb,
+                },
+                'rate': {
+                    'min':        1000,
+                    'max':        60000,
+                    'cb_get':     self._rateCbGet,
+                    'cb_set':     self._rateCbSet,
+                },
+                'pkgen (num/rate/size)': {
+                    'min2':       16,
+                    'max2':       60000,
+                    'min3':       0,
+                    'max3':       90,
+                    'cb_set':     self._pkgenCbSet,
+                },
+                'key': {
+                    'cb_set':     self._keyCbSet,
+                }
+            }
+        )
         
         for i in range(3,40):
             self.frame.addMote(
-                            tuple([random.randint(0,255) for i in range(8)]),
-                            { 
-                                'state':          'searching',
-                                'numDataRx':      0,
-                                'numIpRx':        0,
-                                'toggle led':
-                                                {
-                                                    'text':      'ON',
-                                                    'callback':  self._toggleLedCb,
-                                                },
-                                'rate':
-                                                {
-                                                    'min':       1000,
-                                                    'max':       60000,
-                                                    'cb_get':    self._rateCbGet,
-                                                    'cb_set':    self._rateCbSet,
-                                                },
-                                'pkgen (num/rate/size)':
-                                                {  
-                                                    'min2':      16,
-                                                    'max2':      60000,
-                                                    'min3':      0,
-                                                    'max3':      90,
-                                                    'cb_set':    self._pkgenCbSet,
-                                                },
-                            }
-                        )
-        
+                tuple([random.randint(0,255) for i in range(8)]),
+                { 
+                    'state':      'searching',
+                    'numDataRx':  0,
+                    'numIpRx':    0,
+                    'toggle led': {
+                        'text':        'ON',
+                        'callback':    self._toggleLedCb,
+                    },
+                    'rate': {
+                        'min':         1000,
+                        'max':         60000,
+                        'cb_get':      self._rateCbGet,
+                        'cb_set':      self._rateCbSet,
+                    },
+                    'pkgen (num/rate/size)': {
+                        'min2':        16,
+                        'max2':        60000,
+                        'min3':        0,
+                        'max3':        90,
+                        'cb_set':      self._pkgenCbSet,
+                    },
+                    'key': {
+                        'cb_set':     self._keyCbSet,
+                    }
+                }
+            )
         
         self.frame.update(macMote1,'numDataRx',            200)
         self.frame.update(macMote1,'numIpRx',              600)
@@ -563,6 +643,11 @@ class exampleApp(object):
                                     val3
                                 )
     
+    def _keyCbSet(self,mac,value):
+        print " _keyCbSet for mac={0} value={1}".format(
+            '-'.join(['%.2x'%c for c in mac]),
+            value
+        )
     
     def _closeCb(self):
         print " _closeCb called"

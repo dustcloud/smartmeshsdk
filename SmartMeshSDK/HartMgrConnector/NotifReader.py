@@ -5,7 +5,7 @@ import ssl
 import threading
 import traceback
 
-import ApiException
+from SmartMeshSDK import ApiException
 
 # Set up logging
 
