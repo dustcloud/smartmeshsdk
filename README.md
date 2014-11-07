@@ -1,4 +1,4 @@
-smartmeshsdk
+SmartMeshSDK
 ============
 
 Python SmartMesh SDK
