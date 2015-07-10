@@ -147,6 +147,12 @@ class Sensor(object):
         self.sample_count    = TLVByte(2)
         self.data_format     = TLVByte(3)
         self.value           = TLVShort(4)
+        
+        if(self.addr[0]==2):
+            self.sample_count    = TLVShort(2) #As the notifications from digital channels generate 2 bytes for sample count
+            self.value           = TLVByte(4)  #and one byte for value
+                                               #If this change is not made OAPMessage.TLV.parse_value(val_str) fails to parse 
+                                               #the value tag () as it runs out of bounds.
         self.tags            = [ self.enable,
                                  self.rate,
                                  self.sample_count,
