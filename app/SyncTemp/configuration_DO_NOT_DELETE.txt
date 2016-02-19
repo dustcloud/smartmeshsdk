@@ -1,0 +1,29 @@
+# configuration file for the SyncTemp sample application
+
+# Note: all lines starting with '#' are comments
+
+####
+# Connection details to your SmartMesh IP manager
+# Note: the uncommented line is the active one
+# Use one of the following configurations:
+
+# option 1: connect over the SerialMux
+# connection_details = 127.0.0.1:9900
+
+# option 2: connect over a serial port, in Windows
+#    Note: use your Windows Device manager to see which COM port corresponds
+#          to the API port of your SmartMesh IP Manager
+connection_details = COM21
+
+# option 3: connect over a serial port, in Linux
+# connection_details = /dev/ttyUSB3
+
+# option 4: connect over a serial port, in Mac OS
+# connection_details = /dev/tty.usbserial-2644D
+
+####
+# Reporting period
+# This is the period (in seconds) your SmartMesh IP motes will be reporting 
+# temperature measurements
+
+reporting_period = 3600
