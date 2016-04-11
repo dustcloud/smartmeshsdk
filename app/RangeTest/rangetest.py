@@ -14,7 +14,9 @@ if __name__ == "__main__":
 import time
 import threading
 import traceback
+import pdb
 
+from SmartMeshSDK.IpMoteConnector      import IpMoteConnector
 from SmartMeshSDK.IpMgrConnectorSerial import IpMgrConnectorSerial
 from SmartMeshSDK.IpMgrConnectorMux    import IpMgrSubscribe
 from SmartMeshSDK.ApiException         import APIError, \
@@ -30,7 +32,7 @@ from SmartMeshSDK.utils                import FormatUtils as u
 #============================ globals =========================================
 
 connector     = None
-oapTxRx       = None
+range_tester  = None
 
 #============================ helpers =========================================
 
@@ -52,13 +54,13 @@ def printExcAndQuit(err):
 
 #============================ objects =========================================
 
-class OapTxRx(object):
-    
+class RangeTester(object):
+
     ## timeout (in seconds) for a broadcast commmand. The timeout will expire
     # if not all OAP responses have been received. Note that up to MAX_NUM_BCAST
     # will be sent.
-    TOUT_OAP_RESPONSE_BCAST       = 10.0    
-    
+    TOUT_OAP_RESPONSE_BCAST       = 10.0
+
     ## maximum number of broadcasts sent. A new broadcast is sent when BOTH
     # conditions are met: the timeout (of value TOUT_OAP_RESPONSE_BCAST)
     # expired AND we are still expecting more than THRES_BCAST_UNICAST OAP
@@ -87,11 +89,15 @@ class OapTxRx(object):
     ]
     
     def __init__(self,connector):
-        
+
         # store params
-        self.connector            = connector
-        
+        self.connector              = connector
+        self.stationId              = 26
+        self.goOn                   = True
+
         # local variables
+        self.stats                  = [""]*17              # a list of statistic per channel
+
         self.dataLock             = threading.RLock()      # lock access to the object variables
         self.expectedOAPResp      = []                     # MAC addresses of all operational motes
         self.tsStart              = None                   # timestamp when the OAP commands was sent
@@ -102,30 +108,44 @@ class OapTxRx(object):
         self.toutTimer            = None                   # timer to measure timeout
         self.rtts                 = []                     # round-trip-times of all OAP responses
         self.failedNodes          = []                     # nodes that never answered
-        
-        # subscribe to notifications from the SmartMesh IP manager
-        self.subscriber = IpMgrSubscribe.IpMgrSubscribe(self.connector)
-        self.subscriber.start()
-        self.subscriber.subscribe(
-            notifTypes =    [
-                                IpMgrSubscribe.IpMgrSubscribe.NOTIFDATA,
-                            ],
-            fun =           self._notifDataReceived,
-            isRlbl =        True,
-        )
-        '''
-        self.subscriber.subscribe(
-            notifTypes =    [
-                                IpMgrSubscribe.IpMgrSubscribe.ERROR,
-                                IpMgrSubscribe.IpMgrSubscribe.FINISH,
-                            ],
-            fun =           self.disconnectedCallback,
-            isRlbl =        True,
-        )
-        '''
+
     
     #======================== public ==========================================
-    
+
+    def start(self):
+
+        # set the current channel to default
+        cc = 0
+
+        # loop to the infinite and beyond
+        while(self.goOn):
+            # current channel
+            cc = cc % 15 + 1
+
+            # channel mask
+            cm = 0x1<<cc
+
+            # listen for packets
+            resp = self._readPackets(cm)
+            radioRxDone = False
+
+            while not radioRxDone:
+                time.sleep(1)
+
+                # try to get last statistics
+                try:
+                    last_stats = self._getStats()
+                except APIError:
+                    continue
+
+                radioRxDone = True
+
+            # save stats
+            self._saveStats(cc, last_stats)
+
+            # print stats
+            self._printStats(cc)
+
     def setAllLeds(self,ledVal): 
         '''
         \brief Set all the LEDs of all nodes in the mesh on/off
@@ -196,9 +216,48 @@ class OapTxRx(object):
             pass
     
     #======================== private =========================================
-    
+
     #=== actions
-    
+
+    def _readPackets(self, channel, duration=10):
+        """
+        Call the API to start listen for incomming packets
+        """
+
+        channel_hex = self._num_to_list(channel,2)
+        connector.dn_testRadioRx(
+                channelMask     = channel_hex,      # channel
+                time            = duration,         # reading time
+                stationId       = self.stationId    # stationId
+            )
+
+    def _getStats(self):
+        """
+        Get the latest radiotest statistics
+        """
+        return connector.dn_getParameter_testRadioRxStats()
+
+    def _saveStats(self, channel, last_stats):
+        """
+        Populate the statistics list
+        """
+        self.stats[channel] = str(last_stats[1])
+
+    def _printStats(self, channel):
+        """
+        Refresh page and print the statistics
+        """
+        print "Channel\tRxOK"
+        for i in range(1,16):
+            print "%s\t%s\n" % (i, self.stats[i])
+
+    def _num_to_list(self,num,length):
+        output = []
+        for l in range(length):
+            output = [(num>>8*l)&0xff]+output
+        return output
+
+
     def _sendBroadcast(self):
         '''
         \brief Send a single broadcast into the mesh.
@@ -385,97 +444,6 @@ class OapTxRx(object):
         except Exception as err:
             printExcAndQuit(err)
     
-    def _timeout(self):
-        
-        with self.dataLock:
-            
-            print 'timeout! (state={0})'.format(self.state)
-            
-            assert self.state in [
-                self.ST_SENDING_BCASTS,
-                self.ST_SENDING_UNICASTS,
-            ]
-            
-            if  (
-                    (len(self.expectedOAPResp) >= self.THRES_BCAST_UNICAST) and
-                    self.numBcastAttempts<self.MAX_NUM_BCAST and
-                    self.state==self.ST_SENDING_BCASTS
-                ):
-                # I will retry a broadcast
-                
-                self.numBcastAttempts +=1
-                self._sendBroadcast()
-            else:
-                self.state = self.ST_SENDING_UNICASTS
-                
-                # send the next unicast
-                while self.expectedOAPResp:
-                    
-                    # remove node I've sent too often to
-                    if self.lastUnicastDest and self.numUnicastAttempts==self.MAX_NUM_UNICASTS:
-                        # I've sent MAX_NUM_UNICASTS times to this address
-                        
-                        # declare it failed
-                        print "ERROR {0} didn't respond after {1} unicast attempts".format(
-                            u.formatMacString(self.lastUnicastDest),
-                            self.numUnicastAttempts,
-                        )
-                        
-                        # remove from list of expected responses
-                        self.expectedOAPResp.remove(self.lastUnicastDest)
-                        
-                        # add to list of failed nodes
-                        self.failedNodes        += [
-                            (
-                                self.lastUnicastDest,
-                                self.numBcastAttempts,
-                                self.numUnicastAttempts,
-                                0
-                            )
-                        ]
-                        
-                        # reset
-                        self.lastUnicastDest     = None
-                    
-                    # select the MAC address to send to
-                    if self.expectedOAPResp:
-                        
-                        if not self.lastUnicastDest:
-                            self.lastUnicastDest      = self.expectedOAPResp[0]
-                            self.numUnicastAttempts   = 0
-                        
-                        self.numUnicastAttempts += 1
-                        try:
-                            self._sendUnicast(self.lastUnicastDest)
-                        except APIError:
-                            # can happen if not is declared "lost" by manager
-                            print "WARNING: APIError when sending unicast (more lost?)"
-                            
-                            # remove from list of expected responses
-                            self.expectedOAPResp.remove(self.lastUnicastDest)
-                            
-                            # add to list of failed nodes
-                            self.failedNodes        += [
-                                (
-                                    self.lastUnicastDest,
-                                    self.numBcastAttempts,
-                                    self.numUnicastAttempts,
-                                    1
-                                )
-                            ]
-                            
-                            # reset
-                            self.lastUnicastDest     = None
-                        else:
-                            # I successfully sent out the OAP request
-                            break
-                
-                if not self.expectedOAPResp:
-                    # this can happen if all last nodes are lost
-                    
-                    # wrap up
-                    self._wrapUp()
-    
     def _wrapUp(self):
         with self.dataLock:
             
@@ -555,26 +523,27 @@ class OapTxRx(object):
 
 def quit_clicb():
     global connector
-    
+
     try:
         connector.disconnect()
     except:
         # can happen if connector not created
         pass
-    
+
     print "bye bye."
     time.sleep(0.3)
 
 def connect_clicb(params):
     global connector
-    global oapTxRx
-    
+    global range_tester
+
     # filter params
     port = params[0]
-    
+
     # create a coonnector
-    connector = IpMgrConnectorSerial.IpMgrConnectorSerial()
-    
+    connector = IpMoteConnector.IpMoteConnector()
+    #connector = IpMgrConnectorSerial.IpMgrConnectorSerial()
+
     # connect to the manager
     try:
         connector.connect({
@@ -582,22 +551,18 @@ def connect_clicb(params):
         })
     except ConnectionError as err:
         printExcAndQuit(err)
-    
+
     # create main object
-    oapTxRx = OapTxRx(connector)
+    range_tester = RangeTester(connector)
 
-def on_clicb(params):
-    global oapTxRx
-    oapTxRx.setAllLeds(1)
-
-def off_clicb(params):
-    global oapTxRx
-    oapTxRx.setAllLeds(0)
+def start_clicb(params):
+    global range_tester
+    range_tester.start()
 
 #============================ main ============================================
 
 def main():
-    
+
     # create CLI interface
     cli = DustCli.DustCli("BroadcastLeds Application",quit_clicb)
     cli.registerCommand(
@@ -609,22 +574,14 @@ def main():
         dontCheckParamsLength     = False,
     )
     cli.registerCommand(
-        name                      = 'on',
-        alias                     = 'o',
-        description               = 'set all LEDs on, and plot response times',
+        name                      = 'start',
+        alias                     = 's',
+        description               = 'start the range test',
         params                    = [],
-        callback                  = on_clicb,
+        callback                  = start_clicb,
         dontCheckParamsLength     = False,
     )
-    cli.registerCommand(
-        name                      = 'off',
-        alias                     = 'f',
-        description               = 'clear all LEDs, and plot response times',
-        params                    = [],
-        callback                  = off_clicb,
-        dontCheckParamsLength     = False,
-    )
-    
+
     # print SmartMesh SDK version
     print 'SmartMesh SDK {0}'.format('.'.join([str(i) for i in sdk_version.VERSION]))
     cli.start()
