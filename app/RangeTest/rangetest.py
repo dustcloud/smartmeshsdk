@@ -72,7 +72,7 @@ class RangeTester(object):
         # loop to the infinite and beyond
         while(self.goOn):
             # current channel
-            cc = cc % 15 + 1
+            cc = cc % 16
 
             # channel mask
             cm = 0x1<<cc
@@ -98,6 +98,9 @@ class RangeTester(object):
             # print stats
             self._printStats(cc)
 
+            # next channel
+            cc = cc+4
+
     def disconnect(self):
         try:
             self.connector.disconnect()
@@ -109,7 +112,7 @@ class RangeTester(object):
 
     #=== actions
 
-    def _readPackets(self, channel, duration=32):
+    def _readPackets(self, channel, duration=17):
         """
         Call the API to start listening for incomming packets
         """
@@ -138,8 +141,12 @@ class RangeTester(object):
         Refresh page and print the statistics
         """
         print "Channel\tRxOK"
-        for i in range(1,16):
-            print "%s\t%s" % (i, self.stats[i])
+        for i in range(0,4):
+            if i*4 == channel:
+                star = "*"
+            else:
+                star = " "
+            print "%s %s\t%s" % (star, i*4, self.stats[i*4])
 
     def _num_to_list(self,num,length):
         output = []
