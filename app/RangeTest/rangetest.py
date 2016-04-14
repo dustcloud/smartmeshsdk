@@ -112,7 +112,7 @@ class RangeTester(object):
 
     #=== actions
 
-    def _readPackets(self, channel, duration=17):
+    def _readPackets(self, channel, duration=4):
         """
         Call the API to start listening for incomming packets
         """
@@ -191,7 +191,13 @@ def connect_clicb(params):
 
 def start_clicb(params):
     global range_tester
-    range_tester.start()
+    while(1):
+        try :
+            range_tester.start()
+        except ConnectionError:
+            print "Connection error. Retrying."
+            time.sleep(1)
+            continue
 
 #============================ main ============================================
 
