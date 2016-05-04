@@ -25,9 +25,10 @@ from SmartMeshSDK                      import sdk_version
 
 #============================ defines =========================================
 
+DFLT_DURATION = 2 # seconds
+
 #============================ globals =========================================
 
-connector     = None
 range_tester  = None
 
 #============================ helpers =========================================
@@ -50,103 +51,122 @@ def printExcAndQuit(err):
 
 #============================ objects =========================================
 
-class RangeTester(object):
+class RangeTester(threading.Thread):
 
-    def __init__(self,connector):
+    def __init__(self,port):
 
         # store params
-        self.connector              = connector
-        self.stationId              = 26
-        self.goOn                   = True
-        self.stats                  = [""]*16              # a list of statistic per channel
-
-
+        self.port            = port
+        self.stationId       = 26
+        self.goOn            = True
+        self.rxOk            = [None]*4    # rxOk per channel
+        
+        # init the parent
+        threading.Thread.__init__(self)
+        self.name            = "RangeTester"
+        self.start()
 
     #======================== public ==========================================
 
-    def start(self):
+    def run(self):
+        
+        while self.goOn:
+        
+            try:
+                # create a connector
+                self.connector = IpMoteConnector.IpMoteConnector()
 
-        # set the current channel to default
-        cc = 0
+                # connect to the manager
+                print 'connecting to {0}...'.format(self.port),
+                self.connector.connect({
+                    'port': self.port,
+                })
+                print 'done.'
+                
+                # set the current channel to default
+                chanIdx = 0
+                
+                # loop to the infinite and beyond
+                while self.goOn:
+                    
+                    # channel
+                    mask     = 0x1<<chanIdx*4
 
-        # loop to the infinite and beyond
-        while(self.goOn):
-            # current channel
-            cc = cc % 16
+                    # listen for packets
+                    mask_hex = self._num_to_list(mask,2)
+                    self.connector.dn_testRadioRx(
+                        channelMask      = mask_hex,         # channel
+                        time             = DFLT_DURATION,    # listening time
+                        stationId        = self.stationId    # stationId
+                    )
+                    radioRxDone = False
+                    
+                    while self.goOn:
+                        time.sleep(1)
 
-            # channel mask
-            cm = 0x1<<cc
+                        # get last statistics
+                        try:
+                            testRadioRxStats = self.connector.dn_getParameter_testRadioRxStats()
+                        except APIError:
+                            continue
+                        
+                        break
+                    
+                    # save rxOk
+                    self.rxOk[chanIdx] = testRadioRxStats.rxOk
+                    
+                    # print rxOk
+                    output  = []
+                    output += ['']
+                    sum     = 0
+                    num     = 0
+                    for i in range(0,4):
+                        channel = i*4
+                        if i == chanIdx:
+                            star = "*"
+                        else:
+                            star = " "
+                        if self.rxOk[i]==None:
+                            bar = ''
+                        else:
+                            num += 1
+                            sum += self.rxOk[i]
+                            bar = "{0}|".format(
+                                '-'*(self.rxOk[i]/2),
+                            )
+                        output += [
+                            "{0} channel={1}\t{2} {3}".format(
+                                star,
+                                channel,
+                                bar,
+                                self.rxOk[i]
+                            )
+                        ]
+                    output += ["Total: {0} packets\t({1:.2f}%)".format(sum,float(sum)/float(num))]
+                    output  = '\n'.join(output)
+                    print output
+                    
+                    # switch to next channel
+                    chanIdx = (chanIdx+1)%4
 
-            # listen for packets
-            resp = self._readPackets(cm)
-            radioRxDone = False
-
-            while not radioRxDone:
+            except Exception as err:
+                print err
+                try:
+                    self.connector.disconnect()
+                except:
+                    pass
                 time.sleep(1)
 
-                # try to get last statistics
-                try:
-                    last_stats = self._getStats()
-                except APIError:
-                    continue
-
-                radioRxDone = True
-
-            # save stats
-            self._saveStats(cc, last_stats)
-
-            # print stats
-            self._printStats(cc)
-
-            # next channel
-            cc = cc+4
-
-    def disconnect(self):
+    def close(self):
         try:
             self.connector.disconnect()
         except:
             # can happen if connector not connected
             pass
+        
+        self.goOn = False
 
     #======================== private =========================================
-
-    #=== actions
-
-    def _readPackets(self, channel, duration=4):
-        """
-        Call the API to start listening for incomming packets
-        """
-
-        channel_hex = self._num_to_list(channel,2)
-        connector.dn_testRadioRx(
-                channelMask     = channel_hex,      # channel
-                time            = duration,         # reading time
-                stationId       = self.stationId    # stationId
-            )
-
-    def _getStats(self):
-        """
-        Get the latest radiotest statistics
-        """
-        return connector.dn_getParameter_testRadioRxStats()
-
-    def _saveStats(self, channel, last_stats):
-        """
-        Populate the statistics list
-        """
-        self.stats[channel] = str(last_stats[1])
-
-    def _printStats(self, channel):
-        """
-        Refresh page and print the statistics
-        """
-        print "Channel\tRxOK"
-        for i in range(0,4):
-            if i*4 == channel:
-                star = "*"
-            else:
-                star = " "
-            print "%s %s\t%s" % (star, i*4, self.stats[i*4])
 
     def _num_to_list(self,num,length):
         output = []
@@ -157,47 +177,21 @@ class RangeTester(object):
 #============================ CLI handlers ====================================
 
 def quit_clicb():
-    global connector
+    global range_tester
 
-    try:
-        connector.disconnect()
-    except:
-        # can happen if connector not created
-        pass
+    range_tester.close()
 
     print "bye bye."
     time.sleep(0.3)
 
 def connect_clicb(params):
-    global connector
     global range_tester
-
+    
     # filter params
     port = params[0]
-
-    # create a coonnector
-    connector = IpMoteConnector.IpMoteConnector()
-
-    # connect to the manager
-    try:
-        connector.connect({
-            'port': port,
-        })
-    except ConnectionError as err:
-        printExcAndQuit(err)
-
-    # create main object
-    range_tester = RangeTester(connector)
-
-def start_clicb(params):
-    global range_tester
-    while(1):
-        try :
-            range_tester.start()
-        except ConnectionError:
-            print "Connection error. Retrying."
-            time.sleep(1)
-            continue
+    
+    # create main RangeTester thread
+    range_tester = RangeTester(port)
 
 #============================ main ============================================
 
@@ -213,15 +207,7 @@ def main():
         callback                  = connect_clicb,
         dontCheckParamsLength     = False,
     )
-    cli.registerCommand(
-        name                      = 'start',
-        alias                     = 's',
-        description               = 'start the range test',
-        params                    = [],
-        callback                  = start_clicb,
-        dontCheckParamsLength     = False,
-    )
-
+    
     # print SmartMesh SDK version
     print 'SmartMesh SDK {0}'.format('.'.join([str(i) for i in sdk_version.VERSION]))
     cli.start()
