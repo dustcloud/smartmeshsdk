@@ -854,6 +854,14 @@ class HartMgrDefinition(ApiDefinition.ApiDefinition):
         config_doc = xmlutils.dict_to_xml(param_dict, prefix)
         return [config_doc]
 
+    def serialize_setBlacklist(self, commandArray, fields):
+        cmd_metadata = self.getDefinition(self.COMMAND, commandArray)
+        prefix = []
+        if 'serializerParam' in cmd_metadata : 
+            prefix = cmd_metadata['serializerParam']
+        params = fields['frequency'].split()        
+        return [xmlutils.list_to_xml(params, 'frequency', prefix)]
+
     def _build_stat_set(self, period, index = 0):
         STAT_PERIOD_QUERY_TMPL = '<{0}Set><{0}><index>{1}</index></{0}></{0}Set>'
         if period in ['current']:
@@ -952,6 +960,20 @@ class HartMgrDefinition(ApiDefinition.ApiDefinition):
             result = [self._parse_alarm(alarm, fields, alarm_types)
                       for alarm in alarms]            
         return result
+
+    def deserialize_blacklist(self, cmd_metadata, xmlrpc_resp):
+        # the same deserializer is used for getConfig and setConfig operations
+        resp_fields = self.getResponseFields(self.COMMAND, [cmd_metadata['name']])
+        resp_obj = cmd_metadata['response'].keys()[0]
+        # cmd_metadata['isResponseArray'] should be True
+        resp_dict = xmlutils.parse_xml_obj(xmlrpc_resp, resp_obj, resp_fields)[0]
+        # resp_dict['frequency'] contains either a single string or a list of string values
+        if type(resp_dict['frequency']) is list:
+            resp = [{'frequency': int(freq)} for freq in resp_dict['frequency']]
+        else:
+            resp = [{'frequency': int(resp_dict['frequency'])}]
+        # we return a list of objects containing frequency values
+        return resp
 
     # Commands
     commands = [
@@ -1210,7 +1232,7 @@ class HartMgrDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 'getConfig',
             'name'       : 'getBlacklist',
-            'description': 'Get the channel blacklist',
+            'description': 'Get the channel blacklist. The output is a list of the blacklisted frequency values.',
             'request'    : [
             ],
             'response'   : {
@@ -1221,6 +1243,7 @@ class HartMgrDefinition(ApiDefinition.ApiDefinition):
             'serializer' : 'serialize_getConfig',
             'serializerParam': ['config', 'Network', 'ChannelBlackList'],
             'isResponseArray': True,
+            'deserializer': 'deserialize_blacklist',
         },
         # getConfig.getMote
         {
@@ -1794,17 +1817,19 @@ class HartMgrDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 'setConfig',
             'name'       : 'setBlacklist',
-            'description': 'Update the channel blacklist',
+            'description': 'Update the channel blacklist. The input is a list of blacklisted frequency values separated by spaces.',
             'request'    : [
-                ['frequency',               INT,      4,   None],
+                ['frequency',               STRING,   64,   None],
             ],
             'response'   : { 
                 'ChannelBlackList':  [
                     ['frequency',           INT,      4,   None],
                 ],
             },
-            'serializer' : 'serialize_setConfig',
+            'serializer' : 'serialize_setBlacklist',
             'serializerParam' : ['config', 'Network', 'ChannelBlackList'],
+            'isResponseArray': True,
+            'deserializer': 'deserialize_blacklist',
         },
         # setConfig.setNetwork
         {

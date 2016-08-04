@@ -29,6 +29,7 @@ log.addHandler(NullHandler())
 OK = 0
 END_OF_LIST = 11
 DISCONNECTED = 5
+NACK = 14
 
 
 # TODO: refactor -- MacAddress should be a class

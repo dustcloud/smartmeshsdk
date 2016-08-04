@@ -30,15 +30,15 @@ from dustCli      import DustCli
 from SmartMeshSDK import sdk_version
 
 #============================ defines =========================================
-BCAST_CNT       = 2
-LOGFILE         = "OapClient_log.txt"
+
+NUM_BCAST_TO_SEND  = 2
+LOGFILE            = "OapClient_log.txt"
 
 #============================ globals =========================================
 
 #============================ helpers =========================================
 
 def printExcAndQuit(err):
-    
     output  = []
     output += ["="*30]
     output += ["error"]
@@ -80,19 +80,25 @@ def getOperationalMotes():
                 AppData().get('oap_dispatch'),
             )
     
+    return len(operationalmotes)
+    
 def printOperationalMotes():
+    
     output  = []
-    output += ["\nOperational motes:"]
+    output += ["{0} operational motes:".format(len(AppData().get('operationalmotes')))]
     for (i,m) in enumerate(AppData().get('operationalmotes')):
         output += ['{0}: {1}'.format(i,FormatUtils.formatMacString(m))]
     output  = '\n'.join(output)
     
     print output
 
-def selectOperationalMotes(moteNum):
+def selectOperationalMote(moteNum):
     
     if moteNum>len(AppData().get('operationalmotes')):
-        print 'Cannot select mote {0}, out of range'.format(moteNum)
+        print 'Cannot select mote {0}, there are only {1} motes'.format(
+            moteNum,
+            len(AppData().get('operationalmotes')),
+        )
         return
     
     AppData().set('currentmote',moteNum)
@@ -103,6 +109,7 @@ def selectOperationalMotes(moteNum):
     )
 
 def togglePrintNotifs():
+    
     if AppData().get('printNotifs')==False:
         AppData().set('printNotifs',True)
         print "notifications are ON."
@@ -111,6 +118,7 @@ def togglePrintNotifs():
         print "notifications are OFF."
 
 def toggleLogNotifs():
+    
     if AppData().get('logNotifs')==False:
         AppData().set('logNotifs',True)
         print "logging to logfile is ON."
@@ -143,6 +151,9 @@ class AppData(object):
     def get(self,k):
         with self.dataLock:
             return self.data[k]
+    def delete(self,k):
+        with self.dataLock:
+            del self.data[k]
 
 class Manager(object):
     
@@ -165,9 +176,10 @@ class Manager(object):
         
         # list operational motes
         AppData().set('oap_clients',{})
-        getOperationalMotes()
-        printOperationalMotes()
-        selectOperationalMotes(0)
+        numMotes = getOperationalMotes()
+        if numMotes:
+            printOperationalMotes()
+            selectOperationalMote(0)
         AppData().set('printNotifs',False)
         togglePrintNotifs()
 
@@ -188,6 +200,7 @@ class Manager(object):
     #======================== private =========================================
     
     def _cb_NOTIFDATA(self,notifName,notifParams):
+        
         AppData().get('oap_dispatch').dispatch_pkt(notifName, notifParams)
         if AppData().get('logNotifs'):
             if notifParams.data[0] == 0:
@@ -196,30 +209,33 @@ class Manager(object):
     def _handle_oap_notif(self,mac,notif):
 
         receive_time = float(time.time()) - self.mapmgrtime.pctomgr_time_offset
-        output  = " Received-Time = {0} OAP notification from {1}: {2}".format(
-            receive_time,
+        output  = "OAP notification from {0} (receive time {1}):\n{2}".format(
             FormatUtils.formatMacString(mac),
+            receive_time,
             notif
         )
-
+        
         if AppData().get('printNotifs'):
             print output
         if AppData().get('logNotifs'):
             self.log_file.write('{0}\n'.format(output))
 
 class MgrTime(threading.Thread):
-    # This class sends getTime API command to map network time to UTC time. The offset is then
-    # used to calculate the pkt arrival time for the same time base as the mote
+    '''
+    This class periodically sends a getTime() API command to the manager to map
+    network time to UTC time. The offset is used to calculate the pkt arrival
+    time for the same time base as the mote.
+    '''
 
     def __init__(self, pctomgr_time_offset, sleepperiod):
         # init the parent
         threading.Thread.__init__(self)
         self.event                  = threading.Event()
-        self.sleepperiod           = sleepperiod
+        self.sleepperiod            = sleepperiod
         self.daemon                 = True
         self.pctomgr_time_offset    = pctomgr_time_offset
         # give this thread a name
-        self.name                   = 'MgrTimePin'               
+        self.name                   = 'MgrTime'               
 
     def run(self):
         while True:
@@ -229,7 +245,7 @@ class MgrTime(threading.Thread):
             mgr_time = mgr_timepinres.utcSecs + mgr_timepinres.utcUsecs / 1000000.0
             mgr_asn = int(''.join(["%02x"%i for i in mgr_timepinres.asn]),16)
             self.pctomgr_time_offset = pc_time - mgr_time
-                
+            
             self.event.wait(self.sleepperiod)
 
 #============================ CLI handlers ====================================
@@ -238,6 +254,14 @@ def connect_clicb(params):
     
     # filter params
     port = params[0]
+    
+    try:
+        AppData().get('connector')
+    except KeyError:
+        pass
+    else:
+        print 'already connected.'
+        return
     
     # create a connector
     AppData().set('connector',IpMgrConnectorSerial.IpMgrConnectorSerial())
@@ -248,7 +272,12 @@ def connect_clicb(params):
             'port': port,
         })
     except ConnectionError as err:
-        printExcAndQuit(err)
+        print 'Could not connect to {0}: {1}'.format(
+            port,
+            err,
+        )
+        AppData().delete('connector')
+        return
     
     # start threads
     AppData().set('manager',Manager())
@@ -258,13 +287,16 @@ def list_clicb(params):
     printOperationalMotes()
 
 def select_clicb(params):
-    selectOperationalMotes(int(params[0]))
+    selectOperationalMote(int(params[0]))
 
 def notifs_clicb(params):
     togglePrintNotifs()
 
 def writelogfile_clicb(params):
     toggleLogNotifs()
+
+def _resppoipoi(mac, resp, trans):
+    print (mac, resp, trans)
 
 def led_clicb(params):
     
@@ -275,6 +307,13 @@ def led_clicb(params):
     except:
         isBcast   = True
     ledState  = params[1]
+    
+    if moteId>len(AppData().get('operationalmotes')):
+        print 'moteId {0} impossible, there are only {1} motes'.format(
+            moteId,
+            len(AppData().get('operationalmotes')),
+        )
+        return
     
     if ledState=="0":
         ledVal = 0
@@ -287,6 +326,7 @@ def led_clicb(params):
             cmd_type   = OAPMessage.CmdType.PUT,
             addr       = [3,2],
             data_tags  = [OAPMessage.TLVByte(t=0,v=ledVal)],
+            cb         = _respPoipoi,
         )
     else:
         # build OAP message
@@ -300,8 +340,8 @@ def led_clicb(params):
         )
         oap_msg = [ord(b) for b in oap_msg]
         
-        # send OAP message broadcast BCAST_CNT times
-        for i in range (BCAST_CNT):
+        # send OAP message broadcast NUM_BCAST_TO_SEND times
+        for i in range (NUM_BCAST_TO_SEND):
             AppData().get('connector').dn_sendData(
                 macAddress   = [0xff]*8,
                 priority     = 0,
@@ -321,6 +361,13 @@ def temp_clicb(params):
         isBcast   = True 
     tempOn      = int(params[1])
     pktPeriod   = int(params[2])
+    
+    if moteId>len(AppData().get('operationalmotes')):
+        print 'moteId {0} impossible, there are only {1} motes'.format(
+            moteId,
+            len(AppData().get('operationalmotes')),
+        )
+        return
     
     # send OAP command ... single or all broadcast
     if not isBcast:
@@ -347,8 +394,8 @@ def temp_clicb(params):
         )
         oap_msg = [ord(b) for b in oap_msg]
         
-        # send OAP message broadcast BCAST_CNT times
-        for i in range (BCAST_CNT):
+        # send OAP message broadcast NUM_BCAST_TO_SEND times
+        for i in range (NUM_BCAST_TO_SEND):
             AppData().get('connector').dn_sendData(
                 macAddress   = [0xff]*8,
                 priority     = 0,
@@ -370,6 +417,13 @@ def pkgen_clicb(params):
     pktPeriod   = int(params[2])
     pktSize     = int(params[3])
     pktstartPID = 0
+    
+    if moteId>len(AppData().get('operationalmotes')):
+        print 'moteId {0} impossible, there are only {1} motes'.format(
+            moteId,
+            len(AppData().get('operationalmotes')),
+        )
+        return
     
     # send OAP command ... single mote, or all unicast, or all broadcast
     if isBcast == False:
@@ -418,8 +472,8 @@ def pkgen_clicb(params):
         )
         oap_msg = [ord(b) for b in oap_msg]
                 
-        # send OAP message broadcast BCAST_CNT times
-        for i in range (BCAST_CNT):
+        # send OAP message broadcast NUM_BCAST_TO_SEND times
+        for i in range (NUM_BCAST_TO_SEND):
             AppData().get('connector').dn_sendData(
                 macAddress   = [0xff]*8,
                 priority     = 0,
@@ -430,6 +484,30 @@ def pkgen_clicb(params):
             )
     else:
         print (' unknown paramater ... {0}'.format(params[0]))
+
+def analog_clicb(params):
+    
+    # filter params
+    moteId         = int(params[0])
+    channel        = int(params[1])
+    enable         = int(params[2])
+    rate           = int(params[3])
+    
+    if moteId>len(AppData().get('operationalmotes')):
+        print 'moteId {0} impossible, there are only {1} motes'.format(
+            moteId,
+            len(AppData().get('operationalmotes')),
+        )
+        return
+    
+    AppData().get('oap_clients')[AppData().get('operationalmotes')[moteId]].send(
+        cmd_type   = OAPMessage.CmdType.PUT,
+        addr       = [4,channel],
+        data_tags  = [
+            OAPMessage.TLVByte(t=0,v=enable),  # enable
+            OAPMessage.TLVLong(t=1,v=rate),    # rate
+        ],
+    )
 
 def quit_clicb():
     
@@ -509,6 +587,14 @@ def main():
         description               = 'set the pkgen application on the mote',
         params                    = ['moteId/allu/allb','numPkt','pktPeriod','pktSize'],
         callback                  = pkgen_clicb,
+        dontCheckParamsLength     = False,
+    )
+    cli.registerCommand(
+        name                      = 'analog',
+        alias                     = 'a',
+        description               = 'set the analog application on the mote',
+        params                    = ['moteId','channel','enable','rate'],
+        callback                  = analog_clicb,
         dontCheckParamsLength     = False,
     )
         
