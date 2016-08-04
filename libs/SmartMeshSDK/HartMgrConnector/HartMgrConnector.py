@@ -356,7 +356,7 @@ class HartMgrConnector(HartMgrConnectorInternal):
     Tuple_dn_getBlacklist = collections.namedtuple("Tuple_dn_getBlacklist", ['frequency'])
 
     ##
-    # Get the channel blacklist
+    # Get the channel blacklist. The output is a list of the blacklisted frequency values.
     # 
     # 
     # 
@@ -1339,16 +1339,19 @@ class HartMgrConnector(HartMgrConnectorInternal):
     Tuple_dn_setBlacklist = collections.namedtuple("Tuple_dn_setBlacklist", ['frequency'])
 
     ##
-    # Update the channel blacklist
+    # Update the channel blacklist. The input is a list of blacklisted frequency values separated by spaces.
     # 
-    # \param frequency 4-byte field formatted as a int.<br/>
+    # \param frequency 64-byte field formatted as a string.<br/>
     #     There is no restriction on the value of this field.
     # 
-    # \returns The response to the command, formatted as a #Tuple_dn_setBlacklist named tuple.
+    # \returns The response to the command, formatted as a list of #Tuple_dn_setBlacklist named tuple.
     # 
     def dn_setBlacklist(self, frequency) :
         res = HartMgrConnectorInternal.send(self, ['setBlacklist'], {"frequency" : frequency})
-        return HartMgrConnector.Tuple_dn_setBlacklist(**res)
+        tupleList = []
+        for r in res :
+            tupleList.append(HartMgrConnector.Tuple_dn_setBlacklist(**r))
+        return tupleList
 
     ##
     # The named tuple returned by the dn_setNetwork() function.

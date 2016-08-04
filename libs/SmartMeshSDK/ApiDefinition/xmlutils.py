@@ -75,6 +75,13 @@ def dict_to_xml(inpDict, prefix = None) :
     if prefix :
         outList.append(''.join(['</{0}>'.format(p) for p in reversed(prefix)]))
     return ''.join([l for l in outList])
-       
 
-      
+def list_to_xml(inpList, el_tag, prefix = None):
+    outList = []
+    if prefix :
+        outList.append(''.join(['<{0}>'.format(p) for p in prefix]))
+    for el in inpList:
+        outList.append('<{0}>{1}</{0}>'.format(el_tag, el))
+    if prefix :
+        outList.append(''.join(['</{0}>'.format(p) for p in reversed(prefix)]))
+    return ''.join(outList)

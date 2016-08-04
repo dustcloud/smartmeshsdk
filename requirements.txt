@@ -5,3 +5,4 @@ xively-python==0.1.0-rc1
 cherrypy
 bottle
 plotly
+influxdb

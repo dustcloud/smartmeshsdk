@@ -5,6 +5,7 @@ from   array import array
 
 INFO_ADDRESS       = array('B', [0])
 DIGITAL_IN_ADDRESS = array('B', [0])
+ANALOG_ADDRESS     = 4
 TEMP_ADDRESS       = array('B', [5])
 PKGEN_ADDRESS      = array('B', [254])
 
@@ -62,8 +63,18 @@ def parse_oap_notif(data, index = 0):
         
         #===== create and populate result structure
         
-        if channel == TEMP_ADDRESS:
+        if   channel == TEMP_ADDRESS:
             result                          = OAPTempSample()
+            result.packet_timestamp         = (secs, usecs)
+            result.rate                     = rate
+            result.num_samples              = num_samples
+            result.sample_size              = sample_size
+            for i in range(num_samples):
+                temp                        = struct.unpack('!h', data[index:index+2])[0]
+                index                      += 2
+                result.samples.append(temp)
+        elif len(channel)==2 and channel[0]==ANALOG_ADDRESS:
+            result                          = OAPAnalogSample()
             result.packet_timestamp         = (secs, usecs)
             result.rate                     = rate
             result.num_samples              = num_samples
@@ -224,7 +235,26 @@ class OAPTempSample(OAPSample):
         self.samples                        = []
 
     def __str__(self):
-        return 'TEMP=%d' % (self.samples[0])
+        return 'TEMPERATURE {0:.2f} C'.format(
+            float(self.samples[0])/100,
+        )
+
+class OAPAnalogSample(OAPSample):
+    '''
+    \brief representation of an analog sample notification.
+    '''
+    def __init__(self):
+        self.rate                           = 0
+        self.input                          = 0
+        self.num_samples                    = 0
+        self.sample_size                    = 0
+        self.samples                        = []
+    
+    def __str__(self):
+        return 'ANALOG input={0} voltage={1:.3f} V'.format(
+            self.input,
+            float(self.samples[0])/1000,
+        )
 
 class OAPAnalogStats(OAPNotif):
     '''
