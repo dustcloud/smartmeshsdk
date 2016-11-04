@@ -1046,6 +1046,8 @@ class IpMgrConnectorSerial(IpMgrConnectorSerialInternal):
     ##
     # The setAdvertising command tells the manager to activate or deactivate advertising. The response is a callbackId. A commandFinished notification with the callbackId is generated when the command propagation is complete.
     # 
+    # It is dangerous to turn off advertising in the network. When advertising is off, new motes can not join and existing motes can not rejoin the network after a reset. Turning off advertising may be useful in unusual situations, such as to prevent motes from joining the network or to save power. In most cases, it is best to allow advertising to remain under the control of the manager.
+    # 
     # \param activate 1-byte field formatted as a int.<br/>
     #     This field can only take one of the following values:
     #      - 0: on
@@ -1403,8 +1405,14 @@ class IpMgrConnectorSerial(IpMgrConnectorSerialInternal):
     #     There is no restriction on the value of this field.
     # - <tt>avgLatency</tt>: 4-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
+    # - <tt>stateTime</tt>: 4-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    # - <tt>numJoins</tt>: 1-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    # - <tt>hopDepth</tt>: 1-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
     # 
-    Tuple_dn_getMoteInfo = collections.namedtuple("Tuple_dn_getMoteInfo", ['RC', 'macAddress', 'state', 'numNbrs', 'numGoodNbrs', 'requestedBw', 'totalNeededBw', 'assignedBw', 'packetsReceived', 'packetsLost', 'avgLatency'])
+    Tuple_dn_getMoteInfo = collections.namedtuple("Tuple_dn_getMoteInfo", ['RC', 'macAddress', 'state', 'numNbrs', 'numGoodNbrs', 'requestedBw', 'totalNeededBw', 'assignedBw', 'packetsReceived', 'packetsLost', 'avgLatency', 'stateTime', 'numJoins', 'hopDepth'])
 
     ##
     # The getMoteInfo command returns dynamic information for the specified mote.
@@ -2115,6 +2123,40 @@ class IpMgrConnectorSerial(IpMgrConnectorSerialInternal):
     # 
     EVENTMOTEDELETE = "eventMoteDelete"
     notifTupleTable[EVENTMOTEDELETE] = Tuple_eventMoteDelete = collections.namedtuple("Tuple_eventMoteDelete", ['eventId', 'macAddress', 'moteId'])
+
+    ##
+    # \brief EVENTJOINFAILED notification.
+    # 
+    # The joinFailed event is generated when a mote sends a join request to the manager but the request can not be validated. This notification is available in Manager >= 1.4.1.
+    #
+    # Formatted as a Tuple_eventJoinFailed named tuple. It contains the following fields:
+    #   - <tt>eventId</tt> 4-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    #   - <tt>macAddress</tt> 8-byte field formatted as a hex.<br/>
+    #     There is no restriction on the value of this field.
+    #   - <tt>reason</tt> 1-byte field formatted as a int.<br/>
+    #     This field can only take one of the following values:
+    #      - 0: counter
+    #      - 1: notOnACL
+    #      - 2: authentication
+    #      - 3: unexpected    
+    # 
+    EVENTJOINFAILED = "eventJoinFailed"
+    notifTupleTable[EVENTJOINFAILED] = Tuple_eventJoinFailed = collections.namedtuple("Tuple_eventJoinFailed", ['eventId', 'macAddress', 'reason'])
+
+    ##
+    # \brief EVENTINVALIDMIC notification.
+    # 
+    # The invalidMIC event is generated when a packet that the manager receives from a mote in the network fails decryption.  This notification is available in Manager >= 1.4.1.
+    #
+    # Formatted as a Tuple_eventInvalidMIC named tuple. It contains the following fields:
+    #   - <tt>eventId</tt> 4-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    #   - <tt>macAddress</tt> 8-byte field formatted as a hex.<br/>
+    #     There is no restriction on the value of this field.    
+    # 
+    EVENTINVALIDMIC = "eventInvalidMIC"
+    notifTupleTable[EVENTINVALIDMIC] = Tuple_eventInvalidMIC = collections.namedtuple("Tuple_eventInvalidMIC", ['eventId', 'macAddress'])
 
     ##
     # \brief NOTIFLOG notification.

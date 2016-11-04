@@ -15,8 +15,8 @@ log = logging.getLogger('ReliableCmd')
 log.setLevel(logging.INFO)
 log.addHandler(NullHandler())
 
-# TODO: look up end of list RC by name
-END_OF_LIST = 11
+# TODO: look up NACK RC by name
+NACK = 14
 
 RETRY_DELAY = 10      # retry delay if Picard can't accept the command
 COMMAND_TIMEOUT = 30  # timeout for resending the command to the mote
@@ -105,15 +105,13 @@ class ReliableCommander(object):
         log.info('ORC (re)sending cmd to %s, attempt %d' % (print_mac(otapcmd.mac),
                                                             otapcmd.attempts))
         cmd = struct.pack('BB', otapcmd.cmd_id, len(otapcmd.data)) + otapcmd.data
-        rc = -1
+        rc = NACK
         cbid = -1
         try:
-            while rc != 0:
+            while rc == NACK:
                 log.debug('Sending cmd for %s to Picard' % print_mac(otapcmd.mac))
                 (rc, cbid) = self.send_data(otapcmd.mac, cmd, otapcmd.port)
-                if rc == END_OF_LIST:
-                    break
-                if rc != 0:  # TODO: OK
+                if rc == NACK:
                     time.sleep(self.retry_delay)
         except IOError:
             rc = -1

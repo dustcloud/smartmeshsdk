@@ -79,7 +79,8 @@ class NotifListener(threading.Thread):
         # init the parent
         threading.Thread.__init__(self)
         self.name            = "NotifListener"
-        
+        self.daemon = True
+
     #======================== public ==========================================
     
     def run(self):

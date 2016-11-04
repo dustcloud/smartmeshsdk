@@ -37,6 +37,8 @@ class IpMgrSubscribe(object):
     EVENTPACKETSENT      = "eventPacketSent"
     EVENTMOTECREATE      = "eventMoteCreate"
     EVENTMOTEDELETE      = "eventMoteDelete"
+    EVENTJOINFAILED      = "eventJoinFailed"
+    EVENTINVALIDMIC      = "eventInvalidMIC"
 
     _trNotifNameTable = {
     "eventMoteReset" : "notifEvent",
@@ -52,6 +54,8 @@ class IpMgrSubscribe(object):
     "eventPacketSent" : "notifEvent",
     "eventMoteCreate" : "notifEvent",
     "eventMoteDelete" : "notifEvent",
+    "eventJoinFailed" : "notifEvent",
+    "eventInvalidMIC" : "notifEvent",
 
     }
     
@@ -151,6 +155,8 @@ class IpMgrSubscribe(object):
             <tr><td>EVENTPACKETSENT     </td><td>Tuple_eventPacketSent</td>
             <tr><td>EVENTMOTECREATE     </td><td>Tuple_eventMoteCreate</td>
             <tr><td>EVENTMOTEDELETE     </td><td>Tuple_eventMoteDelete</td>
+            <tr><td>EVENTJOINFAILED     </td><td>Tuple_eventJoinFailed</td>
+            <tr><td>EVENTINVALIDMIC     </td><td>Tuple_eventInvalidMIC</td>
         </table>
         
         \exception IpMgrSubscribe.SubscribeError The subscriber hasn't been

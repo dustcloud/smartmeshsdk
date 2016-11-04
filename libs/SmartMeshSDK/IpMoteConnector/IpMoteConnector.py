@@ -161,7 +161,9 @@ class IpMoteConnector(IpMoteConnectorInternal):
     Tuple_dn_setParameter_txPower = collections.namedtuple("Tuple_dn_setParameter_txPower", ['RC'])
 
     ##
-    # The setParameter<txPower> command sets the mote output power. This setting is persistent. The command may be issued at any time and takes effect on next transmission. Refer to product datasheets for supported RF output power values. For example, if the mote has a typical RF output power of +8 dBm when the power amplifier (PA) is enabled, then set the txPower parameter to 8 to enable the PA. Similarly, if the mote has a typical RF output power of 0 dBm when the PA is disabled, then set the txPower parameter to 0 to turn off the PA.
+    # This command sets the radio output power. This setting is persistent. The command may be issued at any time and takes effect on next transmission. Refer to product datasheets for supported RF output power values. If the provided txPower does not match an appropriate value for the hardware, the radio driver will select the nearest appropriate value. The nearest appropriate value varies depending on the hardware and calibration. The getParameter<txPower> command will return the value selected by the radio driver.
+    # 
+    # For example, if the part has a typical RF output power of +8 dBm when the power amplifier (PA) is enabled, then set the txPower parameter to 8 to enable the PA. Similarly, if the part has a typical RF output power of 0 dBm when the PA is disabled, then set the txPower parameter to 0 to turn off the PA. Similarly, calling this function with a value of 10 on a part such as the LTC-5800 that supports a maximum of +8 dBm will result in a setting of +8. 
     # 
     # \param txPower 1-byte field formatted as a ints.<br/>
     #     There is no restriction on the value of this field.
@@ -237,7 +239,7 @@ class IpMoteConnector(IpMoteConnectorInternal):
     ##
     # The setParameter<eventMask> command allows the microprocessor to selectively subscribe to event notifications. The default value of eventMask at mote reset is all 1s - all events are enabled. This setting is not persistent.
     # 
-    # New event type may be added in future revisions of mote software. It is recommended that the client code only subscribe to known events and gracefully ignore all unknown events.
+    # New event types may be added in future revisions of mote software. It is recommended that the client code only subscribe to known events and gracefully ignore all unknown events.
     # 
     # \param eventMask 4-byte field formatted as a hex.<br/>
     #     There is no restriction on the value of this field.
@@ -637,7 +639,7 @@ class IpMoteConnector(IpMoteConnectorInternal):
     Tuple_dn_getParameter_txPower = collections.namedtuple("Tuple_dn_getParameter_txPower", ['RC', 'txPower'])
 
     ##
-    # Get the radio output power in dBm, excluding any antenna gain.
+    # This command gets the radio output power in dBm, excluding any antenna gain. This value corresponds to the actual output power used by the radio driver and may not be the same as the input value entered with the setParameter<txPower>, which will set to nearest if the value entered is not supported by the hardware.
     # 
     # 
     # 
@@ -854,6 +856,7 @@ class IpMoteConnector(IpMoteConnectorInternal):
     #      - 6: disconnected
     #      - 7: radiotest
     #      - 8: promiscuous listen
+    #      - 9: blink
     # - <tt>reserved_0</tt>: 1-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
     # - <tt>reserved_1</tt>: 2-byte field formatted as a int.<br/>
@@ -1377,6 +1380,44 @@ class IpMoteConnector(IpMoteConnectorInternal):
     def dn_getParameter_euCompliantMode(self, ) :
         res = IpMoteConnectorInternal.send(self, ['getParameter', 'euCompliantMode'], {})
         return IpMoteConnector.Tuple_dn_getParameter_euCompliantMode(**res)
+
+    ##
+    # The named tuple returned by the dn_getParameter_entropy() function.
+    # 
+    # - <tt>RC</tt>: 1-byte field formatted as a int.<br/>
+    #     This field can only take one of the following values:
+    #      - 0: RC_OK
+    #      - 1: RC_ERROR
+    #      - 3: RC_BUSY
+    #      - 4: RC_INVALID_LEN
+    #      - 5: RC_INVALID_STATE
+    #      - 6: RC_UNSUPPORTED
+    #      - 7: RC_UNKNOWN_PARAM
+    #      - 8: RC_UNKNOWN_CMD
+    #      - 9: RC_WRITE_FAIL
+    #      - 10: RC_READ_FAIL
+    #      - 11: RC_LOW_VOLTAGE
+    #      - 12: RC_NO_RESOURCES
+    #      - 13: RC_INCOMPLETE_JOIN_INFO
+    #      - 14: RC_NOT_FOUND
+    #      - 15: RC_INVALID_VALUE
+    #      - 16: RC_ACCESS_DENIED
+    #      - 18: RC_ERASE_FAIL
+    # - <tt>entropy</tt>: 16-byte field formatted as a hex.<br/>
+    #     There is no restriction on the value of this field.
+    # 
+    Tuple_dn_getParameter_entropy = collections.namedtuple("Tuple_dn_getParameter_entropy", ['RC', 'entropy'])
+
+    ##
+    # The getParameter<entropy> command may be used to retrieve a 16-byte block of random data. The data is obtained from thermal noise in the LTC5800 receive signal chain with the radio front-end disabled - as such, it can only be called when the mote is in the Idle state. Thus while it is suitable for cryptographic operations, it is recommended to be used as a seed for a DRBG because of this limitation. This parameter is available in devices running mote software >=1.4.
+    # 
+    # 
+    # 
+    # \returns The response to the command, formatted as a #Tuple_dn_getParameter_entropy named tuple.
+    # 
+    def dn_getParameter_entropy(self, ) :
+        res = IpMoteConnectorInternal.send(self, ['getParameter', 'entropy'], {})
+        return IpMoteConnector.Tuple_dn_getParameter_entropy(**res)
 
     ##
     # The named tuple returned by the dn_join() function.
@@ -2110,6 +2151,81 @@ class IpMoteConnector(IpMoteConnectorInternal):
         res = IpMoteConnectorInternal.send(self, ['socketInfo'], {"index" : index})
         return IpMoteConnector.Tuple_dn_socketInfo(**res)
 
+    ##
+    # The named tuple returned by the dn_blink() function.
+    # 
+    # - <tt>RC</tt>: 1-byte field formatted as a int.<br/>
+    #     This field can only take one of the following values:
+    #      - 0: RC_OK
+    #      - 1: RC_ERROR
+    #      - 3: RC_BUSY
+    #      - 4: RC_INVALID_LEN
+    #      - 5: RC_INVALID_STATE
+    #      - 6: RC_UNSUPPORTED
+    #      - 7: RC_UNKNOWN_PARAM
+    #      - 8: RC_UNKNOWN_CMD
+    #      - 9: RC_WRITE_FAIL
+    #      - 10: RC_READ_FAIL
+    #      - 11: RC_LOW_VOLTAGE
+    #      - 12: RC_NO_RESOURCES
+    #      - 13: RC_INCOMPLETE_JOIN_INFO
+    #      - 14: RC_NOT_FOUND
+    #      - 15: RC_INVALID_VALUE
+    #      - 16: RC_ACCESS_DENIED
+    #      - 18: RC_ERASE_FAIL
+    # 
+    Tuple_dn_blink = collections.namedtuple("Tuple_dn_blink", ['RC'])
+
+    ##
+    # Send a blink payload into the network. If the command returns RC_OK, the mote has accepted the packet and has queued it up for transmission. A txDone notification will be issued when the packet has been sent. If fIncludeDscvNbrs is set to 1, the (reduced) discovered neighbors command will be included in the blink packet. (Available in IP Mote >= 1.4.0)
+    # 
+    # \param fIncludeDscvNbrs 1-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    # \param payload None-byte field formatted as a hex.<br/>
+    #     There is no restriction on the value of this field.
+    # 
+    # \returns The response to the command, formatted as a #Tuple_dn_blink named tuple.
+    # 
+    def dn_blink(self, fIncludeDscvNbrs, payload) :
+        res = IpMoteConnectorInternal.send(self, ['blink'], {"fIncludeDscvNbrs" : fIncludeDscvNbrs, "payload" : payload})
+        return IpMoteConnector.Tuple_dn_blink(**res)
+
+    ##
+    # The named tuple returned by the dn_stopSearch() function.
+    # 
+    # - <tt>RC</tt>: 1-byte field formatted as a int.<br/>
+    #     This field can only take one of the following values:
+    #      - 0: RC_OK
+    #      - 1: RC_ERROR
+    #      - 3: RC_BUSY
+    #      - 4: RC_INVALID_LEN
+    #      - 5: RC_INVALID_STATE
+    #      - 6: RC_UNSUPPORTED
+    #      - 7: RC_UNKNOWN_PARAM
+    #      - 8: RC_UNKNOWN_CMD
+    #      - 9: RC_WRITE_FAIL
+    #      - 10: RC_READ_FAIL
+    #      - 11: RC_LOW_VOLTAGE
+    #      - 12: RC_NO_RESOURCES
+    #      - 13: RC_INCOMPLETE_JOIN_INFO
+    #      - 14: RC_NOT_FOUND
+    #      - 15: RC_INVALID_VALUE
+    #      - 16: RC_ACCESS_DENIED
+    #      - 18: RC_ERASE_FAIL
+    # 
+    Tuple_dn_stopSearch = collections.namedtuple("Tuple_dn_stopSearch", ['RC'])
+
+    ##
+    # The stopSearch command stops the search that was started either by join or search command. The mote must be in either Promiscuous Listen or Search state for this command to be valid. The mote goes back to Idle state when this command is received in valid state. Available in mote >= 1.4.
+    # 
+    # 
+    # 
+    # \returns The response to the command, formatted as a #Tuple_dn_stopSearch named tuple.
+    # 
+    def dn_stopSearch(self, ) :
+        res = IpMoteConnectorInternal.send(self, ['stopSearch'], {})
+        return IpMoteConnector.Tuple_dn_stopSearch(**res)
+
     #======================== notifications ===================================
     
     ##
@@ -2166,6 +2282,7 @@ class IpMoteConnector(IpMoteConnectorInternal):
     #      - 6: disconnected
     #      - 7: radiotest
     #      - 8: promiscuous listen
+    #      - 9: blink
     #   - <tt>alarmsList</tt> 4-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.    
     # 

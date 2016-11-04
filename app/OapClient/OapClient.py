@@ -295,8 +295,32 @@ def notifs_clicb(params):
 def writelogfile_clicb(params):
     toggleLogNotifs()
 
-def _resppoipoi(mac, resp, trans):
-    print (mac, resp, trans)
+def oapinfo_response(mac, oap_resp):
+    output  = []
+    output += ["GET /info response from {0}:".format(FormatUtils.formatMacString(mac))]
+    output  = '\n'.join(output)
+    
+    print output
+    print (mac, oap_resp)
+
+def info_clicb(params):
+    
+    # filter params
+    moteId    = int(params[0])
+    
+    if moteId>len(AppData().get('operationalmotes')):
+        print 'moteId {0} impossible, there are only {1} motes'.format(
+            moteId,
+            len(AppData().get('operationalmotes')),
+        )
+        return
+    
+    AppData().get('oap_clients')[AppData().get('operationalmotes')[moteId]].send(
+        cmd_type   = OAPMessage.CmdType.GET,
+        addr       = [0],
+        data_tags  = [],
+        cb         = oapinfo_response,
+    )
 
 def led_clicb(params):
     
@@ -326,7 +350,6 @@ def led_clicb(params):
             cmd_type   = OAPMessage.CmdType.PUT,
             addr       = [3,2],
             data_tags  = [OAPMessage.TLVByte(t=0,v=ledVal)],
-            cb         = _respPoipoi,
         )
     else:
         # build OAP message
@@ -563,6 +586,14 @@ def main():
         description               = 'toggle whether to write OAP notifications to a LOGFILE',
         params                    = [],
         callback                  = writelogfile_clicb,
+        dontCheckParamsLength     = False,
+    )
+    cli.registerCommand(
+        name                      = 'oapinfo',
+        alias                     = 'oi',
+        description               = 'read the info resource',
+        params                    = ['moteId'],
+        callback                  = info_clicb,
         dontCheckParamsLength     = False,
     )
     cli.registerCommand(

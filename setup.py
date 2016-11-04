@@ -8,6 +8,7 @@ import platform
 
 sys.path.append(os.path.join('libs',         'dustUI'))
 sys.path.append(os.path.join('libs',         'SmartMeshSDK'))
+sys.path.append(os.path.join('libs',         'VManagerSDK'))
 sys.path.append(os.path.join('app',          'MuxConfig'))
 sys.path.append(os.path.join('external_libs','cryptopy'))
 
@@ -19,6 +20,8 @@ import sdk_version
 # Platform-specific initialization
 
 NAME = 'SmartMeshSDK'
+
+VMANAGER_REQUIRES = ["urllib3 >= 1.10", "six >= 1.9", "certifi", "python-dateutil"]
 
 if platform.system() in ['Darwin']:
     # use setuptools on OS X
@@ -46,9 +49,11 @@ elif platform.system() in ['Windows']:
         # py2exe parameters
         'console': [
             {'script': os.path.join('app', 'AclCommissioning', 'AclCommissioning.py'),},
+            {'script': os.path.join('app', 'BlinkPacketSend', 'BlinkPacketSend.py'),},
             {'script': os.path.join('app', 'BroadcastLeds', 'BroadcastLeds.py'),},
             {'script': os.path.join('app', 'InstallTest', 'InstallTest.py'),},
-            {'script': os.path.join('app', 'JsonServer', 'JsonServer.py'),},
+            #{'script': os.path.join('app', 'JsonServer', 'JsonServer.py'),},
+            {'script': os.path.join('app', 'MgrBlinkData', 'MgrBlinkData.py'),},
             {'script': os.path.join('app', 'NetworkHealth', 'NetworkHealth.py'),},
             {'script': os.path.join('app', 'OapClient', 'OapClient.py'),},
             {'script': os.path.join('app', 'OTAPCommunicator', 'OTAPCommunicator.py'),},
@@ -67,16 +72,28 @@ elif platform.system() in ['Windows']:
             {'script': os.path.join('app', 'SyncTemp', 'logAnalysis.py'),},
             {'script': os.path.join('app', 'TempLogger', 'TempLogger.py'),},
             {'script': os.path.join('app', 'Timelapse', 'Timelapse1Collect.py'),},
+            # VManager apps
+            {'script': os.path.join('vmanager_apps', 'VMgr_OTAPCommunicator.py'),},
+            {'script': os.path.join('vmanager_apps', 'VMgr_PublishToWeb.py'),},
+            {'script': os.path.join('vmanager_apps', 'VMgr_SendPing.py'),},
+            {'script': os.path.join('vmanager_apps', 'VMgr_TemperatureData.py'),},
+            {'script': os.path.join('vmanager_apps', 'VMgr_BasicExample.py'),},
+            {'script': os.path.join('vmanager_apps', 'VMgr_BlinkData.py'),},
+            {'script': os.path.join('vmanager_apps', 'VMgr_LatencyMote.py'),},
+            {'script': os.path.join('vmanager_apps', 'VMgr_LatencyNotifs.py'),},
+            {'script': os.path.join('vmanager_apps', 'VMgr_LEDOnOff.py'),},
+            {'script': os.path.join('vmanager_apps', 'VMgr_OAPsend.py'),},
+            {'script': os.path.join('vmanager_apps', 'VMgr_PktPerSec.py'),},
+            {'script': os.path.join('vmanager_apps', 'VMgr_UserCreate-Delete.py'),},
+            {'script': os.path.join('vmanager_apps', 'VMgr_AllNotifications.py'),},
         ],
         'windows': [
             {'script': os.path.join('app', 'APIExplorer', 'APIExplorer.py'),},
             {'script': os.path.join('app', 'Chaser', 'Chaser.py'),},
-            {'script': os.path.join('app', 'DC2126A', 'DC2126A.py'),},
             {'script': os.path.join('app', 'HdlcTool', 'HdlcTool.py'),},
             {'script': os.path.join('app', 'HrListener', 'HrListener.py'),},
             {'script': os.path.join('app', 'LBRConnection', 'LBRConnection.py'),},
             {'script': os.path.join('app', 'LEDPing', 'LEDPing.py'),},
-            {'script': os.path.join('app', 'MeshOfMeshes', 'MeshOfMeshes.py'),},
             {'script': os.path.join('app', 'MgrListener', 'MgrListener.py'),},
             {'script': os.path.join('app', 'MuxConfig', 'MuxConfig.py'),},
             {'script': os.path.join('app', 'PkGen', 'PkGen.py'),},
@@ -108,16 +125,16 @@ setup(
     scripts        = [
         'app/AclCommissioning/AclCommissioning.py',
         'app/APIExplorer/APIExplorer.py',
+        'app/BlinkPacketSend/BlinkPacketSend.py',
         'app/BroadcastLeds/BroadcastLeds.py',
         'app/Chaser/Chaser.py',
-        'app/DC2126A/DC2126A.py',
         'app/HdlcTool/HdlcTool.py',
         'app/HrListener/HrListener.py',
         'app/InstallTest/InstallTest.py',
-        'app/JsonServer/JsonServer.py',
+        #'app/JsonServer/JsonServer.py',
         'app/LBRConnection/LBRConnection.py',
         'app/LEDPing/LEDPing.py',
-        'app/MeshOfMeshes/MeshOfMeshes.py',
+        'app/MgrBlinkData/MgrBlinkData.py',
         'app/MgrListener/MgrListener.py',
         'app/MuxConfig/MuxConfig.py',
         'app/NetworkHealth/NetworkHealth.py',
@@ -146,6 +163,20 @@ setup(
         'app/Upstream/Upstream.py',
         'app/Voting/Voting.py',
         'app/Xively/Xively.py',
+        # VManager scripts
+        'vmanager_apps/VMgr_OTAPCommunicator.py',
+        'vmanager_apps/VMgr_PublishToWeb.py',
+        'vmanager_apps/VMgr_SendPing.py',
+        'vmanager_apps/VMgr_TemperatureData.py',
+        'vmanager_apps/VMgr_BasicExample.py',
+        'vmanager_apps/VMgr_BlinkData.py',
+        'vmanager_apps/VMgr_LatencyMote.py',
+        'vmanager_apps/VMgr_LatencyNotifs.py',
+        'vmanager_apps/VMgr_LEDOnOff.py',
+        'vmanager_apps/VMgr_OAPsend.py',
+        'vmanager_apps/VMgr_PktPerSec.py',
+        'vmanager_apps/VMgr_UserCreate-Delete.py',
+        'vmanager_apps/VMgr_AllNotifications.py',
     ],
     # TODO: is there an easier way to include packages recursively? 
     # maybe find_packages? 
@@ -173,13 +204,18 @@ setup(
         'SmartMeshSDK.LbrConnector',
         'SmartMeshSDK.utils',
         'SmartMeshSDK.protocols',
-        'SmartMeshSDK.protocols.DC2126AConverters',
+        'SmartMeshSDK.protocols.blink',
         'SmartMeshSDK.protocols.Hr',
         'SmartMeshSDK.protocols.NetworkHealthAnalyzer',
         'SmartMeshSDK.protocols.oap',
         'SmartMeshSDK.protocols.otap',
         'SmartMeshSDK.protocols.xivelyConnector',
         'SmartMeshSDK.SerialConnector',
+        # packages for VManager
+        'VManagerSDK',
+        'VManagerSDK.vmanager',
+        'VManagerSDK.vmanager.apis',
+        'VManagerSDK.vmanager.models',
         # application-specific packages
         'MuxConfig',
     ],
@@ -189,6 +225,7 @@ setup(
         'dustUI':       'libs/dustUI',
         'dustCli':      'libs/dustCli',
         'SmartMeshSDK': 'libs/SmartMeshSDK',
+        'VManagerSDK':  'libs/VManagerSDK',
         # application-specific packages
         'MuxConfig':    'app/MuxConfig',
     },
@@ -200,15 +237,15 @@ setup(
         
         ('app/AclCommissioning',   ['app/AclCommissioning/README.md']),
         ('app/APIExplorer',        ['app/APIExplorer/README.md']),
+        ('app/BlinkPacketSend',    ['app/BlinkPacketSend/README.md']),
         ('app/BroadcastLeds',      ['app/BroadcastLeds/README.md']),
         ('app/Chaser',             ['app/Chaser/README.md']),
-        ('app/DC2126A',            ['app/DC2126A/README.md']),
         ('app/HdlcTool',           ['app/HdlcTool/README.md']),
         ('app/HrListener',         ['app/HrListener/README.md']),
         ('app/InstallTest',        ['app/InstallTest/README.md']),
         ('app/LBRConnection',      ['app/LBRConnection/README.md']),
         ('app/LEDPing',            ['app/LEDPing/README.md']),
-        ('app/MeshOfMeshes',       ['app/MeshOfMeshes/README.md']),
+        ('app/MgrBlinkData',       ['app/MgrBlinkData/README.md']),
         ('app/MgrListener',        ['app/MgrListener/README.md']),
         ('app/MuxConfig',          ['app/MuxConfig/README.md']),
         ('app/NetworkHealth',      ['app/NetworkHealth/README.md']),
@@ -230,10 +267,10 @@ setup(
         ('app/Xively',             ['app/Xively/README.md']),
         
         ('app/LBRConnection',      ['app/LBRConnection/guest.lbrauth']),
-        ('app/JsonServer',         ['app/JsonServer/index.html']),
-        ('app/JsonServer',         ['app/JsonServer/README.md']),
-        ('app/JsonServer/static',  ['app/JsonServer/static/jquery-1.8.0.min.js']),
-        ('app/JsonServer/static',  ['app/JsonServer/static/jquery-1.8.0.min.license']),
+        #('app/JsonServer',         ['app/JsonServer/index.html']),
+        #('app/JsonServer',         ['app/JsonServer/README.md']),
+        #('app/JsonServer/static',  ['app/JsonServer/static/jquery-1.8.0.min.js']),
+        #('app/JsonServer/static',  ['app/JsonServer/static/jquery-1.8.0.min.license']),
         ('',                       ['app/SyncTemp/configuration_DO_NOT_DELETE.txt']),
         ('libs/dustUI',            ['libs/dustUI/dust.ico']),
         #('external_libs/cryptopy',['external_libs/cryptopy/LICENSE.txt']),
@@ -242,6 +279,8 @@ setup(
     author         = 'Linear Technology',
     author_email   = "dustsupport@linear.com",
     license        = 'see DN_LICENSE.txt',
+
+    # TODO: install_requires
 
     # platform-specific options
     **platform_setup_options

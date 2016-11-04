@@ -188,6 +188,12 @@ class IpMgrDefinition(ApiDefinition.ApiDefinition):
             [9,    '9',                     ''],
             [10,   '10',                    ''],
         ],
+        'joinFailedReason': [
+            [0,    'counter',               'The join packet reused an already used join counter'],
+            [1,    'notOnACL',               'The mote is not listed on the ACL'],
+            [2,    'authentication',        'The join request could not be decrypted. Generally, this means the request was encrypted with a join key that did not match the key in the ACL.'],
+            [3,    'unexpected',            'An unexpected error occurred while processing the join request'],
+        ],
         
         
         #==================== misc ============================================
@@ -724,7 +730,9 @@ class IpMgrDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 50,
             'name'       : 'setAdvertising',
-            'description': 'The setAdvertising command tells the manager to activate or deactivate advertising. The response is a callbackId. A commandFinished notification with the callbackId is generated when the command propagation is complete.',
+            'description': '''The setAdvertising command tells the manager to activate or deactivate advertising. The response is a callbackId. A commandFinished notification with the callbackId is generated when the command propagation is complete.
+
+It is dangerous to turn off advertising in the network. When advertising is off, new motes can not join and existing motes can not rejoin the network after a reset. Turning off advertising may be useful in unusual situations, such as to prevent motes from joining the network or to save power. In most cases, it is best to allow advertising to remain under the control of the manager.''',
             'request'    : [
                 ['activate',                INT,      1,   'advertisementState'],
             ],
@@ -917,6 +925,9 @@ class IpMgrDefinition(ApiDefinition.ApiDefinition):
                     ['packetsReceived',     INT,      4,   None],
                     ['packetsLost',         INT,      4,   None],
                     ['avgLatency',          INT,      4,   None],
+                    ['stateTime',           INT,      4,   None],
+                    ['numJoins',            INT,      1,   None],
+                    ['hopDepth',            INT,      1,   None],
                 ],
             },
             'responseCodes': {
@@ -1292,6 +1303,27 @@ class IpMgrDefinition(ApiDefinition.ApiDefinition):
                 'FIELDS':  [
                     ['macAddress',        HEXDATA,  8,   None],
                     ['moteId',             INT,      2,   None],
+                ],
+            },
+        },
+        {
+            'id'         : 15,
+            'name'       : 'eventJoinFailed',
+            'description': 'The joinFailed event is generated when a mote sends a join request to the manager but the request can not be validated. This notification is available in Manager >= 1.4.1.',
+            'response'   : {
+                'FIELDS':  [
+                    ['macAddress',        HEXDATA,  8,   None],
+                    ['reason',            INT,      1,   'joinFailedReason'],
+                ],
+            },
+        },
+        {
+            'id'         : 16,
+            'name'       : 'eventInvalidMIC',
+            'description': 'The invalidMIC event is generated when a packet that the manager receives from a mote in the network fails decryption.  This notification is available in Manager >= 1.4.1.',
+            'response'   : {
+                'FIELDS':  [
+                    ['macAddress',        HEXDATA,  8,   None],
                 ],
             },
         },

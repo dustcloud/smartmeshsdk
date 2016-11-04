@@ -1,1 +1,0 @@
-Documentation at https://dustcloud.atlassian.net/wiki/display/SMSDK/MeshOfMeshes.

@@ -84,7 +84,8 @@ class IpMoteDefinition(ApiDefinition.ApiDefinition):
             [5,    'operational',           'Configured by Manager and ready to send data'],
             [6,    'disconnected',          'Disconnected from the network'],
             [7,    'radiotest',             'The mote is in radio test mode'],
-            [8,    'promiscuous listen',    'The mote received search command and is in promiscuous listen mode.'],
+            [8,    'promiscuous listen',    'The mote received search command and is in promiscuous listen mode'],
+            [9,    'blink',                 'The mote received a Blink command and will stay for 60s without any MAC-layer acks'],
         ],
         'moteEvents': [
             [0x0001, 'boot',                'The mote booted up'],
@@ -205,7 +206,7 @@ class IpMoteDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 0x04,
             'name'       : 'txPower',
-            'description': 'The setParameter<txPower> command sets the mote output power. This setting is persistent. The command may be issued at any time and takes effect on next transmission. Refer to product datasheets for supported RF output power values. For example, if the mote has a typical RF output power of +8 dBm when the power amplifier (PA) is enabled, then set the txPower parameter to 8 to enable the PA. Similarly, if the mote has a typical RF output power of 0 dBm when the PA is disabled, then set the txPower parameter to 0 to turn off the PA.',
+            'description': 'This command sets the radio output power. This setting is persistent. The command may be issued at any time and takes effect on next transmission. Refer to product datasheets for supported RF output power values. If the provided txPower does not match an appropriate value for the hardware, the radio driver will select the nearest appropriate value. The nearest appropriate value varies depending on the hardware and calibration. The getParameter<txPower> command will return the value selected by the radio driver.\n\nFor example, if the part has a typical RF output power of +8 dBm when the power amplifier (PA) is enabled, then set the txPower parameter to 8 to enable the PA. Similarly, if the part has a typical RF output power of 0 dBm when the PA is disabled, then set the txPower parameter to 0 to turn off the PA. Similarly, calling this function with a value of 10 on a part such as the LTC-5800 that supports a maximum of +8 dBm will result in a setting of +8. ',
             'request'    : [
                 ['txPower',                 INTS,     1,   None],
             ],
@@ -236,7 +237,7 @@ class IpMoteDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 0x0B,
             'name'       : 'eventMask',
-            'description': 'The setParameter<eventMask> command allows the microprocessor to selectively subscribe to event notifications. The default value of eventMask at mote reset is all 1s - all events are enabled. This setting is not persistent.\n\nNew event type may be added in future revisions of mote software. It is recommended that the client code only subscribe to known events and gracefully ignore all unknown events.',
+            'description': 'The setParameter<eventMask> command allows the microprocessor to selectively subscribe to event notifications. The default value of eventMask at mote reset is all 1s - all events are enabled. This setting is not persistent.\n\nNew event types may be added in future revisions of mote software. It is recommended that the client code only subscribe to known events and gracefully ignore all unknown events.',
             'request'    : [
                 ['eventMask',               HEXDATA,  4,   None],
             ],
@@ -407,7 +408,7 @@ class IpMoteDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 0x04,
             'name'       : 'txPower',
-            'description': 'Get the radio output power in dBm, excluding any antenna gain.',
+            'description': 'This command gets the radio output power in dBm, excluding any antenna gain. This value corresponds to the actual output power used by the radio driver and may not be the same as the input value entered with the setParameter<txPower>, which will set to nearest if the value entered is not supported by the hardware.',
             'request'    : [
             ],
             'response'   : {
@@ -708,6 +709,22 @@ class IpMoteDefinition(ApiDefinition.ApiDefinition):
             },
             'responseCodes': {
                'RC_OK'                      : 'Command completed successfully',
+            },
+        },
+        {
+            'id'         : 0x2c,
+            'name'       : 'entropy',
+            'description': 'The getParameter<entropy> command may be used to retrieve a 16-byte block of random data. The data is obtained from thermal noise in the LTC5800 receive signal chain with the radio front-end disabled - as such, it can only be called when the mote is in the Idle state. Thus while it is suitable for cryptographic operations, it is recommended to be used as a seed for a DRBG because of this limitation. This parameter is available in devices running mote software >=1.4.',
+            'request'    : [
+            ],
+            'response'   : {
+                'FIELDS':  [
+                    ['entropy',         HEXDATA,      16,   None],
+                ],
+            },
+            'responseCodes': {
+               'RC_OK'                      : 'Command completed successfully',
+               'RC_INVALID_STATE'           : 'The mote is in invalid state to retrieve entropy',
             },
         },
     ]
@@ -1054,6 +1071,41 @@ class IpMoteDefinition(ApiDefinition.ApiDefinition):
             'responseCodes': {
                'RC_OK'                      : 'Operation completed normally',
                'RC_NOT_FOUND'               : 'A socket could not be found for the index provided',
+            },
+        },
+        {
+            'id'         : 0x2E,
+            'name'       : 'blink',
+            'description': 'Send a blink payload into the network. If the command returns RC_OK, the mote has accepted the packet and has queued it up for transmission. A txDone notification will be issued when the packet has been sent. If fIncludeDscvNbrs is set to 1, the (reduced) discovered neighbors command will be included in the blink packet. (Available in IP Mote >= 1.4.0)',
+            'request'    : [
+                ['fIncludeDscvNbrs',        INT,      1,   None],
+                ['payload',                 HEXDATA,  None,None],
+            ],
+            'response'   : {
+                'FIELDS':  [
+                    [RC,                    INT,      1,   True],
+                ],
+            },
+            'responseCodes': {
+               'RC_OK'                      : 'Packet was queued up for transmission',
+               'RC_INVALID_STATE'           : 'No queue space to accept the packet',
+               'RC_INVALID_LEN'             : 'Bad payload length',
+            },
+        },
+        {
+            'id'         : 0x2f,
+            'name'       : 'stopSearch',
+            'description': 'The stopSearch command stops the search that was started either by join or search command. The mote must be in either Promiscuous Listen or Search state for this command to be valid. The mote goes back to Idle state when this command is received in valid state. Available in mote >= 1.4.',
+            'request'    : [
+            ],
+            'response'   : {
+                'FIELDS':  [
+                    [RC,                    INT,      1,   True],
+                ],
+            },
+            'responseCodes': {
+               'RC_OK'                      : 'Command was accepted',
+               'RC_INVALID_STATE'           : 'The mote is in invalid state to stop search operation',
             },
         },
     ]

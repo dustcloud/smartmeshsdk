@@ -129,7 +129,7 @@ class OTAPCommunicator(object):
         self.failure_motes = []
         # handle retries and failures
         self.orc = ReliableCommander.ReliableCommander(self.send_data,
-                                                       self.cmd_failure_callback,
+                                                       self.handle_failure,
                                                        retry_delay = options.reliable_retry_delay,
                                                        command_timeout = options.reliable_command_timeout,
                                                        max_retries = options.reliable_max_retries)
@@ -193,13 +193,18 @@ class OTAPCommunicator(object):
                     elif cmd_type == OTAP.STATUS_CMD:
                         self.worker.add_task(self.status_callback,
                                              data.mac, cmd_data)
-
-                    elif data.payload[0] == OTAP.COMMIT_CMD:
+                    elif cmd_type == OTAP.COMMIT_CMD:
                         self.worker.add_task(self.commit_callback,
                                              data.mac, cmd_data)
                 
                 index += 2 + cmd_len
 
+    def handle_failure(self, mac, cmd_id):
+        # insert a task to handle failure so we don't interfere with mote lists
+        # while the handshake or status collection task is running
+        self.worker.add_task(self.cmd_failure_callback, mac, cmd_id)
+
+    # OTAP response callbacks
 
     def handshake_callback(self, mac, cmd_data):
         log.info('Got Handshake response from %s' % print_mac(mac))
