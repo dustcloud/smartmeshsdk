@@ -6,7 +6,8 @@ import sys
 import os
 if __name__ == "__main__":
     here = sys.path[0]
-    sys.path.insert(0, os.path.join(here, '..', '..'))
+    sys.path.insert(0, os.path.join(here, '..', '..','libs'))
+    sys.path.insert(0, os.path.join(here, '..', '..','external_libs'))
 
 #============================ verify installation =============================
 

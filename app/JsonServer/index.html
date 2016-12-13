@@ -1,0 +1,52 @@
+<html>
+    <head>
+        <script type="text/javascript" src="/static/jquery-1.8.0.min.js"></script>
+    
+        <script type='text/javascript'><!--
+        var state = 0;
+        function switchLed() {
+            mac      = $('#mactext').val()
+            ledcolor = $('#led').css('background-color')
+            if (state==1) {
+               state = 0;
+               $('#led').css('background-color','#ffffff');
+            } else {
+               state = 1;
+               $('#led').css('background-color','#b0c4de');
+            }
+            
+            jQuery.ajax({
+                type:        'PUT',
+                url:         '/api/v1/oap/'+mac+'/digital_out/INDICATOR_0',
+                data:        JSON.stringify({ "value" : state }),
+                contentType: 'application/json',
+            });
+        };
+        -->
+        </script>
+        <style type="text/css">
+            .mactext {
+                
+            }
+            .led {
+                width:               100px;
+                height:              100px;
+                border:              1px solid black;
+            }
+        </style>
+    </head>
+    <body>
+        <table>
+            <tr>
+                <td>mac address:</td>
+                <td><input class="mactext" id="mactext" type="text" value="00-17-0D-00-00-38-06-45"/></td>
+            </tr>
+            <tr>
+                <td>click to change LED state:</td>
+                <td><div id="led" class="led" onClick="switchLed()"/></td>
+            </tr>
+        </table>
+        
+    </body>
+</html>
+

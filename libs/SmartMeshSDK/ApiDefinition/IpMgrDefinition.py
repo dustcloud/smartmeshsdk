@@ -109,13 +109,14 @@ class IpMgrDefinition(ApiDefinition.ApiDefinition):
             [16,   'RC_VALIDATION_ERROR',   'Parameter validation error'],
             [17,   'RC_INV_STATE',          'Object has inappropriate state'],
             [18,   'RC_NOT_FOUND',          'Object is not found'],
+            [19,   'RC_UNSUPPORTED',        'The operation is not supported'],
         ],
         'frameProfile' : [
             [ 1,   'Profile_01',            'Fast network build, medium speed network operation'],
         ],
         'advertisementState' : [
             [ 0,   'on',                    'Advertisement is on'],
-            [ 1,   'off',                   'Advertisement is off'],
+            [ 1,   'off',                   'Advertisement is off or slow*'],
         ],
         'downstreamFrameMode' : [
             [ 0,   'normal',                'Normal downstream bandwidth'],
@@ -492,7 +493,7 @@ class IpMgrDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 39,
             'name'       : 'setACLEntry',
-            'description': 'The setACLEntry command adds a new entry or updates an existing entry in the Access Control List (ACL).This change is persistent.',
+            'description': 'The setACLEntry command adds a new entry or updates an existing entry in the Access Control List (ACL).This change is persistent. The maximum number of entries is 1,200.',
             'request'    : [
                 ['macAddress',              HEXDATA,  8,   None],
                 ['joinKey',                 HEXDATA,  16,  None],

@@ -35,6 +35,9 @@ class HrParser(object):
         ('badLinkFrameId',   'B'),
         ('badLinkSlot',      'I'),
         ('badLinkOffset',    'B'),
+        ('numNetMicErr',     'B'),
+        ('numMacMicErr',     'B'),
+        ('numMacCrcErr',     'B'),
     ]
     
     HR_DESC_NEIGHBORS = [
@@ -100,16 +103,20 @@ class HrParser(object):
                 raise ValueError("Less than 2 bytes in HR")
             id         = hr[0]
             length     = hr[1]
-            payload    = hr[2:]
+            payload    = hr[2:2+length]
             
+            # parse current HR
             if   id==self.HR_ID_DEVICE:
-                (hr,returnVal['Device'])        = self._parseDevice(payload)
+                returnVal['Device']         = self._parseDevice(payload)
             elif id==self.HR_ID_NEIGHBORS:
-                (hr,returnVal['Neighbors'])     = self._parseNeighbors(payload)
+                returnVal['Neighbors']      = self._parseNeighbors(payload)
             elif id==self.HR_ID_DISCOVERED:
-                (hr,returnVal['Discovered'])    = self._parseDiscovered(payload)
+                returnVal['Discovered']     = self._parseDiscovered(payload)
             else:
                 raise ValueError("unknown HR id {0}".format(id))
+            
+            # remove current HR
+            hr = hr[2+length:]
         
         return returnVal
     
@@ -151,11 +158,12 @@ class HrParser(object):
         return output
     
     def _parseDevice(self,payload):
-        (payload,fields) = self._parseAs(
+        (remainder,fields) = self._parseAs(
             desc    = self.HR_DESC_DEVICE,
             payload = payload,
         )
-        return (payload,fields)
+        assert not remainder
+        return fields
     
     def _parseNeighbors(self,payload):
         
@@ -174,7 +182,7 @@ class HrParser(object):
             )
             fields['neighbors'] += [newItem]
         
-        return (payload,fields)
+        return fields
     
     def _parseDiscovered(self,payload):
         
@@ -193,7 +201,7 @@ class HrParser(object):
             )
             fields['discoveredNeighbors'] += [newItem]
         
-        return (payload,fields)
+        return fields
     
     #======================== helpers =========================================
     
@@ -202,8 +210,16 @@ class HrParser(object):
         returnVal            = {}
         
         # assemble the format string
-        fmt                  = ''.join(['>']+[f[1] for f in desc])
-        numBytes             = struct.calcsize(fmt)
+        fmt                  = '>'
+        numFields            = 0
+        while True:
+            fmt             += desc[numFields][1]
+            numBytes         = struct.calcsize(fmt)
+            if numBytes==len(payload):
+                break
+            numFields       += 1
+            if len(desc)==numFields:
+                break
         
         # verify enough bytes
         if len(payload)<numBytes:

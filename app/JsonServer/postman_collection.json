@@ -1,0 +1,769 @@
+{
+	"variables": [],
+	"info": {
+		"name": "JsonServer",
+		"_postman_id": "6c16ae1e-4edb-27c3-3908-196c9f522804",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "00 root/",
+			"description": "",
+			"item": [
+				{
+					"name": "root",
+					"request": {
+						"url": "http://{{host}}:{{port}}/",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"mac\": \"00-17-0D-00-00-38-04-35\",\r\n    \"state\": 0\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "01 static/",
+			"description": "",
+			"item": [
+				{
+					"name": "static",
+					"request": {
+						"url": "http://{{host}}:{{port}}/static/jquery-1.8.0.min.license",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"mac\": \"00-17-0D-00-00-38-04-35\",\r\n    \"state\": 0\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "02 status/",
+			"description": "",
+			"item": [
+				{
+					"name": "status",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/status",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"mac\": \"00-17-0D-00-00-38-04-35\",\r\n    \"state\": 0\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "03 raw/",
+			"description": "",
+			"item": [
+				{
+					"name": "raw getNetworkConfig",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/raw",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"manager\": \"{{serialport}}\",\r\n    \"command\": \"getNetworkConfig\"\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "raw getMoteConfig (string)",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/raw",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"manager\": \"{{serialport}}\",\r\n    \"command\": \"getMoteConfig\",\r\n    \"fields\": {\r\n    \t\"macAddress\": \"{{mote}}\",\r\n    \t\"next\": false\r\n    }\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "raw getMoteConfig (list)",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/raw",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"manager\": \"{{serialport}}\",\r\n    \"command\": \"getMoteConfig\",\r\n    \"fields\": {\r\n    \t\"macAddress\": [0,0,0,0,0,0,0,0],\r\n    \t\"next\": true\r\n    }\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "04 oap/",
+			"description": "",
+			"item": [
+				{
+					"name": "oap info",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/oap/{{mote}}/info",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"mac\":      \"00-17-0d-00-00-38-04-35\",\r\n    \"resource\": \"led\",\r\n    \"state\"\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "oap main",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/oap/{{mote}}/main",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"mac\":      \"00-17-0d-00-00-38-04-35\",\r\n    \"resource\": \"led\",\r\n    \"state\"\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "oap main",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/oap/{{mote}}/main",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"destAddr\": \"ff020000000000000000000000000002\",\r\n    \"destPort\": 61625\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "oap digital_in D0",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/oap/{{mote}}/digital_in/D0",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"mac\":      \"00-17-0d-00-00-38-04-35\",\r\n    \"resource\": \"led\",\r\n    \"state\"\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "oap digital_in D0",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/oap/{{mote}}/digital_in/D0",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"enable\":      0,\r\n    \"rate\":        10000,\r\n    \"sampleCount\": 1,\r\n    \"dataFormat\":  0\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "oap digital_in D1",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/oap/{{mote}}/digital_in/D1",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"mac\":      \"00-17-0d-00-00-38-04-35\",\r\n    \"resource\": \"led\",\r\n    \"state\"\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "oap digital_in D1",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/oap/{{mote}}/digital_in/D1",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"enable\":      0,\r\n    \"rate\":        10000,\r\n    \"sampleCount\": 1,\r\n    \"dataFormat\":  0\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "oap digital_in D2",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/oap/{{mote}}/digital_in/D2",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"mac\":      \"00-17-0d-00-00-38-04-35\",\r\n    \"resource\": \"led\",\r\n    \"state\"\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "oap digital_in D2",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/oap/{{mote}}/digital_in/D2",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"enable\":      0,\r\n    \"rate\":        10000,\r\n    \"sampleCount\": 1,\r\n    \"dataFormat\":  0\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "oap digital_in D3",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/oap/{{mote}}/digital_in/D3",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"mac\":      \"00-17-0d-00-00-38-04-35\",\r\n    \"resource\": \"led\",\r\n    \"state\"\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "oap digital_in D3",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/oap/{{mote}}/digital_in/D3",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"enable\":      0,\r\n    \"rate\":        10000,\r\n    \"sampleCount\": 1,\r\n    \"dataFormat\":  0\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "oap digital_out D4",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/oap/{{mote}}/digital_out/D4",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"value\":    0\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "oap digital_out D5",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/oap/{{mote}}/digital_out/D5",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"value\":    0\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "oap digital_out INDICATOR_0",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/oap/{{mote}}/digital_out/INDICATOR_0",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"value\":    1\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "oap analog A0",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/oap/{{mote}}/analog/A0",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"mac\":      \"00-17-0d-00-00-38-04-35\",\r\n    \"resource\": \"led\",\r\n    \"state\"\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "oap analog A0",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/oap/{{mote}}/analog/A0",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"enable\":      0,\r\n    \"rate\":        10000,\r\n    \"sampleCount\": 1,\r\n    \"dataFormat\":  0\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "oap analog A1",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/oap/{{mote}}/analog/A1",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"mac\":      \"00-17-0d-00-00-38-04-35\",\r\n    \"resource\": \"led\",\r\n    \"state\"\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "oap analog A1",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/oap/{{mote}}/analog/A1",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"enable\":      0,\r\n    \"rate\":        10000,\r\n    \"sampleCount\": 1,\r\n    \"dataFormat\":  0\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "oap analog A2",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/oap/{{mote}}/analog/A2",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"mac\":      \"00-17-0d-00-00-38-04-35\",\r\n    \"resource\": \"led\",\r\n    \"state\"\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "oap analog A2",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/oap/{{mote}}/analog/A2",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"enable\":      0,\r\n    \"rate\":        10000,\r\n    \"sampleCount\": 1,\r\n    \"dataFormat\":  0\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "oap analog A3",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/oap/{{mote}}/analog/A3",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"mac\":      \"00-17-0d-00-00-38-04-35\",\r\n    \"resource\": \"led\",\r\n    \"state\"\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "oap analog A3",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/oap/{{mote}}/analog/A3",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"enable\":      0,\r\n    \"rate\":        10000,\r\n    \"sampleCount\": 1,\r\n    \"dataFormat\":  0\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "oap temperature",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/oap/{{mote}}/temperature",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"mac\":      \"00-17-0d-00-00-38-04-35\",\r\n    \"resource\": \"led\",\r\n    \"state\"\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "oap temperature",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/oap/{{mote}}/temperature",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"enable\":      1,\r\n    \"rate\":        30000,\r\n    \"sampleCount\": 1,\r\n    \"dataFormat\":  0\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "oap pkgen/echo",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/oap/{{mote}}/pkgen/echo",
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"mac\":      \"00-17-0d-00-00-38-04-35\",\r\n    \"resource\": \"led\",\r\n    \"state\"\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "oap pkgen",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/oap/{{mote}}/pkgen",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"echo\":       12,\r\n    \"numPackets\": 2,\r\n    \"rate\":       5000,\r\n    \"packetSize\": 10,\r\n    \"startPID\":   0\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "05 helpers/",
+			"description": "",
+			"item": [
+				{
+					"name": "helpers serialports",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/helpers/serialports",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"mac\": \"00-17-0D-00-00-38-04-35\",\r\n    \"state\": 0\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "helpers motes",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/helpers/motes",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"mac\": \"00-17-0D-00-00-38-04-35\",\r\n    \"state\": 0\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "helpers oapmotes",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/helpers/oapmotes",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"mac\": \"00-17-0D-00-00-38-04-35\",\r\n    \"state\": 0\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "06 config/",
+			"description": "",
+			"item": [
+				{
+					"name": "config",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/config",
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"mac\": \"00-17-0D-00-00-38-04-35\",\r\n    \"state\": 0\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "config",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/config",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"notification_urls\": {\r\n    \"hr\": \"http://127.0.0.1:1880/hr2\"\r\n  },\r\n  \"someconfig\": 1,\r\n  \"otherconfig\": 2\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "config managers put",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/config/managers",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"managers\": [\"{{serialport}}\"]\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "config managers delete",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/config/managers",
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"managers\": [\"{{serialport}}\"]\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "07 error codes",
+			"description": "",
+			"item": [
+				{
+					"name": "404",
+					"request": {
+						"url": "http://{{host}}:{{port}}/wrongwrongwrong",
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"destAddr\": \"ff02::3\",\r\n    \"destPort\": 0x1234\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

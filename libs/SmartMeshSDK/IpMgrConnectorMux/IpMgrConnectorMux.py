@@ -34,6 +34,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # - <tt>version</tt>: 1-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
     # 
@@ -117,6 +118,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # - <tt>macAddress</tt>: 8-byte field formatted as a hex.<br/>
     #     There is no restriction on the value of this field.
     # 
@@ -154,6 +156,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # 
     Tuple_dn_subscribe = collections.namedtuple("Tuple_dn_subscribe", ['RC'])
 
@@ -194,6 +197,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # - <tt>uptime</tt>: 4-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
     # - <tt>utcSecs</tt>: 8-byte field formatted as a int.<br/>
@@ -234,6 +238,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # 
     Tuple_dn_setNetworkConfig = collections.namedtuple("Tuple_dn_setNetworkConfig", ['RC'])
 
@@ -308,6 +313,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # 
     Tuple_dn_clearStatistics = collections.namedtuple("Tuple_dn_clearStatistics", ['RC'])
 
@@ -338,6 +344,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # - <tt>callbackId</tt>: 4-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
     # 
@@ -373,6 +380,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # - <tt>callbackId</tt>: 4-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
     # 
@@ -406,6 +414,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # 
     Tuple_dn_radiotestTx = collections.namedtuple("Tuple_dn_radiotestTx", ['RC'])
 
@@ -518,6 +527,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # 
     Tuple_dn_radiotestRx = collections.namedtuple("Tuple_dn_radiotestRx", ['RC'])
 
@@ -559,6 +569,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # - <tt>rxOk</tt>: 2-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
     # - <tt>rxFail</tt>: 2-byte field formatted as a int.<br/>
@@ -593,11 +604,12 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # 
     Tuple_dn_setACLEntry = collections.namedtuple("Tuple_dn_setACLEntry", ['RC'])
 
     ##
-    # The setACLEntry command adds a new entry or updates an existing entry in the Access Control List (ACL).This change is persistent.
+    # The setACLEntry command adds a new entry or updates an existing entry in the Access Control List (ACL).This change is persistent. The maximum number of entries is 1,200.
     # 
     # \param macAddress 8-byte field formatted as a hex.<br/>
     #     There is no restriction on the value of this field.
@@ -626,6 +638,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # - <tt>macAddress</tt>: 8-byte field formatted as a hex.<br/>
     #     There is no restriction on the value of this field.
     # - <tt>joinKey</tt>: 16-byte field formatted as a hex.<br/>
@@ -661,6 +674,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # 
     Tuple_dn_deleteACLEntry = collections.namedtuple("Tuple_dn_deleteACLEntry", ['RC'])
 
@@ -692,6 +706,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # - <tt>callbackId</tt>: 4-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
     # 
@@ -725,6 +740,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # 
     Tuple_dn_getLog = collections.namedtuple("Tuple_dn_getLog", ['RC'])
 
@@ -756,6 +772,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # - <tt>callbackId</tt>: 4-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
     # 
@@ -804,6 +821,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # 
     Tuple_dn_startNetwork = collections.namedtuple("Tuple_dn_startNetwork", ['RC'])
 
@@ -836,6 +854,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # - <tt>macAddress</tt>: 8-byte field formatted as a hex.<br/>
     #     There is no restriction on the value of this field.
     # - <tt>hwModel</tt>: 1-byte field formatted as a int.<br/>
@@ -880,6 +899,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # - <tt>macAddress</tt>: 8-byte field formatted as a hex.<br/>
     #     There is no restriction on the value of this field.
     # - <tt>moteId</tt>: 2-byte field formatted as a int.<br/>
@@ -930,6 +950,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # - <tt>source</tt>: 8-byte field formatted as a hex.<br/>
     #     There is no restriction on the value of this field.
     # - <tt>dest</tt>: 8-byte field formatted as a hex.<br/>
@@ -981,6 +1002,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # - <tt>pathId</tt>: 2-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
     # - <tt>source</tt>: 8-byte field formatted as a hex.<br/>
@@ -1038,6 +1060,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # - <tt>callbackId</tt>: 4-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
     # 
@@ -1075,6 +1098,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # - <tt>callbackId</tt>: 4-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
     # 
@@ -1110,6 +1134,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # - <tt>serTxCnt</tt>: 2-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
     # - <tt>serRxCnt</tt>: 2-byte field formatted as a int.<br/>
@@ -1162,6 +1187,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # 
     Tuple_dn_setTime = collections.namedtuple("Tuple_dn_setTime", ['RC'])
 
@@ -1199,6 +1225,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # - <tt>license</tt>: 13-byte field formatted as a hex.<br/>
     #     There is no restriction on the value of this field.
     # 
@@ -1233,6 +1260,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # 
     Tuple_dn_setLicense = collections.namedtuple("Tuple_dn_setLicense", ['RC'])
 
@@ -1266,6 +1294,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # 
     Tuple_dn_setCLIUser = collections.namedtuple("Tuple_dn_setCLIUser", ['RC'])
 
@@ -1304,6 +1333,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # - <tt>callbackId</tt>: 4-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
     # 
@@ -1350,6 +1380,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # 
     Tuple_dn_restoreFactoryDefaults = collections.namedtuple("Tuple_dn_restoreFactoryDefaults", ['RC'])
 
@@ -1382,6 +1413,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # - <tt>macAddress</tt>: 8-byte field formatted as a hex.<br/>
     #     There is no restriction on the value of this field.
     # - <tt>state</tt>: 1-byte field formatted as a int.<br/>
@@ -1442,6 +1474,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # - <tt>networkId</tt>: 2-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
     # - <tt>apTxPower</tt>: 1-byte field formatted as a ints.<br/>
@@ -1512,6 +1545,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # - <tt>numMotes</tt>: 2-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
     # - <tt>asnSize</tt>: 2-byte field formatted as a int.<br/>
@@ -1576,6 +1610,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # - <tt>macAddress</tt>: 8-byte field formatted as a hex.<br/>
     #     There is no restriction on the value of this field.
     # - <tt>moteId</tt>: 2-byte field formatted as a int.<br/>
@@ -1622,6 +1657,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # 
     Tuple_dn_setCommonJoinKey = collections.namedtuple("Tuple_dn_setCommonJoinKey", ['RC'])
 
@@ -1653,6 +1689,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # - <tt>ipv6Address</tt>: 16-byte field formatted as a hex.<br/>
     #     There is no restriction on the value of this field.
     # - <tt>mask</tt>: 16-byte field formatted as a hex.<br/>
@@ -1687,6 +1724,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # 
     Tuple_dn_setIPConfig = collections.namedtuple("Tuple_dn_setIPConfig", ['RC'])
 
@@ -1720,6 +1758,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # 
     Tuple_dn_deleteMote = collections.namedtuple("Tuple_dn_deleteMote", ['RC'])
 
@@ -1751,6 +1790,7 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     #      - 16: RC_VALIDATION_ERROR
     #      - 17: RC_INV_STATE
     #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
     # - <tt>idx</tt>: 2-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
     # - <tt>utilization</tt>: 1-byte field formatted as a int.<br/>

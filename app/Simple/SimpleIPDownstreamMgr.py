@@ -65,6 +65,7 @@ try:
     
     #=====
     print "- start sending data"
+    print "Note: this is an infinite loop, close the window to end the script"
     
     while True:
         for mac in operationalMacs:
@@ -88,13 +89,6 @@ try:
             
             # wait a bit before sending again
             time.sleep(PUBLISH_RATE_SEC)
-    
-    #=====
-    raw_input("Press any key to stop.")
-    
-    mgrconnector.disconnect()
-    
-    print 'Script ended normally.'
 
 except:
     traceback.print_exc()

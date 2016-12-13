@@ -74,18 +74,16 @@ class NotifThread(threading.Thread):
 
     def parse_notif(self, notif_input):
         self.input_buffer += notif_input
-        token_index = self.input_buffer.find('\r\n')
-        while token_index > 0:
-            # extract the next notification from the input
-            notif_string = self.input_buffer[:token_index]
-            self.input_buffer = self.input_buffer[token_index+2:]
-            token_index = self.input_buffer.find('\r\n')
+        notifs = self.input_buffer.split('\r\n')
+        # the last element of notifs is empty if the input ended with \r\n
+        # or it contains the start of the next notif
+        self.input_buffer = notifs.pop()
+        for notif_str in notifs:
             try:
-                # parse the JSON notification
-                notif_json = json.loads(notif_string)
+                notif_json = json.loads(notif_str)
                 self.callback(notif_json)
             except ValueError:
-                log.warning('warning: can not parse notif: "{0}"'.format(notif_string))
+                log.warning('warning: can not parse notif: "{0}"'.format(notif_str))
         
     def run(self):
         self.done = False

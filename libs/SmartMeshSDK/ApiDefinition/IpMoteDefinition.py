@@ -714,7 +714,7 @@ class IpMoteDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 0x2c,
             'name'       : 'entropy',
-            'description': 'The getParameter<entropy> command may be used to retrieve a 16-byte block of random data. The data is obtained from thermal noise in the LTC5800 receive signal chain with the radio front-end disabled - as such, it can only be called when the mote is in the Idle state. Thus while it is suitable for cryptographic operations, it is recommended to be used as a seed for a DRBG because of this limitation. This parameter is available in devices running mote software >=1.4.',
+            'description': 'The getParameter<entropy> command may be used to retrieve a 16-byte block of random data. The data is obtained from thermal noise in the LTC5800 receive signal chain with the radio front-end disabled - as such, it can only be called when the mote is in the Idle state. Thus while it is suitable for cryptographic operations, it is recommended to be used as a seed for a DRBG because of this limitation. This parameter is available in devices running mote software 1.4 or later.',
             'request'    : [
             ],
             'response'   : {
@@ -782,7 +782,7 @@ class IpMoteDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 0x07,
             'name'       : 'disconnect',
-            'description': 'The disconnect command requests that the mote initiate disconnection from the network. After disconnection completes, the mote will generate a disconnected event, and proceed to reset. If the mote is not in the network, the disconnected event will be generated immediately. This command may be issued at any time.',
+            'description': 'The disconnect command requests that the mote initiate disconnection from the network. After disconnection completes, the mote will generate a disconnected event, and proceed to reset. If the mote is not in the network, the disconnected event will be generated immediately. This command will return an error if the mote is not presently joining or joined to a network.',
             'request'    : [
             ],
             'response'   : {

@@ -48,11 +48,12 @@ elif platform.system() in ['Windows']:
     platform_setup_options = {
         # py2exe parameters
         'console': [
+            # embedded manager apps
             {'script': os.path.join('app', 'AclCommissioning', 'AclCommissioning.py'),},
             {'script': os.path.join('app', 'BlinkPacketSend', 'BlinkPacketSend.py'),},
             {'script': os.path.join('app', 'BroadcastLeds', 'BroadcastLeds.py'),},
             {'script': os.path.join('app', 'InstallTest', 'InstallTest.py'),},
-            #{'script': os.path.join('app', 'JsonServer', 'JsonServer.py'),},
+            {'script': os.path.join('app', 'JsonServer', 'JsonServer.py'),},
             {'script': os.path.join('app', 'MgrBlinkData', 'MgrBlinkData.py'),},
             {'script': os.path.join('app', 'NetworkHealth', 'NetworkHealth.py'),},
             {'script': os.path.join('app', 'OapClient', 'OapClient.py'),},
@@ -123,6 +124,7 @@ setup(
     name           = NAME,
     version        = '.'.join([str(v) for v in sdk_version.VERSION]),
     scripts        = [
+        # embedded manager scripts
         'app/AclCommissioning/AclCommissioning.py',
         'app/APIExplorer/APIExplorer.py',
         'app/BlinkPacketSend/BlinkPacketSend.py',
@@ -131,7 +133,7 @@ setup(
         'app/HdlcTool/HdlcTool.py',
         'app/HrListener/HrListener.py',
         'app/InstallTest/InstallTest.py',
-        #'app/JsonServer/JsonServer.py',
+        'app/JsonServer/JsonServer.py',
         'app/LBRConnection/LBRConnection.py',
         'app/LEDPing/LEDPing.py',
         'app/MgrBlinkData/MgrBlinkData.py',
@@ -234,7 +236,6 @@ setup(
         ('',                       ['DN_LICENSE.txt']),
         ('',                       ['requirements.txt']),
         ('app',                    ['app/logging.conf']),
-        
         ('app/AclCommissioning',   ['app/AclCommissioning/README.md']),
         ('app/APIExplorer',        ['app/APIExplorer/README.md']),
         ('app/BlinkPacketSend',    ['app/BlinkPacketSend/README.md']),
@@ -243,6 +244,14 @@ setup(
         ('app/HdlcTool',           ['app/HdlcTool/README.md']),
         ('app/HrListener',         ['app/HrListener/README.md']),
         ('app/InstallTest',        ['app/InstallTest/README.md']),
+        ('app/JsonServer',         ['app/JsonServer/index.html']),
+        ('app/JsonServer',         ['app/JsonServer/README.md']),
+        ('app/JsonServer',         ['app/JsonServer/postman_collection.json']),
+        ('app/JsonServer',         ['app/JsonServer/postman_environment.json']),
+        ('app/JsonServer',         ['app/JsonServer/NotifReceiver.py']),
+        ('app/JsonServer/static',  ['app/JsonServer/static/jquery-1.8.0.min.js']),
+        ('app/JsonServer/static',  ['app/JsonServer/static/jquery-1.8.0.min.license']),
+        ('app/LBRConnection',      ['app/LBRConnection/guest.lbrauth']),
         ('app/LBRConnection',      ['app/LBRConnection/README.md']),
         ('app/LEDPing',            ['app/LEDPing/README.md']),
         ('app/MgrBlinkData',       ['app/MgrBlinkData/README.md']),
@@ -265,12 +274,6 @@ setup(
         ('app/Upstream',           ['app/Upstream/README.md']),
         ('app/Voting',             ['app/Voting/README.md']),
         ('app/Xively',             ['app/Xively/README.md']),
-        
-        ('app/LBRConnection',      ['app/LBRConnection/guest.lbrauth']),
-        #('app/JsonServer',         ['app/JsonServer/index.html']),
-        #('app/JsonServer',         ['app/JsonServer/README.md']),
-        #('app/JsonServer/static',  ['app/JsonServer/static/jquery-1.8.0.min.js']),
-        #('app/JsonServer/static',  ['app/JsonServer/static/jquery-1.8.0.min.license']),
         ('',                       ['app/SyncTemp/configuration_DO_NOT_DELETE.txt']),
         ('libs/dustUI',            ['libs/dustUI/dust.ico']),
         #('external_libs/cryptopy',['external_libs/cryptopy/LICENSE.txt']),
