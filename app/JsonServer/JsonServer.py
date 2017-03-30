@@ -11,8 +11,6 @@ if __name__ == "__main__":
 
 #============================ define ==========================================
 
-CONFIG_FILENAME    = 'JsonServer.config'
-
 #============================ imports =========================================
 
 if os.name=='nt':       # Windows
@@ -20,6 +18,7 @@ if os.name=='nt':       # Windows
 elif os.name=='posix':  # Linux
    import glob
 
+import argparse
 import collections
 import time
 import datetime
@@ -28,22 +27,27 @@ import copy
 import pickle
 import traceback
 import binascii
+import pprint
 
 import requests
 import json
-from bottle import bottle
+import bottle
+from bottle import hook
 
 from SmartMeshSDK                      import sdk_version
 from SmartMeshSDK.utils                import FormatUtils as u
 from SmartMeshSDK.IpMgrConnectorSerial import IpMgrConnectorSerial
 from SmartMeshSDK.IpMgrConnectorMux    import IpMgrSubscribe
-from SmartMeshSDK.ApiException         import APIError
+from SmartMeshSDK.ApiException         import APIError,      \
+                                              ConnectionError
 from SmartMeshSDK.protocols.Hr         import HrParser
 from SmartMeshSDK.protocols.oap        import OAPDispatcher, \
                                               OAPClient,     \
                                               OAPMessage,    \
                                               OAPNotif,      \
                                               OAPDefines as oapdefs
+
+from dustCli      import DustCli
 
 #============================ helpers =========================================
 
@@ -68,7 +72,9 @@ def logCrash(threadName,err):
 
 def reversedict(d):
     return dict((v,k) for (k,v) in d.iteritems())
-    
+
+pp = pprint.PrettyPrinter(indent=4)
+
 #============================ classes =========================================
 
 class ManagerHandler(threading.Thread):
@@ -201,10 +207,13 @@ class JsonServer(object):
     
     OAP_TIMEOUT = 30.000
     
-    def __init__(self, tcpport):
+    def __init__(self, tcpport, serialport, notifprefix, configfilename):
         
         # store params
         self.tcpport              = tcpport
+        self.serialport           = serialport
+        self.notifprefix          = notifprefix
+        self.configfilename       = configfilename
         
         # local variables
         self.startTime            = time.time()
@@ -218,12 +227,39 @@ class JsonServer(object):
         self.responses            = {}
         self.hrParser             = HrParser.HrParser()
         
-        # print banner
-        print 'JsonServer - SmartMesh SDK {0} - (c) Dust Networks\n'.format(
-            '.'.join([str(b) for b in sdk_version.VERSION]),
-        )
+        #=== CLI interface
         
-        # start web server
+        self.cli                  = DustCli.DustCli("JsonServer",self._clihandle_quit)
+        self.cli.registerCommand(
+            name                  = 'status',
+            alias                 = 's',
+            description           = 'get the current status of the application',
+            params                = [],
+            callback              = self._clihandle_status,
+        )
+        self.cli.registerCommand(
+            name                  = 'seriaports',
+            alias                 = 'sp',
+            description           = 'list the available serialports',
+            params                = [],
+            callback              = self._clihandle_serialports,
+        )
+        self.cli.registerCommand(
+            name                  = 'connectmanager',
+            alias                 = 'cm',
+            description           = 'connect to a manager\'s API serial port',
+            params                = ['serialport'],
+            callback              = self._clihandle_connectmanager,
+        )
+        self.cli.registerCommand(
+            name                  = 'disconnectmanager',
+            alias                 = 'dm',
+            description           = 'disconnect from a manager\'s API serial port',
+            params                = ['serialport'],
+            callback              = self._clihandle_disconnectmanager,
+        )
+    
+        #=== web server
         self.websrv   = bottle.Bottle()
         #=== root
         self.websrv.route('/',                                            'GET',    self._webhandle_root_GET)
@@ -305,6 +341,7 @@ class JsonServer(object):
         self.websrv.route('/api/v1/config/managers',                      'DELETE', self._webhandle_managers_DELETE)
         self.websrv.error(code=404)(self._errorhandle_404)
         self.websrv.error(code=500)(self._errorhandle_500)
+        self.websrv.hook('after_request')(self._add_JsonServer_token_if_requested)
         webthread = threading.Thread(
             target = self.websrv.run,
             kwargs = {
@@ -314,12 +351,49 @@ class JsonServer(object):
                 'debug'         : False,
             }
         )
+        webthread.name = 'WebServer'
+        webthread.daemon = True
         webthread.start()
         
         # connect to managers (if any)
         self._syncManagers()
+        
+        # start CLI
+        print 'SmartMesh SDK {0}'.format('.'.join([str(i) for i in sdk_version.VERSION]))
+        self.cli.start()
+    
+    #======================== CLI handlers ====================================
+    
+    def _clihandle_quit(self):
+        
+        for (k,v) in self.managerHandlers.items():
+            try:
+                v.close()
+            except:
+                pass
+        
+        time.sleep(.3)
+        print "bye bye."
+    
+    def _clihandle_status(self,params):
+        pp.pprint(self._status_GET())
+    
+    def _clihandle_serialports(self,params):
+        pp.pprint(self._serialports_GET())
+    
+    def _clihandle_connectmanager(self,params):
+        self._managers_PUT([params[0],])
+    
+    def _clihandle_disconnectmanager(self,params):
+        self._managers_DELETE([params[0],])
     
     #======================== web handlers ====================================
+    
+    def _add_JsonServer_token_if_requested(self):
+        try:
+            bottle.response.headers['X-Correlation-ID'] = bottle.request.headers['X-Correlation-ID']
+        except KeyError:
+            pass
     
     #=== root
     
@@ -346,16 +420,7 @@ class JsonServer(object):
         return returnVal
     
     def _webhandle_status_GET(self):
-        return {
-            'SmartMesh SDK version': '.'.join([str(b) for b in sdk_version.VERSION]),
-            'current time':          self._formatTime(),
-            'running since':         '{0} ({1} ago)'.format(
-                    self._formatTime(self.startTime),
-                    datetime.timedelta(seconds=time.time()-self.startTime)
-                ),
-            'threads running':       [t.getName() for t in threading.enumerate()],
-            'managers':              self._formatManagersStatus(),
-        }
+        return self._status_GET()
     
     #=== raw
     
@@ -373,15 +438,22 @@ class JsonServer(object):
         except KeyError:
             fields           = {}
         manager              = bottle.request.json['manager']
+        if type(manager)==int:
+            manager = sorted(self.managerHandlers.keys())[manager]
         
         # mac addresses: '00-01-02-03-04-05-06-07' -> [0,1,2,3,4,5,6,7]
         wasDestringified = self._destringifyMacAddresses(fields)
         
         with self.dataLock:
-            returnVal = self.managerHandlers[manager].connector.send(
-                commandArray = commandArray,
-                fields       = fields,
-            )
+            try:
+                returnVal = self.managerHandlers[manager].connector.send(
+                    commandArray = commandArray,
+                    fields       = fields,
+                )
+            except APIError as err:
+                returnVal = {
+                    'RC': err.rc,
+                }
         
         if wasDestringified:
             # mac addresses: [0,1,2,3,4,5,6,7] -> '00-01-02-03-04-05-06-07'
@@ -681,45 +753,26 @@ class JsonServer(object):
     #=== helpers
     
     def _webhandle_helpers_serialports_GET(self):
-        try:
-            serialports = []
-            
-            if os.name=='nt':
-                key  = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, 'HARDWARE\\DEVICEMAP\\SERIALCOMM')
-                for i in range(winreg.QueryInfoKey(key)[1]):
-                    try:
-                        val = winreg.EnumValue(key,i)
-                    except:
-                        pass
-                    else:
-                        if val[0].find('VCP')>-1:
-                            serialports.append(str(val[1]))
-            elif os.name=='posix':
-                serialports = glob.glob('/dev/ttyUSB*')
-            
-            serialports.sort()
-            
-            return {
-                'serialports': serialports
-            }
-        except Exception as err:
-            return ['Could not scan for serial port. Error={0}'.format(err)]
+        return self._serialports_GET()
     
     def _list_motes_per_manager(self,manager):
         returnVal = []
         
-        currentMac     = (0,0,0,0,0,0,0,0) # start getMoteConfig() iteration with the 0 MAC address
-        continueAsking = True
-        while continueAsking:
-            try:
-                with self.dataLock:
-                    res = self.managerHandlers[manager].connector.dn_getMoteConfig(currentMac,True)
-            except APIError:
-                continueAsking = False
-            else:
-                if ((not res.isAP) and (res.state in [4,])):
-                    returnVal.append(u.formatMacString(res.macAddress))
-                currentMac = res.macAddress
+        try:
+            currentMac     = (0,0,0,0,0,0,0,0) # start getMoteConfig() iteration with the 0 MAC address
+            continueAsking = True
+            while continueAsking:
+                try:
+                    with self.dataLock:
+                        res = self.managerHandlers[manager].connector.dn_getMoteConfig(currentMac,True)
+                except APIError:
+                    continueAsking = False
+                else:
+                    if ((not res.isAP) and (res.state in [4,])):
+                        returnVal.append(u.formatMacString(res.macAddress))
+                    currentMac = res.macAddress
+        except ConnectionError as err:
+            pass # happens when manager is disconnected
         
         return returnVal
     
@@ -764,49 +817,10 @@ class JsonServer(object):
     #=== managers
     
     def _webhandle_managers_PUT(self):
-        with self.dataLock:
-            for m in bottle.request.json['managers']:
-                if m not in self.config['managers']:
-                    self.config['managers'] += [m]
-        self._saveConfig()
-        self._syncManagers()
+        self._managers_PUT(bottle.request.json['managers'])
     
     def _webhandle_managers_DELETE(self):
-        with self.dataLock:
-            for m in bottle.request.json['managers']:
-                self.config['managers'].remove(m)
-        self._saveConfig()
-        self._syncManagers()
-    
-    '''
-    def _webhandle_root_POST(self):
-        mac    = bottle.request.json['mac']
-        state  = bottle.request.json['state']
-        
-        mac    = [int(b,16) for b in mac.split('-')]
-        
-        self.manager.dn_sendData(
-            macAddress      = mac,
-            priority        = 1,
-            srcPort         = 0xf0b9,
-            dstPort         = 0xf0b9,
-            options         = 0,
-            data            = [
-                0x05,            # un-ACK'ed transport, resync connection
-                0x00,            # seqnum and session
-                0x02,            # "PUT" command
-                0xff,            # ==TLV== address (0xff)
-                0x02,            #         length (2)
-                0x03,            #         digital_out (3)
-                0x02,            #         Actuate LED (2)
-                0x00,            # ==TLV== Value (0x00)
-                0x01,            #         length (1)
-                state,           # set pin high or low
-            ]
-        )
-        
-        sys.stdout.write('.')
-    '''
+        self._managers_DELETE(bottle.request.json['managers'])
     
     #======================== error handlers ==================================
     
@@ -833,6 +847,58 @@ class JsonServer(object):
     
     #======================== private =========================================
     
+    def _status_GET(self):
+        return {
+            'SmartMesh SDK version': '.'.join([str(b) for b in sdk_version.VERSION]),
+            'current time':          self._formatTime(),
+            'running since':         '{0} ({1} ago)'.format(
+                    self._formatTime(self.startTime),
+                    datetime.timedelta(seconds=time.time()-self.startTime)
+                ),
+            'threads running':       [t.getName() for t in threading.enumerate()],
+            'managers':              self._formatManagersStatus(),
+        }
+    
+    def _serialports_GET(self):
+        try:
+            serialports = []
+            
+            if os.name=='nt':
+                key  = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, 'HARDWARE\\DEVICEMAP\\SERIALCOMM')
+                for i in range(winreg.QueryInfoKey(key)[1]):
+                    try:
+                        val = winreg.EnumValue(key,i)
+                    except:
+                        pass
+                    else:
+                        if val[0].find('VCP')>-1:
+                            serialports.append(str(val[1]))
+            elif os.name=='posix':
+                serialports = glob.glob('/dev/ttyUSB*')
+            
+            serialports.sort()
+            
+            return {
+                'serialports': serialports
+            }
+        except Exception as err:
+            return ['Could not scan for serial port. Error={0}'.format(err)]
+    
+    def _managers_PUT(self,newmanagers):
+        with self.dataLock:
+            for m in newmanagers:
+                if m not in self.config['managers']:
+                    self.config['managers'] += [m]
+        self._saveConfig()
+        self._syncManagers()
+    
+    def _managers_DELETE(self,oldmanagers):
+        with self.dataLock:
+            for m in oldmanagers:
+                self.config['managers'].remove(m)
+        self._saveConfig()
+        self._syncManagers()
+    
     def _syncManagers(self):
         with self.dataLock:
             # add
@@ -854,68 +920,68 @@ class JsonServer(object):
         elif notifName==IpMgrSubscribe.IpMgrSubscribe.NOTIFHEALTHREPORT:
             hr  = self.hrParser.parseHr(notif.payload)
             # POST HR to some URL
-            with self.dataLock:
-                notification_url = self.config['notification_urls']['hr']
-            if notification_url:
-                self._send_notif(
-                    url          = notification_url,
-                    jsonToSend   = {
-                        'name':    'hr',
-                        'hr':      hr,
-                    },
-                )
+            self._send_notif(
+                notifname    = 'hr',
+                jsonToSend   = {
+                            'name':    'hr',
+                            'mac':     u.formatMacString(notif.macAddress),
+                            'hr':      hr,
+                        },
+            )
         
         # POST raw notification to some URL
-        with self.dataLock:
-            if notifName.startswith('event'):
-                notification_url = self.config['notification_urls']['event']
-            else:
-                notification_url = self.config['notification_urls'][notifName]
-        if notification_url:
-            fields = self._stringifyMacAddresses(notif._asdict())
-            self._send_notif(
-                url          = notification_url,
-                jsonToSend   = {
-                    'manager': manager,
-                    'name':    notifName,
-                    'fields':  fields,
-                },
-            )
+        if notifName.startswith('event'):
+            nm           = 'event'
+        else:
+            nm           = notifName
+        fields = self._stringifyMacAddresses(notif._asdict())
+        self._send_notif(
+            notifname    = nm,
+            jsonToSend   = {
+                'manager': manager,
+                'name':    notifName,
+                'fields':  fields,
+            },
+        )
     
     def _manager_oap_notif_handler(self,mac,notif):
         
         macString = u.formatMacString(mac)
         
-        # add an oapClients, if needed
+        # add an oapClient, if needed
         self._add_oapClient_if_needed(mac)
         
-        # POST OAP notification to some URL
-        with self.dataLock:
-            notification_url = self.config['notification_urls']['oap']
-        if notification_url:
-            fields = self._stringifyMacAddresses(notif._asdict())
-            self._send_notif(
-                url          = notification_url,
-                jsonToSend   = {
-                    'name':    'oap',
-                    'mac':     macString,
-                    'fields':  fields,
-                },
-            )
+        # POST OAP notification to some URLs
+        fields = self._stringifyMacAddresses(notif._asdict())
+        self._send_notif(
+            notifname    = 'oap',
+            jsonToSend   = {
+                'name':    'oap',
+                'mac':     macString,
+                'fields':  fields,
+            },
+        )
     
-    def _send_notif(self,url,jsonToSend):
-        threading.Thread(
-            target = self._send_notif_thread,
-            args = (
-                url,
-            ),
-            kwargs = {
-                'data'        : json.dumps(jsonToSend),
-                'headers'     : {
-                    'Content-type': 'application/json',
-                },
-            }
-        ).start()
+    def _send_notif(self,notifname,jsonToSend):
+        # find notification URLs
+        with self.dataLock:
+            urls = self.config['notification_urls'][notifname]
+        
+        # send notifications
+        if urls:
+            for url in urls:
+                threading.Thread(
+                    target = self._send_notif_thread,
+                    args = (
+                        url,
+                    ),
+                    kwargs = {
+                        'data'        : json.dumps(jsonToSend),
+                        'headers'     : {
+                            'Content-type': 'application/json',
+                        },
+                    }
+                ).start()
     
     def _send_notif_thread(self,*args,**kwargs):
         try:
@@ -993,30 +1059,57 @@ class JsonServer(object):
     def _loadConfig(self):
         with self.dataLock:
             try:
-                self.config = pickle.load(open(CONFIG_FILENAME,"rb"))
+                self.config = pickle.load(open(self.configfilename,"rb"))
             except IOError as err:
+                if self.serialport:
+                    managers = [self.serialport]
+                else:
+                    managers = []
+                if self.notifprefix:
+                    raise NotImplementedError()
                 self.config     = {
-                    'managers':         [],
+                    'managers':         managers,
                     'notification_urls': {
-                        'event':            'http://127.0.0.1:1880/event',
-                        'notifLog':         'http://127.0.0.1:1880/notifLog',
-                        'notifData':        'http://127.0.0.1:1880/notifData',
-                        'notifIpData':      'http://127.0.0.1:1880/notifIpData',
-                        'notifHealthReport':'http://127.0.0.1:1880/notifHealthReport',
-                        'oap':              'http://127.0.0.1:1880/oap',
-                        'hr':               'http://127.0.0.1:1880/hr',
+                        'event':            [
+                            'http://127.0.0.1:1880/event',
+                            'http://127.0.0.1:8081/event',
+                        ],
+                        'notifLog':         [
+                            'http://127.0.0.1:1880/notifLog',
+                        ],
+                        'notifData':        [
+                            'http://127.0.0.1:1880/notifData',
+                        ],
+                        'notifIpData':      [
+                            'http://127.0.0.1:1880/notifIpData',
+                        ],
+                        'notifHealthReport':[
+                            'http://127.0.0.1:1880/notifHealthReport',
+                        ],
+                        'oap':              [
+                            'http://127.0.0.1:1880/oap',
+                        ],
+                        'hr':               [
+                            'http://127.0.0.1:1880/hr',
+                        ],
                     }
                 }
                 self._saveConfig()
     
     def _saveConfig(self):
         with self.dataLock:
-            pickle.dump(self.config, open(CONFIG_FILENAME,"wb"))
+            pickle.dump(self.config, open(self.configfilename,"wb"))
 
 #============================ main =======================================
 
-def main():
-    jsonServer = JsonServer(8080)
+def main(args):
+    jsonServer = JsonServer(**args)
 
 if __name__=="__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--tcpport',        default=8080)
+    parser.add_argument('--serialport',     default=None)
+    parser.add_argument('--notifprefix',    default='')
+    parser.add_argument('--configfilename', default='JsonServer.config')
+    args = vars(parser.parse_args())
+    main(args)

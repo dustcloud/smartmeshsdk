@@ -61,6 +61,7 @@ elif platform.system() in ['Windows']:
             {'script': os.path.join('app', 'PublishToWeb', 'PublishToWeb.py'),},
             {'script': os.path.join('app', 'RangeTest', 'RangeTest.py'),},
             {'script': os.path.join('app', 'RawSerial', 'RawSerial.py'),},
+            {'script': os.path.join('app', 'SeeTheMesh', 'SeeTheMesh.py'),},
             {'script': os.path.join('app', 'Simple', 'SimpleHartMote.py'),},
             {'script': os.path.join('app', 'Simple', 'SimpleIPMgr.py'),},
             {'script': os.path.join('app', 'Simple', 'SimpleIPMote.py'),},
@@ -147,6 +148,7 @@ setup(
         'app/PublishToWeb/PublishToWebRandom.py',
         'app/RangeTest/RangeTest.py',
         'app/RawSerial/RawSerial.py',
+        'app/SeeTheMesh/SeeTheMesh.py',
         'app/SensorDataReceiver/SensorDataReceiver.py',
         'app/Simple/SimpleHartMote.py',
         'app/Simple/SimpleIPMgr.py',
@@ -184,7 +186,6 @@ setup(
     # maybe find_packages? 
     packages       = [
         # from external_libs/
-        'bottle',
         'cryptopy',
         'cryptopy.crypto',
         'cryptopy.crypto.cipher',
@@ -222,7 +223,6 @@ setup(
         'MuxConfig',
     ],
     package_dir    = {
-        'bottle':       'external_libs/bottle',
         'cryptopy':     'external_libs/cryptopy',
         'dustUI':       'libs/dustUI',
         'dustCli':      'libs/dustCli',
@@ -265,6 +265,13 @@ setup(
         ('app/PublishToWeb',       ['app/PublishToWeb/README.md']),
         ('app/RangeTest',          ['app/RangeTest/README.md']),
         ('app/RawSerial',          ['app/RawSerial/README.md']),
+        ('app/SeeTheMesh',         ['app/SeeTheMesh/static/background.jpg']),
+        ('app/SeeTheMesh',         ['app/SeeTheMesh/static/d3.v3.min.js']),
+        ('app/SeeTheMesh',         ['app/SeeTheMesh/static/dagre-d3.js']),
+        ('app/SeeTheMesh',         ['app/SeeTheMesh/static/jquery-3.1.1.min.js']),
+        ('app/SeeTheMesh',         ['app/SeeTheMesh/static/logo_dust.png']),
+        ('app/SeeTheMesh',         ['app/SeeTheMesh/static/style.css']),
+        ('app/SeeTheMesh',         ['app/SeeTheMesh/views/index.tpl']),
         ('app/SensorDataReceiver', ['app/SensorDataReceiver/README.md']),
         ('app/Simple',             ['app/Simple/README.md']),
         ('app/SyncTemp',           ['app/SyncTemp/README.md']),

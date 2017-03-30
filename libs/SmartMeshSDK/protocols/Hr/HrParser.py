@@ -12,54 +12,68 @@ import struct
 
 class HrParser(object):
     
-    HR_ID_DEVICE             = 0x80
-    HR_ID_NEIGHBORS          = 0x81
-    HR_ID_DISCOVERED         = 0x82
-    HR_ID_ALL                = [
+    HR_ID_DEVICE                  = 0x80
+    HR_ID_NEIGHBORS               = 0x81
+    HR_ID_DISCOVERED              = 0x82
+    HR_ID_EXTENDED                = 0x91
+    HR_ID_ALL                     = [
         HR_ID_DEVICE,
         HR_ID_NEIGHBORS,
         HR_ID_DISCOVERED,
+        HR_ID_EXTENDED,
     ]
+    HR_ID_EXTENDED_RSSI           = 1
     
     HR_DESC_DEVICE = [
-        ('charge',           'I'),
-        ('queueOcc',         'B'),
-        ('temperature',      'b'),
-        ('batteryVoltage',   'H'),
-        ('numTxOk',          'H'),
-        ('numTxFail',        'H'),
-        ('numRxOk',          'H'),
-        ('numRxLost',        'H'),
-        ('numMacDropped',    'B'),
-        ('numTxBad',         'B'),
-        ('badLinkFrameId',   'B'),
-        ('badLinkSlot',      'I'),
-        ('badLinkOffset',    'B'),
-        ('numNetMicErr',     'B'),
-        ('numMacMicErr',     'B'),
-        ('numMacCrcErr',     'B'),
+        ('charge',                'I'),
+        ('queueOcc',              'B'),
+        ('temperature',           'b'),
+        ('batteryVoltage',        'H'),
+        ('numTxOk',               'H'),
+        ('numTxFail',             'H'),
+        ('numRxOk',               'H'),
+        ('numRxLost',             'H'),
+        ('numMacDropped',         'B'),
+        ('numTxBad',              'B'),
+        ('badLinkFrameId',        'B'),
+        ('badLinkSlot',           'I'),
+        ('badLinkOffset',         'B'),
+        ('numNetMicErr',          'B'),
+        ('numMacMicErr',          'B'),
+        ('numMacCrcErr',          'B'),
     ]
     
     HR_DESC_NEIGHBORS = [
-        ('numItems',         'B'),
+        ('numItems',              'B'),
     ]
     HR_DESC_NEIGHBOR_DATA = [
-        ('neighborId',       'H'),
-        ('neighborFlag',     'B'),
-        ('rssi',             'b'),
-        ('numTxPackets',     'H'),
-        ('numTxFailures',    'H'),
-        ('numRxPackets',     'H'),
+        ('neighborId',            'H'),
+        ('neighborFlag',          'B'),
+        ('rssi',                  'b'),
+        ('numTxPackets',          'H'),
+        ('numTxFailures',         'H'),
+        ('numRxPackets',          'H'),
     ]
     
     HR_DESC_DISCOVERED = [
-        ('numJoinParents',   'B'),
-        ('numItems',         'B'),
+        ('numJoinParents',        'B'),
+        ('numItems',              'B'),
     ]
     HR_DESC_DISCOVERED_DATA = [
-        ('neighborId',       'H'),
-        ('rssi',             'b'),
-        ('numRx',            'B'),
+        ('neighborId',            'H'),
+        ('rssi',                  'b'),
+        ('numRx',                 'B'),
+    ]
+    
+    HR_DESC_EXTENDED = [
+        ('extType',               'B'),
+        ('extLength',             'B'),
+    ]
+    
+    HR_DESC_EXTENDED_RSSI_DATA = [
+        ('idleRssi',              'b'),
+        ('txUnicastAttempts',     'H'),
+        ('txUnicastFailures',     'H'),
     ]
     
     #======================== public ==========================================
@@ -112,6 +126,8 @@ class HrParser(object):
                 returnVal['Neighbors']      = self._parseNeighbors(payload)
             elif id==self.HR_ID_DISCOVERED:
                 returnVal['Discovered']     = self._parseDiscovered(payload)
+            elif id==self.HR_ID_EXTENDED:
+                returnVal['Extended']       = self._parseExtended(payload)
             else:
                 raise ValueError("unknown HR id {0}".format(id))
             
@@ -202,6 +218,41 @@ class HrParser(object):
             fields['discoveredNeighbors'] += [newItem]
         
         return fields
+    
+    def _parseExtended(self,payload):
+        
+        # parse the header
+        (payload,fields) = self._parseAs(
+            desc    = self.HR_DESC_EXTENDED,
+            payload = payload,
+        )
+        
+        if fields['extLength']!=len(payload):
+            raise ValueError("extLength={0} while len(extended HR payload)={1}".format(fields['extLength'],len(payload)))
+        
+        returnVal = {}
+        if fields['extType']==self.HR_ID_EXTENDED_RSSI:
+            returnVal['RSSI']   = self._parseExtendedRSSI(payload)
+        else:
+            raise ValueError("unknown extended HR extType {0}".format(fields['extType']))
+        
+        return returnVal
+    
+    def _parseExtendedRSSI(self,payload):
+        
+        if len(payload)!=75:
+            raise ValueError("RSSI HR should be of length 75, not {0}".format(len(payload)))
+        
+        returnVal = []
+        
+        while payload:
+            (payload,fields) = self._parseAs(
+                desc    = self.HR_DESC_EXTENDED_RSSI_DATA,
+                payload = payload,
+            )
+            returnVal += [fields]
+        
+        return returnVal
     
     #======================== helpers =========================================
     

@@ -1,0 +1,65 @@
+body {
+    margin:             0 auto;
+    color:              #333;
+    font-weight:        300;
+    font-family:        "Helvetica Neue", Helvetica, Arial, sans-serf;
+    background-image:   url(/static/background.jpg);
+    background-repeat:  repeat;
+}
+
+.pagetitle {
+    position:           fixed;
+}
+
+.version {
+    position:           fixed;
+}
+
+.logo {
+    position:           fixed;
+}
+
+.logo div {
+    position:           absolute;
+    top:                -40px;
+    text-align:         center;
+    width:              100%;
+    font-family:        Calibri;
+    font-size:          200%;
+    color:              #00AEDA;
+}
+
+.logo img {
+    top:                 0;
+    left:                0;
+    outline:             none;
+    border:              0;
+}
+
+svg {
+    border:             0px solid #ff0000;
+    overflow:           hidden;
+    margin:             0 auto;
+}
+
+pre {
+    border:             1px solid #ccc;
+}
+
+h1 {
+    font-size:          3em;
+    font-weight:        300;
+}
+
+h2 {
+    font-size:          1.5em;
+    font-weight:        300;
+}
+
+section {
+    margin-bottom:      3em;
+}
+
+section p {
+    text-align:         justify;
+}

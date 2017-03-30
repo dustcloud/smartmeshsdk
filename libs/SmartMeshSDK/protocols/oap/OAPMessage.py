@@ -44,8 +44,11 @@ class TLV(object):
         return '%d: %s' % (self.tag, str(self.value))
     def serialize(self):
         return struct.pack('!BB' + self.format_str, self.tag, self.val_len, self.value)
-    def parse_value(self, val_str):
-        self.value = struct.unpack('!'+self.format_str, val_str[0:self.val_len])[0]
+    def parse_value(self, val_str, val_len=None):
+        if val_len==0:
+            self.value = None
+        else:
+            self.value = struct.unpack('!'+self.format_str, val_str[0:self.val_len])[0]
     
 class TLVByte(TLV):
     def __init__(self, t, v = None):
@@ -155,10 +158,11 @@ class Sensor(object):
     
     def parse_response(self, resp):
         for t in resp['tags']:
+            # (t[0],t[1],t[2]) is (tag,length,value)
             my_tag = find_tag(self.tags, t[0])
             # the response can contain tags we don't care about
             if my_tag:
-                my_tag.parse_value(t[2])
+                my_tag.parse_value(val_len=t[1],val_str=t[2])
     
     def __str__(self):
         template = "{0}=({1})"
