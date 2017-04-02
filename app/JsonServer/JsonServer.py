@@ -895,7 +895,10 @@ class JsonServer(object):
     def _managers_DELETE(self,oldmanagers):
         with self.dataLock:
             for m in oldmanagers:
-                self.config['managers'].remove(m)
+                try:
+                    self.config['managers'].remove(m)
+                except ValueError:
+                    pass # happens when manager doesn't exist
         self._saveConfig()
         self._syncManagers()
     
@@ -970,7 +973,7 @@ class JsonServer(object):
         # send notifications
         if urls:
             for url in urls:
-                threading.Thread(
+                notifthread = threading.Thread(
                     target = self._send_notif_thread,
                     args = (
                         url,
@@ -981,7 +984,9 @@ class JsonServer(object):
                             'Content-type': 'application/json',
                         },
                     }
-                ).start()
+                )
+                notifthread.name = '{0}->{1}'.format(notifname,url)
+                notifthread.start()
     
     def _send_notif_thread(self,*args,**kwargs):
         try:

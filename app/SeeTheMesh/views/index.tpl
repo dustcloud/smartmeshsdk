@@ -56,15 +56,15 @@
         // pagetitle
         $('#pagetitle').offset(
             {
-                top:  50,
-                left: 70
+                top:  20,
+                left: 20
             }
         );
         // version
         $('#version').offset(
             {
-                top:  $(window).height()-80-20,
-                left: 70
+                top:  $(window).height()-60,
+                left: 20
             }
         );
         // logo

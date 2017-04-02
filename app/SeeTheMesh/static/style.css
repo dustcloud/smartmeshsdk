@@ -2,7 +2,7 @@ body {
     margin:             0 auto;
     color:              #333;
     font-weight:        300;
-    font-family:        "Helvetica Neue", Helvetica, Arial, sans-serf;
+    font-family:        "Helvetica Neue", Helvetica, Arial, sans-serif;
     background-image:   url(/static/background.jpg);
     background-repeat:  repeat;
 }
