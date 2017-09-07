@@ -1374,7 +1374,7 @@ It is dangerous to turn off advertising in the network. When advertising is off,
             'name'       : 'notifIpData',
             'description': "The ipData notification contains full IP packet sent by the mote, including 6LoWPAN header, UDP header, and the UDP payload. Manager generates this notification when it receives packet from a mote with destination other than manager's own IP address. The size of the data field can be calculated by subtracting the fixed header size (up to macAddress) from the size of overall notification packet.",
             'response'   : {
-                'System':  [
+                'FIELDS':  [
                     ['utcSecs',            INT,      8,   None],
                     ['utcUsecs',           INT,      4,   None],
                     ['macAddress',         HEXDATA,  8,   None],
@@ -1387,7 +1387,7 @@ It is dangerous to turn off advertising in the network. When advertising is off,
             'name'       : 'notifHealthReport',
             'description': 'The healthReport notifications include the raw payload of health reports received from devices. The payload contains one or more specific health report messages. Each message contains an identifier, length and variable-sized data. The individual healthReport message structures are defined below.',
             'response'   : {
-                'System':  [
+                'FIELDS':  [
                     ['macAddress',         HEXDATA,  8,   None],
                     ['payload',            HEXDATA,  None,None],
                 ],
