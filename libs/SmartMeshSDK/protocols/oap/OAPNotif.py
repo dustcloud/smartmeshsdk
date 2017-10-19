@@ -47,7 +47,7 @@ def parse_oap_notif(data, index = 0):
         index                              += 2 + l
         
         # timestamp
-        (secs, usecs)                       = struct.unpack_from('!ql', data, index + 1)
+        (secs, usecs)                       = struct.unpack_from('!ql', data, index)
         index                              += 12
         
         # rate
