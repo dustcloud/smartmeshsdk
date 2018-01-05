@@ -4,8 +4,6 @@ from SmartMeshSDK.ApiDefinition   import ApiDefinition,    \
                                          IpMgrDefinition
 from SmartMeshSDK.ApiException    import ConnectionError
 
-API_VERSION = [4, 3,]
-
 class IpMgrConnectorSerialInternal(SerialConnector.SerialConnector):
     '''
     \ingroup ApiConnector
@@ -27,7 +25,8 @@ class IpMgrConnectorSerialInternal(SerialConnector.SerialConnector):
                           }
         self.helloCmdIds = self.HELLO_IDS.values()
         self.isConnect = False
-
+        self.TxPacketId = 0
+        
     def connect(self, params):
         SerialConnector.SerialConnector.connect(self, params)
         try:
@@ -46,15 +45,14 @@ class IpMgrConnectorSerialInternal(SerialConnector.SerialConnector):
         self.paramLock.acquire()
         self.isConnect = False
         cmdId,byteArray = self.api_def.serialize(['hello'],
-                                                 {'version':  API_VERSION[0],
-                                                  'cliSeqNo': self.TxPacketId,
+                                                 {'version':  self.api_def.fieldOptions['protocolVersion'],
+                                                  'cliSeqNo': (self.TxPacketId - 1) % 256,
                                                   'mode':     0,
                                                   })
         self.paramLock.release()
         resp = self._sendInternal(cmdId, False, byteArray)
         if resp['successCode'] == ApiDefinition.ApiDefinition.RC_OK:
             self.paramLock.acquire()
-            self.TxPacketId = resp['cliSeqNo']
             self.RxPacketId = resp['mgrSeqNo']
             self.isConnect = True
             self.paramLock.release()
@@ -75,7 +73,6 @@ class IpMgrConnectorSerialInternal(SerialConnector.SerialConnector):
         if isResponse:
             txHeader.append(self.RxPacketId)
         else:
-            self._incrementTxPacketId()
             txHeader.append(self.TxPacketId)
         self.paramLock.release()
         txHeader.append(len(serializedFields))
@@ -126,6 +123,8 @@ class IpMgrConnectorSerialInternal(SerialConnector.SerialConnector):
         else:
             if isResponse:
                 isValidId              = packetId==self.TxPacketId
+                if isValidId :
+                    self._incrementTxPacketId()
                 isDuplicate            = False
                 updateRxPacketId    = True
             else:

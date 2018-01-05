@@ -23,6 +23,8 @@ NAME = 'SmartMeshSDK'
 
 VMANAGER_REQUIRES = ["urllib3 >= 1.10", "six >= 1.9", "certifi", "python-dateutil"]
 
+ssl_ca_cert = []
+
 if platform.system() in ['Darwin']:
     # use setuptools on OS X
     from setuptools import setup
@@ -44,6 +46,9 @@ elif platform.system() in ['Windows']:
     # use distutils because it's easier to specify what's included
     from distutils.core import setup
     import py2exe
+    import certifi
+    
+    ssl_ca_cert.append(certifi.where())
 
     platform_setup_options = {
         # py2exe parameters
@@ -52,6 +57,7 @@ elif platform.system() in ['Windows']:
             {'script': os.path.join('app', 'AclCommissioning', 'AclCommissioning.py'),},
             {'script': os.path.join('app', 'BlinkPacketSend', 'BlinkPacketSend.py'),},
             {'script': os.path.join('app', 'BroadcastLeds', 'BroadcastLeds.py'),},
+            {'script': os.path.join('app', 'FindManagers', 'FindManagers.py'),},
             {'script': os.path.join('app', 'InstallTest', 'InstallTest.py'),},
             {'script': os.path.join('app', 'JsonServer', 'JsonServer.py'),},
             {'script': os.path.join('app', 'MgrBlinkData', 'MgrBlinkData.py'),},
@@ -62,6 +68,7 @@ elif platform.system() in ['Windows']:
             {'script': os.path.join('app', 'RangeTest', 'RangeTest.py'),},
             {'script': os.path.join('app', 'RawSerial', 'RawSerial.py'),},
             {'script': os.path.join('app', 'SeeTheMesh', 'SeeTheMesh.py'),},
+            {'script': os.path.join('app', 'SerialScanner', 'SerialScanner.py'),},
             {'script': os.path.join('app', 'Simple', 'SimpleHartMote.py'),},
             {'script': os.path.join('app', 'Simple', 'SimpleIPMgr.py'),},
             {'script': os.path.join('app', 'Simple', 'SimpleIPMote.py'),},
@@ -73,7 +80,6 @@ elif platform.system() in ['Windows']:
             {'script': os.path.join('app', 'SyncTemp', 'SyncTemp.py'),},
             {'script': os.path.join('app', 'SyncTemp', 'logAnalysis.py'),},
             {'script': os.path.join('app', 'TempLogger', 'TempLogger.py'),},
-            {'script': os.path.join('app', 'Timelapse', 'Timelapse1Collect.py'),},
             # VManager apps
             {'script': os.path.join('vmanager_apps', 'VMgr_OTAPCommunicator.py'),},
             {'script': os.path.join('vmanager_apps', 'VMgr_PublishToWeb.py'),},
@@ -97,11 +103,9 @@ elif platform.system() in ['Windows']:
             {'script': os.path.join('app', 'LBRConnection', 'LBRConnection.py'),},
             {'script': os.path.join('app', 'LEDPing', 'LEDPing.py'),},
             {'script': os.path.join('app', 'MgrListener', 'MgrListener.py'),},
-            {'script': os.path.join('app', 'MuxConfig', 'MuxConfig.py'),},
             {'script': os.path.join('app', 'PkGen', 'PkGen.py'),},
             {'script': os.path.join('app', 'SensorDataReceiver', 'SensorDataReceiver.py'),},
             {'script': os.path.join('app', 'TempMonitor', 'TempMonitor.py'),},\
-            {'script': os.path.join('app', 'Timelapse', 'Timelapse2Analyze.py'),},
             {'script': os.path.join('app', 'Upstream', 'Upstream.py'),},
             {'script': os.path.join('app', 'Voting', 'Voting.py'),},
             {'script': os.path.join('app', 'Xively', 'Xively.py'),},
@@ -131,6 +135,7 @@ setup(
         'app/BlinkPacketSend/BlinkPacketSend.py',
         'app/BroadcastLeds/BroadcastLeds.py',
         'app/Chaser/Chaser.py',
+        'app/FindManagers/FindManagers.py',
         'app/HdlcTool/HdlcTool.py',
         'app/HrListener/HrListener.py',
         'app/InstallTest/InstallTest.py',
@@ -150,6 +155,7 @@ setup(
         'app/RawSerial/RawSerial.py',
         'app/SeeTheMesh/SeeTheMesh.py',
         'app/SensorDataReceiver/SensorDataReceiver.py',
+        'app/SerialScanner/SerialScanner.py',
         'app/Simple/SimpleHartMote.py',
         'app/Simple/SimpleIPMgr.py',
         'app/Simple/SimpleIPMote.py',
@@ -233,6 +239,7 @@ setup(
     },
     data_files     = [
         # destination              source
+        ('',                       ssl_ca_cert),
         ('',                       ['DN_LICENSE.txt']),
         ('',                       ['requirements.txt']),
         ('app',                    ['app/logging.conf']),
@@ -265,13 +272,16 @@ setup(
         ('app/PublishToWeb',       ['app/PublishToWeb/README.md']),
         ('app/RangeTest',          ['app/RangeTest/README.md']),
         ('app/RawSerial',          ['app/RawSerial/README.md']),
-        ('app/SeeTheMesh',         ['app/SeeTheMesh/static/background.jpg']),
-        ('app/SeeTheMesh',         ['app/SeeTheMesh/static/d3.v3.min.js']),
-        ('app/SeeTheMesh',         ['app/SeeTheMesh/static/dagre-d3.js']),
-        ('app/SeeTheMesh',         ['app/SeeTheMesh/static/jquery-3.1.1.min.js']),
-        ('app/SeeTheMesh',         ['app/SeeTheMesh/static/logo_dust.png']),
-        ('app/SeeTheMesh',         ['app/SeeTheMesh/static/style.css']),
-        ('app/SeeTheMesh',         ['app/SeeTheMesh/views/index.tpl']),
+        ('app/SeeTheMesh/static',  ['app/SeeTheMesh/static/background.jpg']),
+        ('app/SeeTheMesh/static',  ['app/SeeTheMesh/static/d3.v3.min.js']),
+        ('app/SeeTheMesh/static',  ['app/SeeTheMesh/static/dagre-d3.js']),
+        ('app/SeeTheMesh/static',  ['app/SeeTheMesh/static/jquery-3.1.1.min.js']),
+        ('app/SeeTheMesh/static',  ['app/SeeTheMesh/static/logo_dust.png']),
+        ('app/SeeTheMesh/static',  ['app/SeeTheMesh/static/logo_map.png']),
+        ('app/SeeTheMesh/static',  ['app/SeeTheMesh/static/logo_topology.png']),
+        ('app/SeeTheMesh/static',  ['app/SeeTheMesh/static/style.css']),
+        ('app/SeeTheMesh/views',   ['app/SeeTheMesh/views/map.tpl']),
+        ('app/SeeTheMesh/views',   ['app/SeeTheMesh/views/topology.tpl']),
         ('app/SensorDataReceiver', ['app/SensorDataReceiver/README.md']),
         ('app/Simple',             ['app/Simple/README.md']),
         ('app/SyncTemp',           ['app/SyncTemp/README.md']),

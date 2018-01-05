@@ -58,6 +58,7 @@ class MoteInfo(object):
             'num_joins': 'int',
             'num_links': 'int',
             'num_neighbors': 'int',
+            'num_parents': 'int',
             'power_cost_rx_link': 'int',
             'power_cost_tx_link': 'int',
             'reliability': 'float',
@@ -91,6 +92,7 @@ class MoteInfo(object):
             'num_joins': 'numJoins',
             'num_links': 'numLinks',
             'num_neighbors': 'numNeighbors',
+            'num_parents': 'numParents',
             'power_cost_rx_link': 'powerCostRxLink',
             'power_cost_tx_link': 'powerCostTxLink',
             'reliability': 'reliability',
@@ -123,6 +125,7 @@ class MoteInfo(object):
         self._num_joins = None
         self._num_links = None
         self._num_neighbors = None
+        self._num_parents = None
         self._power_cost_rx_link = None
         self._power_cost_tx_link = None
         self._reliability = None
@@ -594,6 +597,28 @@ class MoteInfo(object):
         :type: int
         """
         self._num_neighbors = num_neighbors
+
+    @property
+    def num_parents(self):
+        """
+        Gets the num_parents of this MoteInfo.
+        Number of parents assigned to the mote
+
+        :return: The num_parents of this MoteInfo.
+        :rtype: int
+        """
+        return self._num_parents
+
+    @num_parents.setter
+    def num_parents(self, num_parents):
+        """
+        Sets the num_parents of this MoteInfo.
+        Number of parents assigned to the mote
+
+        :param num_parents: The num_parents of this MoteInfo.
+        :type: int
+        """
+        self._num_parents = num_parents
 
     @property
     def power_cost_rx_link(self):

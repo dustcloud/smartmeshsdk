@@ -59,7 +59,7 @@ class PathInfo(object):
     def num_links(self):
         """
         Gets the num_links of this PathInfo.
-        Number of links on this path
+        Number of upstream links on this path
 
         :return: The num_links of this PathInfo.
         :rtype: int
@@ -70,7 +70,7 @@ class PathInfo(object):
     def num_links(self, num_links):
         """
         Sets the num_links of this PathInfo.
-        Number of links on this path
+        Number of upstream links on this path
 
         :param num_links: The num_links of this PathInfo.
         :type: int

@@ -20,7 +20,9 @@ class FieldFormats(object):
     INT                 = 'int'
     INTS                = 'ints'
     HEXDATA             = 'hex'
+    HEXDATA_VL          = 'hex_vl'      # variable length
     FLOAT               = 'float'
+    ARRAY               = 'array'
 
 class FieldOptions(object):
     '''
@@ -132,6 +134,28 @@ class ApiDefinition(object):
     RC_OK        = 0
     
     #======================== id and name =====================================
+    def __init__(self, array2scalar = True) :
+        if array2scalar :
+            self._array2scalar(self.commands)
+            self._array2scalar(self.notifications)
+    
+    def _array2scalar(self, defs) :
+        '''
+        \brief Convert ARRAY to list of scalars
+        '''
+        for fields in defs:
+            if 'subCommands' in fields :
+                self._array2scalar(fields['subCommands'])
+            if 'response' in fields and 'FIELDS' in fields['response'] :
+                arrays = [f for f in fields['response']['FIELDS'] if f[1] == FieldFormats.ARRAY]
+                for array in arrays :
+                    scalars = []
+                    for n in range(array[2]) :
+                        for item in array[3] :
+                            name = '{}_{}'.format(item[0], n+1)
+                            scalars.append([name] + item[1:])
+                    fields['response']['FIELDS'].remove(array)
+                    fields['response']['FIELDS'] += scalars
     
     def idToName(self,type,id):
         '''

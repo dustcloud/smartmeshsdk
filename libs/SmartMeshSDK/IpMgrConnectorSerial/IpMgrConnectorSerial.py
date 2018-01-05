@@ -164,7 +164,7 @@ class IpMgrConnectorSerial(IpMgrConnectorSerialInternal):
     # The subscribe command indicates that the manager should send the external application the specified notifications. It contains two filter fields:
     # 
     # - filter is a bitmask of flags indicating the types of notifications that the client wants to receive
-    # - unackFilter allows the client to select which of the notifications selected in filter should be sent acknowledged. If a notification is sent as 'acknowledged', thesubsequent notification packets will be queued while waiting for response.
+    # - unackFilter allows the client to select which of the notifications selected in filter should be sent acknowledged. If a notification is sent as 'acknowledged', the subsequent notification packets will be queued while waiting for response.
     # 
     # Each subscription request overwrites the previous one. If an application is subscribed to data and then decides he also wants events he should send a subscribe command with both the data and event flags set. To clear all subscriptions, the client should send a subscribe command with the filter set to zero. When a session is initiated between the manager and a client, the subscription filter is initialized to zero.
     # 
@@ -387,7 +387,7 @@ class IpMgrConnectorSerial(IpMgrConnectorSerialInternal):
     Tuple_dn_exchangeNetworkId = collections.namedtuple("Tuple_dn_exchangeNetworkId", ['RC', 'callbackId'])
 
     ##
-    # The exchangeNetworkId command triggers the manager to distribute a new network ID to all the motes in the network. A callbackId is returned in the response. A commandFinished notification with this callbackId will be sent when the operation is complete.This change is persistent.
+    # The exchangeNetworkId command triggers the manager to distribute a new network ID to all the motes in the network. A callbackId is returned in the response. A commandFinished notification with this callbackId will be sent when the operation is complete. This change is persistent.
     # 
     # \param id 2-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
@@ -419,23 +419,22 @@ class IpMgrConnectorSerial(IpMgrConnectorSerialInternal):
     Tuple_dn_radiotestTx = collections.namedtuple("Tuple_dn_radiotestTx", ['RC'])
 
     ##
-    # The radiotestTx command allows the user to initiate a radio transmission test. It may only be executed if the manager has been booted up in radiotest mode (see setNetworkConfig command). Three types of transmission tests are supported:
+    # The radiotestTx command allows the user to initiate a radio transmission test. It may only be executed if the manager has been booted up in radiotest mode (see setNetworkConfig command). Four types of transmission tests are supported:
     # 
     # - Packet transmission
     # - Continuous modulation (CM)
     # - Continuous wave, i.e unmodulated signal (CW)
+    # - Packet transmission with clear channel assessment (CCA) enabled (Available in Manager > 1.3.x)
     # 
-    # In a packet transmission test, the device generates a repeatCnt number of packet sequences. Each sequence consists of up to 10 packets with configurable size and delays. Each packet starts with a PHY preamble (5 bytes), followed by a PHY length field (1 byte), followed by data payload of up to 125 bytes, and finally a 2-byte 802.15.4 CRC at the end. Byte 0 of the payload contains stationId of the sender. Bytes 1 and 2 contain the packet number (in big-endian format) that increments with every packet transmitted. Bytes 3..N contain a counter (from 0..N-2) that increments with every byte inside payload. Transmissions occur on the set of channels defined by chanMask , selected inpseudo-randomorder.
+    # In a packet transmission test, the device generates a repeatCnt number of packet sequences. Each sequence consists of up to 10 packets with configurable size and delays. Each packet starts with a PHY preamble (5 bytes), followed by a PHY length field (1 byte), followed by data payload of up to 125 bytes, and finally a 2-byte 802.15.4 CRC at the end. Byte 0 of the payload contains stationId of the sender. Bytes 1 and 2 contain the packet number (in big-endian format) that increments with every packet transmitted. Bytes 3..N contain a counter (from 0..N-2) that increments with every byte inside payload. Transmissions occur on the set of channels defined by chanMask , selected in pseudo-random order.
     # 
     # In a continuous modulation test, the device generates continuous pseudo-random modulated signal, centered at the specified channel. The test is stopped by resetting the device.
     # 
     # In a continuous wave test, the device generates an unmodulated tone, centered at the specified channel. The test tone is stopped by resetting the device.
     # 
+    # In a packet transmission with CCA test, the device is configured identically to that in the packet transmission test, however the device does a clear channel assessment before each transmission and aborts that packet if the channel is busy.
     # 
-    # 
-    # Channel numbering is 0-15, corresponding to IEEE 2.4 GHz channels 11-26.
-    # 
-    # The station ID is a user selectable value. It is used in packet tests so that a receiver (see radiotestRx) can identify packets from this device in cases where there may be multiple tests running in the same radio space. This field is not used for CM or CW tests.
+    # The station ID is a user selectable value. It is used in packet tests so that a receiver (see radiotestRx) can identify packets from this device in cases where there may be multiple tests running in the same radio space. This field is not used for CM or CW tests. (Available in Manager >= 1.3.0) Channel numbering is 0-15, corresponding to IEEE 2.4 GHz channels 11-26.
     # 
     # \param testType 1-byte field formatted as a int.<br/>
     #     This field can only take one of the following values:
@@ -578,7 +577,7 @@ class IpMgrConnectorSerial(IpMgrConnectorSerialInternal):
     Tuple_dn_getRadiotestStatistics = collections.namedtuple("Tuple_dn_getRadiotestStatistics", ['RC', 'rxOk', 'rxFail'])
 
     ##
-    # This command retrieves statistics from a previously run radiotestRx command.It may only be executed if the manager has been booted up in radiotest mode (see setNetworkConfig command).
+    # This command retrieves statistics from a previously run radiotestRx command. It may only be executed if the manager has been booted up in radiotest mode (see setNetworkConfig command).
     # 
     # 
     # 
@@ -609,7 +608,7 @@ class IpMgrConnectorSerial(IpMgrConnectorSerialInternal):
     Tuple_dn_setACLEntry = collections.namedtuple("Tuple_dn_setACLEntry", ['RC'])
 
     ##
-    # The setACLEntry command adds a new entry or updates an existing entry in the Access Control List (ACL).This change is persistent. The maximum number of entries is 1,200.
+    # The setACLEntry command adds a new entry or updates an existing entry in the Access Control List (ACL). This change is persistent. The maximum number of entries is 1,200.
     # 
     # \param macAddress 8-byte field formatted as a hex.<br/>
     #     There is no restriction on the value of this field.
@@ -779,9 +778,9 @@ class IpMgrConnectorSerial(IpMgrConnectorSerialInternal):
     Tuple_dn_sendData = collections.namedtuple("Tuple_dn_sendData", ['RC', 'callbackId'])
 
     ##
-    # The sendData command sends a packet to a mote in the network. The response contains a callbackId. When the manager injects the packet into the network, it will generate a packetSent notification. It is the responsibility of the customer'sapplication layer at the mote to send a response. It is also the responsibility of thecustomer's application layer to timeout if no response is received at the manager if one is expected.
+    # The sendData command sends a packet to a mote in the network. The response contains a callbackId. When the manager injects the packet into the network, it will generate a packetSent notification. It is the responsibility of the customer's application layer at the mote to send a response. It is also the responsibility of the customer's application layer to timeout if no response is received at the manager if one is expected.
     # 
-    # The sendData command should be used by applications that communicate directly with the manager. If end-to-end (application to mote) IP connectivity is required, the application should use the sendIP command. For a more comprehensive discussion of the distinction, see the SmartMesh IPNetwork User Guide.
+    # The sendData command should be used by applications that communicate directly with the manager. If end-to-end (application to mote) IP connectivity is required, the application should use the sendIP command. For a more comprehensive discussion of the distinction, see the SmartMesh IP Network User Guide.
     # 
     # \param macAddress 8-byte field formatted as a hex.<br/>
     #     There is no restriction on the value of this field.
@@ -1067,9 +1066,13 @@ class IpMgrConnectorSerial(IpMgrConnectorSerialInternal):
     Tuple_dn_setAdvertising = collections.namedtuple("Tuple_dn_setAdvertising", ['RC', 'callbackId'])
 
     ##
-    # The setAdvertising command tells the manager to activate or deactivate advertising. The response is a callbackId. A commandFinished notification with the callbackId is generated when the command propagation is complete.
+    # The setAdvertising command tells the manager to activate, deactivate, or use slow advertising. The response is a callbackId. A commandFinished notification with the callbackId is generated when the command propagation is complete.
     # 
-    # It is dangerous to turn off advertising in the network. When advertising is off, new motes can not join and existing motes can not rejoin the network after a reset. Turning off advertising may be useful in unusual situations, such as to prevent motes from joining the network or to save power. In most cases, it is best to allow advertising to remain under the control of the manager.
+    # With motes prior to version 1.4.1, it is only possible to turn advertising ON or OFF. If building networks consisting primarily of motes 1.4.1 or later, power can be saved by setting advertising to "slow". Set the INI parameter advtimeout to a value (in ms) and set this command to 0.
+    # 
+    # For example, the default full advertising frequency is approximately once per 2 seconds. It is recommended to set advtimeout = 20000, which will result in an advertising every 20 seconds which will result in a 90% power savings in the cost of advertising.
+    # 
+    # It is dangerous to turn off advertising in the network. When advertising is off, new motes can not join and existing motes can not rejoin the network after a reset. Turning off advertising is primarily used to save power, or may be useful in for specific use cases where it is desirable to prevent motes from joining the network. In most cases, it is best to allow advertising to remain under the control of the manager.
     # 
     # \param activate 1-byte field formatted as a int.<br/>
     #     This field can only take one of the following values:
@@ -1105,7 +1108,7 @@ class IpMgrConnectorSerial(IpMgrConnectorSerialInternal):
     Tuple_dn_setDownstreamFrameMode = collections.namedtuple("Tuple_dn_setDownstreamFrameMode", ['RC', 'callbackId'])
 
     ##
-    # The setDownstreamFrameMode command tells the manager to shorten or extend the downstream slotframe. The base slotframe length will be multiplied by the downFrameMultVal for "normal" speed. For "fast" speed the downstream slotframe is the base length.Once this command is executed, the manager switches to manual mode and no longer changes slotframesize automatically. The response is a callbackId. A commandFinished notification with the callbackId is generated when the command propagation is complete.
+    # The setDownstreamFrameMode command tells the manager to shorten or extend the downstream slotframe. The base slotframe length will be multiplied by the downFrameMultVal for "normal" speed. For "fast" speed the downstream slotframe is the base length. Once this command is executed, the manager switches to manual mode and no longer changes slotframe size automatically. The response is a callbackId. A commandFinished notification with the callbackId is generated when the command propagation is complete.
     # 
     # \param frameMode 1-byte field formatted as a int.<br/>
     #     This field can only take one of the following values:
@@ -1267,7 +1270,7 @@ class IpMgrConnectorSerial(IpMgrConnectorSerialInternal):
     ##
     # The setLicense command has been deprecated in Manager >= 1.3.0. There is no longer a need to use a license to enable > 32 mote networks.
     # 
-    # The setLicense command validates and updates the software license key stored in flash. Features enabled or disabled by the license key change will take effect after the device is restarted.If the license parameter is set to all 0x0s, the manager restores the default license. This change is persistent.
+    # The setLicense command validates and updates the software license key stored in flash. Features enabled or disabled by the license key change will take effect after the device is restarted. If the license parameter is set to all 0x0s, the manager restores the default license. This change is persistent.
     # 
     # \param license 13-byte field formatted as a hex.<br/>
     #     There is no restriction on the value of this field.
@@ -1729,7 +1732,7 @@ class IpMgrConnectorSerial(IpMgrConnectorSerialInternal):
     Tuple_dn_setIPConfig = collections.namedtuple("Tuple_dn_setIPConfig", ['RC'])
 
     ##
-    # The setIPConfig command sets the IPv6 prefix of the mesh network. Only the upper 8 bytes of the IPv6 address are relevant: the lower 8 bytes of the IPv6 address are ignored, and lower 8 bytes of the mask field are reserved and should be set to 0.This change is persistent.
+    # The setIPConfig command sets the IPv6 prefix of the mesh network. Only the upper 8 bytes of the IPv6 address are relevant: the lower 8 bytes of the IPv6 address are ignored, and lower 8 bytes of the mask field are reserved and should be set to 0. This change is persistent.
     # 
     # \param ipv6Address 16-byte field formatted as a hex.<br/>
     #     There is no restriction on the value of this field.
@@ -1763,7 +1766,7 @@ class IpMgrConnectorSerial(IpMgrConnectorSerialInternal):
     Tuple_dn_deleteMote = collections.namedtuple("Tuple_dn_deleteMote", ['RC'])
 
     ##
-    # The deleteMote command deletes a mote from the manager's list. A mote can only be deleted if it in the Lost or Unknown states. This change is persistent.
+    # The deleteMote command deletes a mote from the manager's list. A mote can only be deleted if it is in the Lost state.
     # 
     # \param macAddress 8-byte field formatted as a hex.<br/>
     #     There is no restriction on the value of this field.
@@ -1901,7 +1904,7 @@ class IpMgrConnectorSerial(IpMgrConnectorSerialInternal):
     Tuple_dn_getMoteLinks = collections.namedtuple("Tuple_dn_getMoteLinks", ['RC', 'idx', 'utilization', 'numLinks', 'frameId_1', 'slot_1', 'channelOffset_1', 'moteId_1', 'flags_1', 'frameId_2', 'slot_2', 'channelOffset_2', 'moteId_2', 'flags_2', 'frameId_3', 'slot_3', 'channelOffset_3', 'moteId_3', 'flags_3', 'frameId_4', 'slot_4', 'channelOffset_4', 'moteId_4', 'flags_4', 'frameId_5', 'slot_5', 'channelOffset_5', 'moteId_5', 'flags_5', 'frameId_6', 'slot_6', 'channelOffset_6', 'moteId_6', 'flags_6', 'frameId_7', 'slot_7', 'channelOffset_7', 'moteId_7', 'flags_7', 'frameId_8', 'slot_8', 'channelOffset_8', 'moteId_8', 'flags_8', 'frameId_9', 'slot_9', 'channelOffset_9', 'moteId_9', 'flags_9', 'frameId_10', 'slot_10', 'channelOffset_10', 'moteId_10', 'flags_10'])
 
     ##
-    # The getMoteLinks command returns information about links assigned to the mote. The response contains a list of links starting with Nth link on the mote, where N is supplied as the idx parameter in the request. To retrieve all links on the device the user can call this command with idx that increments by number of links returned with priorresponse, until the command returns RC_END_OF_LIST response code. Note that links assigned to a mote may change between API calls.
+    # The getMoteLinks command returns information about links assigned to the mote. The response contains a list of links starting with Nth link on the mote, where N is supplied as the idx parameter in the request. To retrieve all links on the device the user can call this command with idx that increments by number of links returned with prior response, until the command returns RC_END_OF_LIST response code. Note that links assigned to a mote may change between API calls.
     # 
     # \param macAddress 8-byte field formatted as a hex.<br/>
     #     There is no restriction on the value of this field.
@@ -1913,6 +1916,80 @@ class IpMgrConnectorSerial(IpMgrConnectorSerialInternal):
     def dn_getMoteLinks(self, macAddress, idx) :
         res = IpMgrConnectorSerialInternal.send(self, ['getMoteLinks'], {"macAddress" : macAddress, "idx" : idx})
         return IpMgrConnectorSerial.Tuple_dn_getMoteLinks(**res)
+
+    ##
+    # The named tuple returned by the dn_radiotestRxPER() function.
+    # 
+    # - <tt>RC</tt>: 1-byte field formatted as a int.<br/>
+    #     This field can only take one of the following values:
+    #      - 0: RC_OK
+    #      - 1: RC_INVALID_COMMAND
+    #      - 2: RC_INVALID_ARGUMENT
+    #      - 11: RC_END_OF_LIST
+    #      - 12: RC_NO_RESOURCES
+    #      - 13: RC_IN_PROGRESS
+    #      - 14: RC_NACK
+    #      - 15: RC_WRITE_FAIL
+    #      - 16: RC_VALIDATION_ERROR
+    #      - 17: RC_INV_STATE
+    #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
+    # 
+    Tuple_dn_radiotestRxPER = collections.namedtuple("Tuple_dn_radiotestRxPER", ['RC'])
+
+    ##
+    # The radiotestRxPER command initiates the Packet Error Rate (PER) test in RX mode. This command may be issued only if the manager has been booted up in radiotest mode (see setNetworkConfig command).
+    # 
+    # This command is available in the SmartMesh IP Manager version 1.4.2 or later.
+    # 
+    # 
+    # 
+    # \returns The response to the command, formatted as a #Tuple_dn_radiotestRxPER named tuple.
+    # 
+    def dn_radiotestRxPER(self, ) :
+        res = IpMgrConnectorSerialInternal.send(self, ['radiotestRxPER'], {})
+        return IpMgrConnectorSerial.Tuple_dn_radiotestRxPER(**res)
+
+    ##
+    # The named tuple returned by the dn_radiotestTxPER() function.
+    # 
+    # - <tt>RC</tt>: 1-byte field formatted as a int.<br/>
+    #     This field can only take one of the following values:
+    #      - 0: RC_OK
+    #      - 1: RC_INVALID_COMMAND
+    #      - 2: RC_INVALID_ARGUMENT
+    #      - 11: RC_END_OF_LIST
+    #      - 12: RC_NO_RESOURCES
+    #      - 13: RC_IN_PROGRESS
+    #      - 14: RC_NACK
+    #      - 15: RC_WRITE_FAIL
+    #      - 16: RC_VALIDATION_ERROR
+    #      - 17: RC_INV_STATE
+    #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
+    # 
+    Tuple_dn_radiotestTxPER = collections.namedtuple("Tuple_dn_radiotestTxPER", ['RC'])
+
+    ##
+    # The radiotestTxPER command initiates the Packet Error Rate (PER) test in TX mode. This command may be issued only if the manager has been booted up in radiotest mode (see setNetworkConfig command).
+    # Channel numbering is 0-15, corresponding to IEEE 2.4 GHz channels 11-26.
+    # 
+    # This command is available in the SmartMesh IP Manager version 1.4.2 or later.
+    # 
+    # \param txPower 1-byte field formatted as a ints.<br/>
+    #     There is no restriction on the value of this field.
+    # \param numPackets 2-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    # \param chanMask 2-byte field formatted as a hex.<br/>
+    #     There is no restriction on the value of this field.
+    # \param numRepeat 2-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    # 
+    # \returns The response to the command, formatted as a #Tuple_dn_radiotestTxPER named tuple.
+    # 
+    def dn_radiotestTxPER(self, txPower, numPackets, chanMask, numRepeat) :
+        res = IpMgrConnectorSerialInternal.send(self, ['radiotestTxPER'], {"txPower" : txPower, "numPackets" : numPackets, "chanMask" : chanMask, "numRepeat" : numRepeat})
+        return IpMgrConnectorSerial.Tuple_dn_radiotestTxPER(**res)
 
     #======================== notifications ===================================
     
@@ -2031,7 +2108,7 @@ class IpMgrConnectorSerial(IpMgrConnectorSerialInternal):
     # 
     # 
     # - Uptime The number of seconds since the device was booted
-    # - Unixtime The number of seconds and microseconds since Jan 1, 1970 in UTC
+    # - Unix time The number of seconds and microseconds since Jan 1, 1970 in UTC
     #
     # Formatted as a Tuple_eventNetworkTime named tuple. It contains the following fields:
     #   - <tt>eventId</tt> 4-byte field formatted as a int.<br/>
@@ -2167,7 +2244,7 @@ class IpMgrConnectorSerial(IpMgrConnectorSerialInternal):
     ##
     # \brief EVENTJOINFAILED notification.
     # 
-    # The joinFailed event is generated when a mote sends a join request to the manager but the request can not be validated. This notification is available in Manager >= 1.4.1.
+    # The joinFailed event is generated when a mote sends a join request to the manager but the request can not be validated. This notification is available in Manager 1.4.1 or later.
     #
     # Formatted as a Tuple_eventJoinFailed named tuple. It contains the following fields:
     #   - <tt>eventId</tt> 4-byte field formatted as a int.<br/>
@@ -2187,7 +2264,7 @@ class IpMgrConnectorSerial(IpMgrConnectorSerialInternal):
     ##
     # \brief EVENTINVALIDMIC notification.
     # 
-    # The invalidMIC event is generated when a packet that the manager receives from a mote in the network fails decryption.  This notification is available in Manager >= 1.4.1.
+    # The invalidMIC event is generated when a packet that the manager receives from a mote in the network fails decryption. This notification is available in Manager 1.4.1 or later.
     #
     # Formatted as a Tuple_eventInvalidMIC named tuple. It contains the following fields:
     #   - <tt>eventId</tt> 4-byte field formatted as a int.<br/>
@@ -2267,6 +2344,30 @@ class IpMgrConnectorSerial(IpMgrConnectorSerialInternal):
     # 
     NOTIFHEALTHREPORT = "notifHealthReport"
     notifTupleTable[NOTIFHEALTHREPORT] = Tuple_notifHealthReport = collections.namedtuple("Tuple_notifHealthReport", ['macAddress', 'payload'])
+
+    ##
+    # \brief NOTIFRADIOTESTSTATSPER notification.
+    # 
+    # The testRadioStatsPER notification is generated by the manager when PER test in RX mode is completed.
+    # 
+    # This command is available in the SmartMesh IP Manager version 1.4.2 or later.
+    #
+    # Formatted as a Tuple_notifRadiotestStatsPER named tuple. It contains the following fields:
+    #   - <tt>numRxOK</tt> 2-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    #   - <tt>numRxErr</tt> 2-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    #   - <tt>numRxInv</tt> 2-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    #   - <tt>numRxMiss</tt> 2-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    #   - <tt>perInt</tt> 2-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    #   - <tt>perFrac</tt> 2-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.    
+    # 
+    NOTIFRADIOTESTSTATSPER = "notifRadiotestStatsPER"
+    notifTupleTable[NOTIFRADIOTESTSTATSPER] = Tuple_notifRadiotestStatsPER = collections.namedtuple("Tuple_notifRadiotestStatsPER", ['numRxOK', 'numRxErr', 'numRxInv', 'numRxMiss', 'perInt', 'perFrac'])
 
     ##
     # \brief Get a notification from the notification queue, and returns

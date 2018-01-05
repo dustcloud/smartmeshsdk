@@ -11,10 +11,13 @@ if __name__ == "__main__":
 
 #============================ imports =========================================
 
+# built-in
 import time
 import threading
 import traceback
 
+# SmartMeshSDK
+from SmartMeshSDK                                 import sdk_version
 from SmartMeshSDK.utils                           import FormatUtils
 from SmartMeshSDK.IpMgrConnectorSerial            import IpMgrConnectorSerial
 from SmartMeshSDK.IpMgrConnectorMux               import IpMgrSubscribe
@@ -26,8 +29,8 @@ from SmartMeshSDK.protocols.oap                   import OAPDispatcher, \
                                                          OAPMessage,    \
                                                          OAPNotif
 
+# DustCli
 from dustCli      import DustCli
-from SmartMeshSDK import sdk_version
 
 #============================ defines =========================================
 
@@ -547,7 +550,12 @@ def quit_clicb():
 def main():
     
     # create CLI interface
-    cli = DustCli.DustCli("OapClient",quit_clicb)
+    cli = DustCli.DustCli(
+        quit_cb  = quit_clicb,
+        versions = {
+            'SmartMesh SDK': sdk_version.VERSION,
+        },
+    )
     cli.registerCommand(
         name                      = 'connect',
         alias                     = 'c',
@@ -628,10 +636,6 @@ def main():
         callback                  = analog_clicb,
         dontCheckParamsLength     = False,
     )
-        
-    # print SmartMesh SDK version
-    print 'SmartMesh SDK {0}'.format('.'.join([str(i) for i in sdk_version.VERSION]))
-    cli.start()
 
 if __name__=='__main__':
     main()

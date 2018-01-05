@@ -91,7 +91,7 @@ class ManagerStopping(object):
         :param type: The type of this ManagerStopping.
         :type: str
         """
-        allowed_values = ["netStarted", "pathStateChanged", "pathAlert", "moteStateChanged", "joinFailed", "pingResponse", "invalidMIC", "dataPacketReceived", "ipPacketReceived", "packetSent", "cmdFinished", "configChanged", "configLoaded", "alarmOpened", "alarmClosed", "deviceHealthReport", "neighborHealthReport", "discoveryHealthReport", "rawMoteNotification", "serviceChanged", "apStateChanged", "managerStarted", "managerStopping", "optPhase", "pathAlert"]
+        allowed_values = ["netStarted", "pathStateChanged", "pathAlert", "moteStateChanged", "joinFailed", "pingResponse", "invalidMIC", "dataPacketReceived", "ipPacketReceived", "packetSent", "cmdFinished", "configChanged", "configLoaded", "alarmOpened", "alarmClosed", "deviceHealthReport", "neighborHealthReport", "discoveryHealthReport", "rawMoteNotification", "serviceChanged", "apStateChanged", "managerStarted", "managerStopping", "optPhase", "pathAlert", "moteTrace", "frameCapacity", "apGpsSyncChanged"]
         if type not in allowed_values:
             raise ValueError(
                 "Invalid value for `type`, must be one of {0}"

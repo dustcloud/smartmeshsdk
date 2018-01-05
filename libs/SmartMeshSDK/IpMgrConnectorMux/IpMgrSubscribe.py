@@ -23,7 +23,8 @@ class IpMgrSubscribe(object):
     NOTIFDATA            = "notifData"
     NOTIFIPDATA          = "notifIpData"
     NOTIFHEALTHREPORT    = "notifHealthReport"
-    ALLNOTIF             = [NOTIFEVENT, NOTIFLOG, NOTIFDATA, NOTIFIPDATA, NOTIFHEALTHREPORT]
+    NOTIFRADIOTESTSTATSPER = "notifRadiotestStatsPER"
+    ALLNOTIF             = [NOTIFEVENT, NOTIFLOG, NOTIFDATA, NOTIFIPDATA, NOTIFHEALTHREPORT, NOTIFRADIOTESTSTATSPER]
     EVENTMOTERESET       = "eventMoteReset"
     EVENTNETWORKRESET    = "eventNetworkReset"
     EVENTCOMMANDFINISHED = "eventCommandFinished"
@@ -75,6 +76,7 @@ class IpMgrSubscribe(object):
             self.NOTIFDATA         : [0x10, None, True],
             self.NOTIFIPDATA       : [0x20, None, True],
             self.NOTIFHEALTHREPORT : [0x40, None, True],
+            self.NOTIFRADIOTESTSTATSPER : [0x80, None, True],
         
         }
         self._con    = ipMgrConnector
@@ -120,7 +122,7 @@ class IpMgrSubscribe(object):
             be a single string (when subscribing to a single notification), or
             a list of strings (when subscribing to multiple notifications).
             The list of possible types is:
-            ERROR, FINISH, NOTIFEVENT, NOTIFLOG, NOTIFDATA, NOTIFIPDATA, NOTIFHEALTHREPORT, ALLNOTIF
+            ERROR, FINISH, NOTIFEVENT, NOTIFLOG, NOTIFDATA, NOTIFIPDATA, NOTIFHEALTHREPORT, NOTIFRADIOTESTSTATSPER, ALLNOTIF
 
         \param fun The function to call when any of the notification types
             specified in the notifTypes parameter occurs. If you wish to assign
@@ -142,6 +144,7 @@ class IpMgrSubscribe(object):
             <tr><td>NOTIFDATA           </td><td>Tuple_notifData</td>
             <tr><td>NOTIFIPDATA         </td><td>Tuple_notifIpData</td>
             <tr><td>NOTIFHEALTHREPORT   </td><td>Tuple_notifHealthReport</td>
+            <tr><td>NOTIFRADIOTESTSTATSPER</td><td>Tuple_notifRadiotestStatsPER</td>
             <tr><td>EVENTMOTERESET      </td><td>Tuple_eventMoteReset</td>
             <tr><td>EVENTNETWORKRESET   </td><td>Tuple_eventNetworkReset</td>
             <tr><td>EVENTCOMMANDFINISHED</td><td>Tuple_eventCommandFinished</td>

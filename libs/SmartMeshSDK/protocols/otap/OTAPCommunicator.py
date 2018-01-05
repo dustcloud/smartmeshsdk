@@ -46,9 +46,9 @@ OtapOptions = namedtuple('OtapOptions', 'broadcast_threshold retry_delay data_re
 RETRY_DELAY = 1       # retry delay if Picard can't accept the command
 DATA_RETRIES = 10     # number of retries before skipping the block 
 # TODO: skip or fail?
-INTER_COMMAND_DELAY = 1 # inter-packet delay for OTAP commands
-POST_DATA_DELAY = 1   # delay after sending all data before sending a status query
-WAIT_TIMEOUT = 3      # internal timeout for resetting waits
+INTER_COMMAND_DELAY = 3 # inter-packet delay for OTAP commands
+POST_DATA_DELAY = 30   # delay after sending all data before sending a status query
+WAIT_TIMEOUT = 10      # internal timeout for resetting waits
 BROADCAST_THRESHOLD = 1 # threshold for sending OTAP data as broadcast   
 
 DEFAULT_OPTIONS = OtapOptions(

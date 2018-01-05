@@ -17,6 +17,7 @@ if __name__ == "__main__":
 
 import urllib3
 import traceback
+import certifi
 
 # generic SmartMeshSDK imports
 from SmartMeshSDK                      import sdk_version
@@ -111,13 +112,14 @@ try:
     config.username     = 'dust'
     config.password     = 'dust'
     config.verify_ssl   = False
+    
+    if os.path.isfile(certifi.where()):
+        config.ssl_ca_cert  = certifi.where()
+    else:
+        config.ssl_ca_cert = os.path.join(os.path.dirname(sys.executable), "cacert.pem")
 
     # initialize the VManager Python library
     voyager = VManagerApi(host=mgrhost)
-
-    # read and display network configuration
-    netConfig = voyager.networkApi.get_network_config()
-    print netConfig
 
     # Start listening for data notifications
     voyager.get_notifications('data', notif_callback=process_notif)

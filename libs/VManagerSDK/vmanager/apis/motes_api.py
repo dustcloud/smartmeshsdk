@@ -701,6 +701,91 @@ class MotesApi(object):
                                             callback=params.get('callback'))
         return response
 
+    def exchange_network_id_mote(self, mac, parameters, **kwargs):
+        """
+        Exchange network id
+        This command triggers the manager to distribute a new network ID to a specific mote in the network. A callbackId is returned in the response. A cmdFinished notification with this callbackId will be sent when the operation is complete. This change is persistent. When the mote is reset, it will attempt to join the new network.
+
+        This method makes a synchronous HTTP request by default. To make an
+        asynchronous HTTP request, please define a `callback` function
+        to be invoked when receiving the response.
+        >>> def callback_function(response):
+        >>>     pprint(response)
+        >>>
+        >>> thread = api.exchange_network_id_mote(mac, parameters, callback=callback_function)
+
+        :param callback function: The callback function
+            for asynchronous request. (optional)
+        :param str mac: MAC Address (required)
+        :param NetworkIdInfo parameters:  (required)
+        :return: CallbackInfo
+                 If the method is called asynchronously,
+                 returns the request thread.
+        """
+
+        all_params = ['mac', 'parameters']
+        all_params.append('callback')
+
+        params = locals()
+        for key, val in iteritems(params['kwargs']):
+            if key not in all_params:
+                raise TypeError(
+                    "Got an unexpected keyword argument '%s'"
+                    " to method exchange_network_id_mote" % key
+                )
+            params[key] = val
+        del params['kwargs']
+
+        # verify the required parameter 'mac' is set
+        if ('mac' not in params) or (params['mac'] is None):
+            raise ValueError("Missing the required parameter `mac` when calling `exchange_network_id_mote`")
+        # verify the required parameter 'parameters' is set
+        if ('parameters' not in params) or (params['parameters'] is None):
+            raise ValueError("Missing the required parameter `parameters` when calling `exchange_network_id_mote`")
+
+        resource_path = '/motes/m/{mac}/networkId'.replace('{format}', 'json')
+        method = 'POST'
+
+        path_params = {}
+        if 'mac' in params:
+            path_params['mac'] = params['mac']
+
+        query_params = {}
+
+        header_params = {}
+
+        form_params = {}
+        files = {}
+
+        body_params = None
+        if 'parameters' in params:
+            body_params = params['parameters']
+
+        # HTTP header `Accept`
+        header_params['Accept'] = self.api_client.\
+            select_header_accept(['application/json'])
+        if not header_params['Accept']:
+            del header_params['Accept']
+
+        # HTTP header `Content-Type`
+        header_params['Content-Type'] = self.api_client.\
+            select_header_content_type(['application/json'])
+
+        # Authentication setting
+        auth_settings = ['dust_basic']
+
+        response = self.api_client.call_api(resource_path, method,
+                                            path_params,
+                                            query_params,
+                                            header_params,
+                                            body=body_params,
+                                            post_params=form_params,
+                                            files=files,
+                                            response_type='CallbackInfo',
+                                            auth_settings=auth_settings,
+                                            callback=params.get('callback'))
+        return response
+
     def ping_mote(self, mac, **kwargs):
         """
         Ping a mote

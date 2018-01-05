@@ -4,11 +4,9 @@ import struct
 import datetime
 from   array import array
 
-INFO_ADDRESS       = array('B', [0])
-DIGITAL_IN_ADDRESS = array('B', [0])
+DIGITAL_IN_ADDRESS = 2
 ANALOG_ADDRESS     = 4
 TEMP_ADDRESS       = array('B', [5])
-PKGEN_ADDRESS      = array('B', [254])
 
 NOTIFTYPE_SAMPLE   = 0
 NOTIFTYPE_STATS    = 1
@@ -62,40 +60,34 @@ def parse_oap_notif(data, index = 0):
         sample_size                         = int(data[index])
         index                              += 1
         
-        #===== create and populate result structure
+        #===== create result structure
         
-        if   channel == TEMP_ADDRESS:
+        if len(channel)==2 and channel[0]==DIGITAL_IN_ADDRESS:
+            result                          = OAPDigitalInSample()
+        elif channel == TEMP_ADDRESS:
             result                          = OAPTempSample()
-            result.packet_timestamp         = (secs, usecs)
-            result.rate                     = rate
-            result.num_samples              = num_samples
-            result.sample_size              = sample_size
-            for i in range(num_samples):
-                temp                        = struct.unpack('!h', data[index:index+2])[0]
-                index                      += 2
-                result.samples.append(temp)
         elif len(channel)==2 and channel[0]==ANALOG_ADDRESS:
             result                          = OAPAnalogSample()
-            result.packet_timestamp         = (secs, usecs)
-            result.rate                     = rate
-            result.num_samples              = num_samples
-            result.sample_size              = sample_size
-            for i in range(num_samples):
-                temp                        = struct.unpack('!h', data[index:index+2])[0]
-                index                      += 2
-                result.samples.append(temp)
         else:
-            result                          = OAPSample()
-            result.packet_timestamp         = (secs, usecs)
-            result.rate                     = rate
-            result.num_samples              = num_samples
-            result.sample_size              = sample_size
-            result.samples                  = []
-            bit_index                       = 0
-            for i in range(num_samples):
-                sample_data                 = OAPMessage.read_bits(data[index:], bit_index, sample_size)
-                result.samples.append(sample_data)
-           
+            raise SystemError("unknown OAP sample with channel={0}").format(channel)
+        
+        #===== populate result structure
+        
+        result.packet_timestamp             = (secs, usecs)
+        result.rate                         = rate
+        result.num_samples                  = num_samples
+        result.sample_size                  = sample_size
+        for i in range(num_samples):
+            if   sample_size==8:
+                temp                            = struct.unpack('!B', data[index:index+1])[0]
+                index                          += 1
+            elif sample_size==16:
+                temp                            = struct.unpack('!h', data[index:index+2])[0]
+                index                          += 2
+            else:
+                raise SystemError("unexpected sample_size of {0}".format(sample_size))
+            result.samples.append(temp)
+        
     elif notif_type==NOTIFTYPE_STATS:
         
         #===== parse
@@ -107,7 +99,7 @@ def parse_oap_notif(data, index = 0):
         index                              += 2 + l
         
         # timestamp
-        (secs, usecs)                       = struct.unpack_from('!ql', data, index + 1)
+        (secs, usecs)                       = struct.unpack_from('!ql', data, index)
         index                              += 12
         
         # rate
@@ -131,7 +123,7 @@ def parse_oap_notif(data, index = 0):
     elif notif_type==NOTIFTYPE_DIG:
     
         #===== parse
-                        
+
         # channel (TLV)
         (tag, l, channel)                   = OAPMessage.parse_tlv(data[index:])
         if tag!=TAG_ADDRESS:
@@ -139,7 +131,7 @@ def parse_oap_notif(data, index = 0):
         index                              += 2 + l
         
         # timestamp
-        (secs, usecs)                       = struct.unpack_from('!ql', data, index + 1)
+        (secs, usecs)                       = struct.unpack_from('!ql', data, index)
         index                              += 12
         
         # new value
@@ -147,7 +139,7 @@ def parse_oap_notif(data, index = 0):
         index                              += 1
         
         #===== create and populate result structure
-                
+        
         result                          = OAPDigitalIn()
         result.channel                  = channel
         result.packet_timestamp         = (secs, usecs)
@@ -204,6 +196,8 @@ def parse_oap_notif(data, index = 0):
         
     return result
 
+#===== OAP notification base class
+
 class OAPNotif(object):
     '''
     \brief Parent class for all OAP notification structures.
@@ -231,6 +225,8 @@ class OAPNotif(object):
         }
         return returnVal
 
+#===== OAP Sample/Report notification
+
 class OAPSample(OAPNotif):
     '''
     \brief representation of a (e.g. sensor) sample notification.
@@ -240,6 +236,32 @@ class OAPSample(OAPNotif):
             self.channel_str(),
             ', '.join([str(i) for i in self.samples]),
         )
+
+class OAPDigitalInSample(OAPSample):
+    '''
+    \brief representation of an digital_in sample notification.
+    '''
+    def __init__(self):
+        self.rate                           = 0
+        self.input                          = 0
+        self.num_samples                    = 0
+        self.sample_size                    = 0
+        self.samples                        = []
+    
+    def __str__(self):
+        return 'DIGITAL_IN input={0} state={1} V'.format(
+            self.input,
+            self.samples[0],
+        )
+    
+    def _asdict(self):
+        returnVal = super(OAPDigitalInSample, self)._asdict()
+        returnVal['rate']                   = self.rate
+        returnVal['input']                  = self.input
+        returnVal['num_samples']            = self.num_samples
+        returnVal['sample_size']            = self.sample_size
+        returnVal['samples']                = self.samples
+        return returnVal
 
 class OAPTempSample(OAPSample):
     '''
@@ -290,6 +312,8 @@ class OAPAnalogSample(OAPSample):
         returnVal['samples']                = self.samples
         return returnVal
 
+#===== OAP Stats report (min/max/ave)
+
 class OAPAnalogStats(OAPNotif):
     '''
     \brief representation of a stats notification.
@@ -320,6 +344,8 @@ class OAPAnalogStats(OAPNotif):
         returnVal['ave_value']              = self.ave_value
         return returnVal
 
+#===== OAP Digital change notification
+
 class OAPDigitalIn(OAPNotif):
     '''
     \brief representation of a digital input notification.
@@ -336,6 +362,8 @@ class OAPDigitalIn(OAPNotif):
         returnVal = super(OAPDigitalIn, self)._asdict()
         returnVal['new_val']                = self.new_val
         return returnVal
+
+#===== OAP PkGen notification
 
 class OAPpkGenPacket(OAPNotif):
     def __init__(self):

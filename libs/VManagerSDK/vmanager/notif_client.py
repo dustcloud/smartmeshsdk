@@ -54,6 +54,9 @@ from .models import manager_started
 from .models import manager_stopping
 from .models import opt_phase
 from .models import path_alert
+from .models import ap_gps_sync_changed
+from .models import frame_capacity
+from .models import mote_trace
 
 log = logging.getLogger('vmanager.notif_client')
 
@@ -122,6 +125,9 @@ NOTIF_TYPE_MAP = {
     'managerStopping': manager_stopping.ManagerStopping,
     'pathAlert': path_alert.PathAlert,
     'optPhase': opt_phase.OptPhase,
+    'apGpsSyncChanged': ap_gps_sync_changed.ApGpsSyncChanged,
+    'frameCapacity': frame_capacity.FrameCapacity,
+    'moteTrace': mote_trace.MoteTrace,
     # Config
     'configChanged': config_changed.ConfigChanged,
     'configDeleted': config_deleted.ConfigDeleted,

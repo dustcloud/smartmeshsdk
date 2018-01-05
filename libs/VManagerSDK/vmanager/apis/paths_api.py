@@ -148,12 +148,13 @@ class PathsApi(object):
         :param str mac: MAC Address (required)
         :param int start_index: Start index for the response elements
         :param int max_results: Maximum number of elements to return
-        :return: MACAddrList
+        :param bool details: Provide details for each path
+        :return: PathDetailsList
                  If the method is called asynchronously,
                  returns the request thread.
         """
 
-        all_params = ['mac', 'start_index', 'max_results']
+        all_params = ['mac', 'start_index', 'max_results', 'details']
         all_params.append('callback')
 
         params = locals()
@@ -182,6 +183,8 @@ class PathsApi(object):
             query_params['startIndex'] = params['start_index']
         if 'max_results' in params:
             query_params['maxResults'] = params['max_results']
+        if 'details' in params:
+            query_params['details'] = params['details']
 
         header_params = {}
 
@@ -210,7 +213,7 @@ class PathsApi(object):
                                             body=body_params,
                                             post_params=form_params,
                                             files=files,
-                                            response_type='MACAddrList',
+                                            response_type='PathDetailsList',
                                             auth_settings=auth_settings,
                                             callback=params.get('callback'))
         return response

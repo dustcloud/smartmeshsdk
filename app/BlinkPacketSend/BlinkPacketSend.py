@@ -102,9 +102,11 @@ parser.add_option("-p", "--packets", dest='packets', default=1,
 #============================ main ============================================
 
 try:
-    print '\nBlinkPacketSend (c) Dust Networks'
+    print 'BlinkPacketSend (c) Dust Networks'
     print 'SmartMesh SDK {0}\n'.format('.'.join([str(b) for b in sdk_version.VERSION]))
     print 'Note: Use with Manager Data capture utility to receive the packets\n'
+    
+    print 'using the following parameters: {0}\n'.format(options)
     
     #=====
 
@@ -145,7 +147,25 @@ try:
   
     print 'Script ended normally.'
 
-except:
-    traceback.print_exc()
-    print 'Script ended with an error.'
-    sys.exit()    
+except Exception as err:
+    output  = []
+    output += ["Script ended with an error!"]
+    output += [""]
+    output += ["======== exception ==========="]
+    output += [""]
+    output += [str(err)]
+    output += [""]
+    output += ["======== trace ==============="]
+    output += [""]
+    output += [traceback.format_exc()]
+    output += ["=============================="]
+    output += [""]
+    output  = '\n'.join(output)
+    print output
+    
+    tout = 20
+    while tout:
+        print 'closing in {0} s...'.format(tout)
+        time.sleep(1)
+        tout -= 1
+    sys.exit()

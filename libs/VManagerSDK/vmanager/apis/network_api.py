@@ -498,7 +498,7 @@ class NetworkApi(object):
     def exchange_network_id(self, parameters, **kwargs):
         """
         Exchange network id
-        This command triggers the manager to distribute a new network ID to all the motes in the network. A callbackId is returned in the response. A cmdFinished notification with this callbackId will be sent when the operation is complete. This change is persistent.
+        This command triggers the manager to distribute a new network ID to all the motes in the network. A callbackId is returned in the response. A cmdFinished notification with this callbackId will be sent when the operation is complete. When the operation is complete, the manager's network configuration is updated. The configuration changes are persistent. Both the motes and manager need to be reset for the new network ID to take effect.
 
         This method makes a synchronous HTTP request by default. To make an
         asynchronous HTTP request, please define a `callback` function

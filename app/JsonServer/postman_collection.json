@@ -2,7 +2,7 @@
 	"variables": [],
 	"info": {
 		"name": "JsonServer",
-		"_postman_id": "6c16ae1e-4edb-27c3-3908-196c9f522804",
+		"_postman_id": "e92fba6c-1ffe-27f8-d055-4c3f07ccd9bc",
 		"description": "",
 		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
 	},
@@ -652,6 +652,32 @@
 						"body": {
 							"mode": "raw",
 							"raw": "{\r\n    \"mac\": \"00-17-0D-00-00-38-04-35\",\r\n    \"state\": 0\r\n}"
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "helpers snapshot",
+					"request": {
+						"url": "http://{{host}}:{{port}}/api/v1/helpers/snapshot",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "X-Correlation-ID",
+								"value": "poipoi",
+								"description": "",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"manager\": 0,\r\n    \"correlationID\": \"poipoi\"\r\n}"
 						},
 						"description": ""
 					},

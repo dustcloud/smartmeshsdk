@@ -120,7 +120,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     Tuple_dn_setParameter_batteryLife = collections.namedtuple("Tuple_dn_setParameter_batteryLife", ['RC'])
 
     ##
-    # The setParameter<batteryLife> command allows the microprocessor to update the remaining battery life information that the mote reports to WirelessHART Gateway in Command 778. This parameter must be set during the Idle state prior to joining, and should be updated periodically throughout operation.This parameter is only used in WirelessHART-compliant devices.
+    # The setParameter<batteryLife> command allows the microprocessor to update the remaining battery life information that the mote reports to WirelessHART Gateway in Command 778. This parameter must be set during the Idle state prior to joining, and should be updated periodically throughout operation. This parameter is only used in WirelessHART-compliant devices.
     # 
     # Command 778 is deprecated in version 7.4 of the HART specification as most existing gateways do not use battery life information.
     # 
@@ -168,13 +168,13 @@ class HartMoteConnector(HartMoteConnectorInternal):
     Tuple_dn_setParameter_service = collections.namedtuple("Tuple_dn_setParameter_service", ['RC', 'numServices'])
 
     ##
-    # The setParameter<service> command is used to request new device-originated bandwidth services and modify existing device-initiated services (now called "Timetables" in WirelessHART 7.4).Calling thiscommand updates the motes internal service table, which later initiates a request to the network manager for bandwidth allocation. A subsequent serviceIndication notification will be sent indicating the response from the network manager. The getParameter<service> command may be used to read the service table, including the state of the service request.
+    # The setParameter<service> command is used to request new device-originated bandwidth services and modify existing device-initiated services (now called "Timetables" in WirelessHART 7.4). Calling this command updates the motes internal service table, which later initiates a request to the network manager for bandwidth allocation. A subsequent serviceIndication notification will be sent indicating the response from the network manager. The getParameter<service> command may be used to read the service table, including the state of the service request.
     # 
     # The setParameter<service> command may be sent at any time. If the network manager rejects a service request, the microprocessor can try again by re-issuing the setParameter<service> command.
     # 
     # To delete a service, set the time field of the desired service to zero. Service request flags, application domain, and destination address are ignored by the mote when time equals zero.
     # 
-    # Normally all service requests are compared against the power limits set with the setNVParameter<powerInfo> command. Services that would cause the device to exceed its power budget are denied.In Manager 4.1.1, a service request of 1 ms will result in the manager respecting the power limit for publish services, but will allow a block-transfer service requests (see the SmartMesh WirelessHART User's Guide section on Services)that would result in a fast pipe being activated.
+    # Normally all service requests are compared against the power limits set with the setNVParameter<powerInfo> command. Services that would cause the device to exceed its power budget are denied. In Manager 4.1.1, a service request of 1 ms will result in the manager respecting the power limit for publish services, but will allow a block-transfer service requests (see the SmartMesh WirelessHART User's Guide section on Services) that would result in a fast pipe being activated.
     # 
     # \param serviceId 1-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
@@ -227,11 +227,13 @@ class HartMoteConnector(HartMoteConnectorInternal):
     # 
     # \param hartDevStatus 1-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
+    # \param hartExtDevStatus 1-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
     # 
     # \returns The response to the command, formatted as a #Tuple_dn_setParameter_hartDeviceStatus named tuple.
     # 
-    def dn_setParameter_hartDeviceStatus(self, hartDevStatus) :
-        res = HartMoteConnectorInternal.send(self, ['setParameter', 'hartDeviceStatus'], {"hartDevStatus" : hartDevStatus})
+    def dn_setParameter_hartDeviceStatus(self, hartDevStatus, hartExtDevStatus) :
+        res = HartMoteConnectorInternal.send(self, ['setParameter', 'hartDeviceStatus'], {"hartDevStatus" : hartDevStatus, "hartExtDevStatus" : hartExtDevStatus})
         return HartMoteConnector.Tuple_dn_setParameter_hartDeviceStatus(**res)
 
     ##
@@ -260,7 +262,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     Tuple_dn_setParameter_hartDeviceInfo = collections.namedtuple("Tuple_dn_setParameter_hartDeviceInfo", ['RC'])
 
     ##
-    # The setParameter<hartDeviceInfo> command is used to set HART device information that the mote passes to gateway during join. This command must be issued prior to join. This command is only required for WirelessHART-compliant devices.Note that the contents of this command are not validated by mote.
+    # The setParameter<hartDeviceInfo> command is used to set HART device information that the mote passes to gateway during join. This command must be issued prior to join. This command is only required for WirelessHART-compliant devices. Note that the contents of this command are not validated by mote.
     # 
     # \param hartCmd0 22-byte field formatted as a hex.<br/>
     #     There is no restriction on the value of this field.
@@ -377,7 +379,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     Tuple_dn_setParameter_lock = collections.namedtuple("Tuple_dn_setParameter_lock", ['RC'])
 
     ##
-    # The setParameter<lock> command locks/unlocks select HART commands (ones that affect the configuration changed flag) to a specific master (GW or serial maintenance port) to prevent the other master from changing it. This command is intended for use when the lock is temporary, i.e. it does not persist through power cycle or reset. For nonvolatile locking, use the setNVParameter<lock> command.Note: This parameter is available in devices running mote software >= 1.1.0
+    # The setParameter<lock> command locks/unlocks select HART commands (ones that affect the configuration changed flag) to a specific master (GW or serial maintenance port) to prevent the other master from changing it. This command is intended for use when the lock is temporary, i.e. it does not persist through power cycle or reset. For nonvolatile locking, use the setNVParameter<lock> command. Note: This parameter is available in devices running mote software >= 1.1.0
     # 
     # \param code 1-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
@@ -792,7 +794,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     Tuple_dn_getParameter_lock = collections.namedtuple("Tuple_dn_getParameter_lock", ['RC', 'code', 'master'])
 
     ##
-    # The getParameter<lock> command returns the current (RAM resident) lock code and locking master. To determine what the lock status will be after reset, use the getNVParameter<lock> command.Note: This parameter is available in devices running mote software >= 1.1.0
+    # The getParameter<lock> command returns the current (RAM resident) lock code and locking master. To determine what the lock status will be after reset, use the getNVParameter<lock> command. Note: This parameter is available in devices running mote software >= 1.1.0
     # 
     # 
     # 
@@ -902,7 +904,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     Tuple_dn_setNVParameter_networkId = collections.namedtuple("Tuple_dn_setNVParameter_networkId", ['RC'])
 
     ##
-    # The setNVParameter<networkId> command may be used to set the persistent Network ID of the mote. The networkId is used to separate networks, and can be set during manufacturing or in the field.The mote reads this value from persistent storage at boot time. Note: while the mote is in Idle state, it is possible to update the value of mote's in-RAM Network ID by using the RAM flag in the header of this command. This avoids the extra reset that is needed to start using the Network ID. Network ID can also be set over the air using HART command 773 in a WirelessHART-compliant network.
+    # The setNVParameter<networkId> command may be used to set the persistent Network ID of the mote. The networkId is used to separate networks, and can be set during manufacturing or in the field. The mote reads this value from persistent storage at boot time. Note: while the mote is in Idle state, it is possible to update the value of mote's in-RAM Network ID by using the RAM flag in the header of this command. This avoids the extra reset that is needed to start using the Network ID. Network ID can also be set over the air using HART command 773 in a WirelessHART-compliant network.
     # 
     # As of version 1.1.1, a network ID of 0xFFFF can be used to indicate that the mote should join the first network heard.
     # 
@@ -1026,7 +1028,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     Tuple_dn_setNVParameter_ttl = collections.namedtuple("Tuple_dn_setNVParameter_ttl", ['RC'])
 
     ##
-    # The setNVParameter<ttl> command sets the mote's persistent packet Time To Live (TTL) value. TTL specifies the maximum number of hops a packet may traverse before it is discarded from the network. A mote sets the initial value of the TTL field in the packets it generates to this value.The mote reads the value from persistent storage at boot time. To change the TTL used currently, this command may be issued with the RAM option.
+    # The setNVParameter<ttl> command sets the mote's persistent packet Time To Live (TTL) value. TTL specifies the maximum number of hops a packet may traverse before it is discarded from the network. A mote sets the initial value of the TTL field in the packets it generates to this value. The mote reads the value from persistent storage at boot time. To change the TTL used currently, this command may be issued with the RAM option.
     # 
     # The mote defaults TTL to 127. For compliant devices, the HART specification currently defaults to 32, but this will change to 249 in spec version 7.4, as will the mote default. We suggest not changing the mote default unless HART specifically raises it as a compliance issue when you submit your device for testing.
     # 
@@ -1065,7 +1067,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     Tuple_dn_setNVParameter_hartAntennaGain = collections.namedtuple("Tuple_dn_setNVParameter_hartAntennaGain", ['RC'])
 
     ##
-    # The setNVParameter<hartAntennaGain> command stores value of the antenna gain in the mote's persistent storage.This value is added to the conducted output power of the mote when replying to HART command 797 (Write Radio Power Output) and to HART command 798 (Read Radio Output Power). The antenna gain should take into account both the gain of the antenna and any loss (for example, attenuation from a long coax cable) between the mote and the antenna. By default, this value is 2, assuming a +2 dBi antenna gain. To change the transmit power immediately, use the write RAM option of this command.
+    # The setNVParameter<hartAntennaGain> command stores value of the antenna gain in the mote's persistent storage. This value is added to the conducted output power of the mote when replying to HART command 797 (Write Radio Power Output) and to HART command 798 (Read Radio Output Power). The antenna gain should take into account both the gain of the antenna and any loss (for example, attenuation from a long coax cable) between the mote and the antenna. By default, this value is 2, assuming a +2 dBi antenna gain. To change the transmit power immediately, use the write RAM option of this command.
     # 
     # \param antennaGain 1-byte field formatted as a ints.<br/>
     #     There is no restriction on the value of this field.
@@ -1188,17 +1190,13 @@ class HartMoteConnector(HartMoteConnectorInternal):
     ##
     # The setNVParameter<autojoin> command allows the microprocessor to change between automatic and manual joining by the mote's networking stack. In manual mode, an explicit join command from the application is required to initiate joining. This setting is persistent and takes effect after mote reset. (Available Mote >= 1.1) Note that auto join mode must not be set if the application is also configured to join (e.g combining 'auto join' with 'master' mode will result in mote not joining).
     # 
-    # \param reserved 4-byte field formatted as a int.<br/>
-    #     There is no restriction on the value of this field.
-    # \param nvParamId 1-byte field formatted as a int.<br/>
-    #     There is no restriction on the value of this field.
     # \param autojoin 1-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
     # 
     # \returns The response to the command, formatted as a #Tuple_dn_setNVParameter_autojoin named tuple.
     # 
-    def dn_setNVParameter_autojoin(self, reserved, nvParamId, autojoin) :
-        res = HartMoteConnectorInternal.send(self, ['setNVParameter', 'autojoin'], {"reserved" : reserved, "nvParamId" : nvParamId, "autojoin" : autojoin})
+    def dn_setNVParameter_autojoin(self, autojoin) :
+        res = HartMoteConnectorInternal.send(self, ['setNVParameter', 'autojoin'], {"autojoin" : autojoin})
         return HartMoteConnector.Tuple_dn_setNVParameter_autojoin(**res)
 
     ##
@@ -1270,7 +1268,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     Tuple_dn_setNVParameter_lock = collections.namedtuple("Tuple_dn_setNVParameter_lock", ['RC'])
 
     ##
-    # The setNVParameter<lock> command persistently locks/unlocks select HART commands (ones that affect the configuration changed flag) to a specific master (GW or serial maintenance port) to prevent the other master from changing it. This command is intended for use when the lock persists through power cycle or reset. For temporary locking, use the setParameter<lock> command. Bit 7 in the flags field of the API header (see Packet Format) should be set (store in NV & RAM) when calling this command.Note: This parameter is available in devices running mote software >= 1.1.0
+    # The setNVParameter<lock> command persistently locks/unlocks select HART commands (ones that affect the configuration changed flag) to a specific master (GW or serial maintenance port) to prevent the other master from changing it. This command is intended for use when the lock persists through power cycle or reset. For temporary locking, use the setParameter<lock> command. Bit 7 in the flags field of the API header (see Packet Format) should be set (store in NV & RAM) when calling this command. Note: This parameter is available in devices running mote software >= 1.1.0
     # 
     # \param code 1-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
@@ -1311,7 +1309,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     ##
     # The setNVParameter<euCompliantMode> command may be used to enforce EN 300 328 duty cycle limits based on output power. This may cause the mote to skip some transmit opportunities to remain within average power limits. Motes below +10 dBm radiated power do not need to duty cycle to meet EN 300 328 requirements.
     # 
-    # Note: This parameter is available in version>=1.2.x
+    # Note: This parameter is available in version >=1.2.x
     # 
     # \param euCompliantMode 1-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
@@ -1321,6 +1319,43 @@ class HartMoteConnector(HartMoteConnectorInternal):
     def dn_setNVParameter_euCompliantMode(self, euCompliantMode) :
         res = HartMoteConnectorInternal.send(self, ['setNVParameter', 'euCompliantMode'], {"euCompliantMode" : euCompliantMode})
         return HartMoteConnector.Tuple_dn_setNVParameter_euCompliantMode(**res)
+
+    ##
+    # The named tuple returned by the dn_setNVParameter_joinShedTime() function.
+    # 
+    # - <tt>RC</tt>: 1-byte field formatted as a int.<br/>
+    #     This field can only take one of the following values:
+    #      - 0: RC_OK
+    #      - 3: RC_BUSY
+    #      - 4: RC_INVALID_LEN
+    #      - 5: RC_INVALID_STATE
+    #      - 6: RC_UNSUPPORTED
+    #      - 7: RC_UNKNOWN_PARAM
+    #      - 8: RC_UNKNOWN_CMD
+    #      - 9: RC_WRITE_FAIL
+    #      - 10: RC_READ_FAIL
+    #      - 11: RC_LOW_VOLTAGE
+    #      - 12: RC_NO_RESOURCES
+    #      - 13: RC_INCOMPLETE_JOIN_INFO
+    #      - 14: RC_NOT_FOUND
+    #      - 15: RC_INVALID_VALUE
+    #      - 16: RC_ACCESS_DENIED
+    #      - 18: RC_OPEN_FAIL
+    #      - 19: RC_ERASE_FAIL
+    # 
+    Tuple_dn_setNVParameter_joinShedTime = collections.namedtuple("Tuple_dn_setNVParameter_joinShedTime", ['RC'])
+
+    ##
+    # The setNVParameter<joinShedTime> command sets the join shed time u sed with HART command 771/772 to determine when the mote should transition between active and passive search. This command may be issued at any time and takes effect at the next mote boot.
+    # 
+    # \param joinShedTime 4-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    # 
+    # \returns The response to the command, formatted as a #Tuple_dn_setNVParameter_joinShedTime named tuple.
+    # 
+    def dn_setNVParameter_joinShedTime(self, joinShedTime) :
+        res = HartMoteConnectorInternal.send(self, ['setNVParameter', 'joinShedTime'], {"joinShedTime" : joinShedTime})
+        return HartMoteConnector.Tuple_dn_setNVParameter_joinShedTime(**res)
 
     ##
     # The named tuple returned by the dn_getNVParameter_macAddress() function.
@@ -1665,25 +1700,20 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
-    # - <tt>nvParamId</tt>: 1-byte field formatted as a int.<br/>
-    #     There is no restriction on the value of this field.
     # - <tt>autojoin</tt>: 1-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
     # 
-    Tuple_dn_getNVParameter_autojoin = collections.namedtuple("Tuple_dn_getNVParameter_autojoin", ['RC', 'nvParamId', 'autojoin'])
+    Tuple_dn_getNVParameter_autojoin = collections.namedtuple("Tuple_dn_getNVParameter_autojoin", ['RC', 'autojoin'])
 
     ##
     # The getNVParameter<autojoin> command returns the autojoin status stored in mote's persistent storage (i.e. set with setNVParameter<autojoin>). Autojoin can be used to cause a mote in slave mode to join on its own when booted.
     # 
-    # \param reserved 4-byte field formatted as a int.<br/>
-    #     There is no restriction on the value of this field.
-    # \param nvParamId 1-byte field formatted as a int.<br/>
-    #     There is no restriction on the value of this field.
+    # 
     # 
     # \returns The response to the command, formatted as a #Tuple_dn_getNVParameter_autojoin named tuple.
     # 
-    def dn_getNVParameter_autojoin(self, reserved, nvParamId) :
-        res = HartMoteConnectorInternal.send(self, ['getNVParameter', 'autojoin'], {"reserved" : reserved, "nvParamId" : nvParamId})
+    def dn_getNVParameter_autojoin(self, ) :
+        res = HartMoteConnectorInternal.send(self, ['getNVParameter', 'autojoin'], {})
         return HartMoteConnector.Tuple_dn_getNVParameter_autojoin(**res)
 
     ##
@@ -1716,7 +1746,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     Tuple_dn_getNVParameter_hartCompliantMode = collections.namedtuple("Tuple_dn_getNVParameter_hartCompliantMode", ['RC', 'hartCompliantMode'])
 
     ##
-    # The getNVParameter<hartCompliantMode> command may be used to retrieve the HART compliance mode that is used by devices.This mode controls strict compliance to HART specification requirements, specifically:
+    # The getNVParameter<hartCompliantMode> command may be used to retrieve the HART compliance mode that is used by devices. This mode controls strict compliance to HART specification requirements, specifically:
     # 
     # - join timeouts (faster in non-compliant mode)
     # - Keepalive interval (adapts to synch quality in non-compliant mode)
@@ -1762,7 +1792,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     Tuple_dn_getNVParameter_lock = collections.namedtuple("Tuple_dn_getNVParameter_lock", ['RC', 'code', 'master'])
 
     ##
-    # The getNVParameter < lock > command returns the persisted lock code and locking master (those to be used after reset). To determine the current lock status, use the getParameter<lock> command.Note: This parameter is available in devices running mote software >= 1.1.0
+    # The getNVParameter < lock > command returns the persisted lock code and locking master (those to be used after reset). To determine the current lock status, use the getParameter<lock> command. Note: This parameter is available in devices running mote software >= 1.1.0
     # 
     # 
     # 
@@ -1813,6 +1843,44 @@ class HartMoteConnector(HartMoteConnectorInternal):
         return HartMoteConnector.Tuple_dn_getNVParameter_euCompliantMode(**res)
 
     ##
+    # The named tuple returned by the dn_getNVParameter_joinShedTime() function.
+    # 
+    # - <tt>RC</tt>: 1-byte field formatted as a int.<br/>
+    #     This field can only take one of the following values:
+    #      - 0: RC_OK
+    #      - 3: RC_BUSY
+    #      - 4: RC_INVALID_LEN
+    #      - 5: RC_INVALID_STATE
+    #      - 6: RC_UNSUPPORTED
+    #      - 7: RC_UNKNOWN_PARAM
+    #      - 8: RC_UNKNOWN_CMD
+    #      - 9: RC_WRITE_FAIL
+    #      - 10: RC_READ_FAIL
+    #      - 11: RC_LOW_VOLTAGE
+    #      - 12: RC_NO_RESOURCES
+    #      - 13: RC_INCOMPLETE_JOIN_INFO
+    #      - 14: RC_NOT_FOUND
+    #      - 15: RC_INVALID_VALUE
+    #      - 16: RC_ACCESS_DENIED
+    #      - 18: RC_OPEN_FAIL
+    #      - 19: RC_ERASE_FAIL
+    # - <tt>joinShedTime</tt>: 4-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    # 
+    Tuple_dn_getNVParameter_joinShedTime = collections.namedtuple("Tuple_dn_getNVParameter_joinShedTime", ['RC', 'joinShedTime'])
+
+    ##
+    # The getNVParameter<joinShedTime> command returns the join shed time used with HART command 771/772 to determine when the mote should transition between active and passive search.
+    # 
+    # 
+    # 
+    # \returns The response to the command, formatted as a #Tuple_dn_getNVParameter_joinShedTime named tuple.
+    # 
+    def dn_getNVParameter_joinShedTime(self, ) :
+        res = HartMoteConnectorInternal.send(self, ['getNVParameter', 'joinShedTime'], {})
+        return HartMoteConnector.Tuple_dn_getNVParameter_joinShedTime(**res)
+
+    ##
     # The named tuple returned by the dn_send() function.
     # 
     # - <tt>RC</tt>: 1-byte field formatted as a int.<br/>
@@ -1840,8 +1908,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     ##
     # The send command allows a serial device to send a packet into the network through the mote's serial port. The mote forwards the packet to the network upon receiving it. The microprocessor must not attempt to send data at a rate that exceeds its allocated bandwidth. For a WirelessHART device, the payload of the packet must include the status byte and the extended status byte, followed by one or more sets of HART commands up to the maximum send payload size, as follows:
     # 
-    # Request: Status|Extended Status|Cmd1|Length1|Data1|Cmd2|Length2|Data2...
-    # Response: Status|Extended Status|Cmd1|Length1(includes response code)|RC1|Data1|Cmd2|Length2|RC2|Data2...
+    # Request: Status|Extended Status|Cmd1|Length1|Data1|Cmd2|Length2|Data2... Response: Status|Extended Status|Cmd1|Length1(includes response code)|RC1|Data1|Cmd2|Length2|RC2|Data2...
     # 
     # Prior to sending the payload into the network, the mote caches the value of Status and Extended Status to use in packets it originates locally. The send command is only valid when the mote is in the Operational state. If the mote receives this command when it is not in the Operational state, it returns the error RC_INV_STATE. Note: The serial device can receive a request while the mote is in the process of transition from the Connected state to the Operational state.
     # 
@@ -2063,11 +2130,11 @@ class HartMoteConnector(HartMoteConnectorInternal):
     Tuple_dn_hartPayload = collections.namedtuple("Tuple_dn_hartPayload", ['RC', 'payloadLen', 'payload'])
 
     ##
-    # The hartPayload command allows the microprocessor to forward a HART payload to the mote. The format of the command must be as follows
+    # The hartPayload command allows the microprocessor to forward a HART payload to the mote. The format of the command must be as follows:
     # 
     # 16-bit command number | data length | data
     # 
-    # The reply (if any) will be in the form of a HART response and sent in the payload of the acknowledgement. The RC_INVALID_VALUE response means that the hartPayload command was given a HART command that the mote does not terminate.
+    # The reply (if any) will be in the form of a HART response and sent in the payload of the acknowledgement. This command always returns RC_OK - any HART errors are returned within the response payload, e.g. if a command is not implemented, the response payload field will contain the 16-bit command number, a length = 1, and data = 0x40 (HART RC 64).
     # 
     # \param payloadLen 1-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
@@ -2108,11 +2175,13 @@ class HartMoteConnector(HartMoteConnectorInternal):
     ##
     # The testRadioTx command initiates transmission over the radio. This command may only be issued prior to the mote joining the network. While executing this command the mote sends numPackets packets. Each packet consists of a payload of up to 125 bytes, and a 2-byte 802.15.4 CRC at the end. Bytes 0 and 1 contain the packet number (in big-endian format) that increments with every packet transmitted. Bytes 2..N contain a counter (from 0..N-2) that increments with every byte inside payload. Transmissions occur on the specified channel.
     # 
-    # If number of packets parameter is set to 0x00, the mote will generate an unmodulatedtest tone on the selected channel. The test tone can only be stopped by resetting themote.
+    # If number of packets parameter is set to 0x00, the mote will generate an unmodulated test tone on the selected channel. The test tone can only be stopped by resetting the mote.
     # 
     # 
     # 
     # Channel numbering is 0-15, corresponding to IEEE 2.4 GHz channels 11-26.
+    # 
+    # 
     # 
     # Note: this command is deprecated and should not be used in new designs. The replacement command is testRadioTxExt.
     # 
@@ -2158,6 +2227,8 @@ class HartMoteConnector(HartMoteConnectorInternal):
     # 
     # 
     # Channel numbering is 0-15, corresponding to IEEE 2.4 GHz channels 11-26.
+    # 
+    # 
     # 
     # Note: this command is deprecated and should not be used in new designs. The replacement command is testRadioRxExt.
     # 
@@ -2390,9 +2461,9 @@ class HartMoteConnector(HartMoteConnectorInternal):
     Tuple_dn_testRadioRxExt = collections.namedtuple("Tuple_dn_testRadioRxExt", ['RC'])
 
     ##
-    # The testRadioRxExt command clears all previously collected statistics and initiates a test of radio reception for the specified channel and duration. During the test, the mote keeps statistics about the number of packets received (with and without error). The test results may be retrieved using the getParameter<testRadioRxStats> command.The mote must be reset (either hardware or software reset) after radio tests are complete and prior to joining.
+    # The testRadioRxExt command clears all previously collected statistics and initiates a test of radio reception for the specified channel and duration. During the test, the mote keeps statistics about the number of packets received (with and without error). The test results may be retrieved using the getParameter<testRadioRxStats> command. The mote must be reset (either hardware or software reset) after radio tests are complete and prior to joining.
     # 
-    # Station ID is available in IP mote >= 1.4, and WirelessHART mote >= 1.1.2. The station ID is a user selectable value used to isolate traffic if multiple tests are running in the same radio space. It must be set to match the station ID used by the transmitter.
+    # Station ID is available in IP Mote 1.4.0 or later, and WirelessHART Mote 1.1.2 or later. The station ID is a user selectable value used to isolate traffic if multiple tests are running in the same radio space. It must be set to match the station ID used by the transmitter.
     # 
     # 
     # 
@@ -2441,12 +2512,13 @@ class HartMoteConnector(HartMoteConnectorInternal):
     # 
     # The zeroize command will render the mote inoperable. It must be re-programmed via SPI or JTAG in order to be useable.
     # 
-    # 
+    # \param password 4-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
     # 
     # \returns The response to the command, formatted as a #Tuple_dn_zeroize named tuple.
     # 
-    def dn_zeroize(self, ) :
-        res = HartMoteConnectorInternal.send(self, ['zeroize'], {})
+    def dn_zeroize(self, password) :
+        res = HartMoteConnectorInternal.send(self, ['zeroize'], {"password" : password})
         return HartMoteConnector.Tuple_dn_zeroize(**res)
 
     ##
@@ -2594,6 +2666,89 @@ class HartMoteConnector(HartMoteConnectorInternal):
         res = HartMoteConnectorInternal.send(self, ['fileOpen'], {"name" : name, "options" : options, "size" : size, "mode" : mode})
         return HartMoteConnector.Tuple_dn_fileOpen(**res)
 
+    ##
+    # The named tuple returned by the dn_testRadioRxPER() function.
+    # 
+    # - <tt>RC</tt>: 1-byte field formatted as a int.<br/>
+    #     This field can only take one of the following values:
+    #      - 0: RC_OK
+    #      - 3: RC_BUSY
+    #      - 4: RC_INVALID_LEN
+    #      - 5: RC_INVALID_STATE
+    #      - 6: RC_UNSUPPORTED
+    #      - 7: RC_UNKNOWN_PARAM
+    #      - 8: RC_UNKNOWN_CMD
+    #      - 9: RC_WRITE_FAIL
+    #      - 10: RC_READ_FAIL
+    #      - 11: RC_LOW_VOLTAGE
+    #      - 12: RC_NO_RESOURCES
+    #      - 13: RC_INCOMPLETE_JOIN_INFO
+    #      - 14: RC_NOT_FOUND
+    #      - 15: RC_INVALID_VALUE
+    #      - 16: RC_ACCESS_DENIED
+    #      - 18: RC_OPEN_FAIL
+    #      - 19: RC_ERASE_FAIL
+    # 
+    Tuple_dn_testRadioRxPER = collections.namedtuple("Tuple_dn_testRadioRxPER", ['RC'])
+
+    ##
+    # The testRadioRxPER command initiates Packet Error Rate (PER) test in rx mode. This command may be issued only when mote is in Idle state.
+    # 
+    # This command is available in WiHART Mote version 1.2.4.1 or later
+    # 
+    # 
+    # 
+    # \returns The response to the command, formatted as a #Tuple_dn_testRadioRxPER named tuple.
+    # 
+    def dn_testRadioRxPER(self, ) :
+        res = HartMoteConnectorInternal.send(self, ['testRadioRxPER'], {})
+        return HartMoteConnector.Tuple_dn_testRadioRxPER(**res)
+
+    ##
+    # The named tuple returned by the dn_testRadioTxPER() function.
+    # 
+    # - <tt>RC</tt>: 1-byte field formatted as a int.<br/>
+    #     This field can only take one of the following values:
+    #      - 0: RC_OK
+    #      - 3: RC_BUSY
+    #      - 4: RC_INVALID_LEN
+    #      - 5: RC_INVALID_STATE
+    #      - 6: RC_UNSUPPORTED
+    #      - 7: RC_UNKNOWN_PARAM
+    #      - 8: RC_UNKNOWN_CMD
+    #      - 9: RC_WRITE_FAIL
+    #      - 10: RC_READ_FAIL
+    #      - 11: RC_LOW_VOLTAGE
+    #      - 12: RC_NO_RESOURCES
+    #      - 13: RC_INCOMPLETE_JOIN_INFO
+    #      - 14: RC_NOT_FOUND
+    #      - 15: RC_INVALID_VALUE
+    #      - 16: RC_ACCESS_DENIED
+    #      - 18: RC_OPEN_FAIL
+    #      - 19: RC_ERASE_FAIL
+    # 
+    Tuple_dn_testRadioTxPER = collections.namedtuple("Tuple_dn_testRadioTxPER", ['RC'])
+
+    ##
+    # The testRadioTxPER command initiates Packet Error Rate (PER) test in tx mode. This command may be issued only when mote is in Idle state.
+    # 
+    # This command is available in WiHART Mote version 1.2.4.1 or later
+    # 
+    # \param txPower 1-byte field formatted as a ints.<br/>
+    #     There is no restriction on the value of this field.
+    # \param numPackets 2-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    # \param chanMask 2-byte field formatted as a hex.<br/>
+    #     There is no restriction on the value of this field.
+    # \param numRepeat 2-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    # 
+    # \returns The response to the command, formatted as a #Tuple_dn_testRadioTxPER named tuple.
+    # 
+    def dn_testRadioTxPER(self, txPower, numPackets, chanMask, numRepeat) :
+        res = HartMoteConnectorInternal.send(self, ['testRadioTxPER'], {"txPower" : txPower, "numPackets" : numPackets, "chanMask" : chanMask, "numRepeat" : numRepeat})
+        return HartMoteConnector.Tuple_dn_testRadioTxPER(**res)
+
     #======================== notifications ===================================
     
     ##
@@ -2606,7 +2761,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     # 
     # The timeIndication notification applies to mote products that support a time interrupt into the mote. The time packet includes the network time and the current UTC time relative to the manager.
     # 
-    # For LTC5800-WHM based products, driving the TIMEn pin low (assert) wakes the processor. The pin must asserted for a minimum of t strobe s. De-asserting the pin latches the time, and a timeIndication will be generated within t response ms.Refer to the LTC5800-WHM Datasheet for additional information about TIME pin usage.
+    # For LTC5800-WHM based products, driving the TIMEn pin low (assert) wakes the processor. The pin must asserted for a minimum of t strobe s. De-asserting the pin latches the time, and a timeIndication will be generated within t response ms. Refer to the LTC5800-WHM Datasheet for additional information about TIME pin usage.
     # 
     # The processor will remain awake and drawing current while the TIMEn pin is asserted. To avoid drawing excess current, take care to minimize the duration of the TIMEn pin being asserted past t strobe minimum.
     #
@@ -2685,7 +2840,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     ##
     # \brief DATARECEIVED notification.
     # 
-    # The dataReceived notification notifies the microprocessor that a packet was received.When the microprocessor receives a reliable dataReceived request, in addition to acknowledging the request with a dataReceived response it must also respond using the send command.
+    # The dataReceived notification notifies the microprocessor that a packet was received. When the microprocessor receives a reliable dataReceived request, in addition to acknowledging the request with a dataReceived response it must also respond using the send command.
     #
     # Formatted as a Tuple_dataReceived named tuple. It contains the following fields:
     #   - <tt>srcAddr</tt> 2-byte field formatted as a hex.<br/>
@@ -2708,7 +2863,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     # Formatted as a Tuple_advReceived named tuple. It contains the following fields:
     #   - <tt>netId</tt> 2-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
-    #   - <tt>moteid</tt> 2-byte field formatted as a hex.<br/>
+    #   - <tt>moteId</tt> 2-byte field formatted as a hex.<br/>
     #     There is no restriction on the value of this field.
     #   - <tt>rssi</tt> 1-byte field formatted as a ints.<br/>
     #     There is no restriction on the value of this field.
@@ -2716,7 +2871,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #     There is no restriction on the value of this field.    
     # 
     ADVRECEIVED = "advReceived"
-    notifTupleTable[ADVRECEIVED] = Tuple_advReceived = collections.namedtuple("Tuple_advReceived", ['netId', 'moteid', 'rssi', 'joinPri'])
+    notifTupleTable[ADVRECEIVED] = Tuple_advReceived = collections.namedtuple("Tuple_advReceived", ['netId', 'moteId', 'rssi', 'joinPri'])
 
     ##
     # \brief SUSPENDSTARTED notification.
@@ -2729,6 +2884,30 @@ class HartMoteConnector(HartMoteConnectorInternal):
     # 
     SUSPENDSTARTED = "suspendStarted"
     notifTupleTable[SUSPENDSTARTED] = Tuple_suspendStarted = collections.namedtuple("Tuple_suspendStarted", ['duration'])
+
+    ##
+    # \brief TESTRADIOSTATSPER notification.
+    # 
+    # The testRadioStatsPER notification is generated by the mote when PER test in RX mode is completed.
+    # 
+    # This command is available in WiHART Mote version 1.2.4 or later.
+    #
+    # Formatted as a Tuple_testRadioStatsPER named tuple. It contains the following fields:
+    #   - <tt>numRxOK</tt> 2-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    #   - <tt>numRxErr</tt> 2-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    #   - <tt>numRxInv</tt> 2-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    #   - <tt>numRxMiss</tt> 2-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    #   - <tt>perInt</tt> 2-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    #   - <tt>perFrac</tt> 2-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.    
+    # 
+    TESTRADIOSTATSPER = "testRadioStatsPER"
+    notifTupleTable[TESTRADIOSTATSPER] = Tuple_testRadioStatsPER = collections.namedtuple("Tuple_testRadioStatsPER", ['numRxOK', 'numRxErr', 'numRxInv', 'numRxMiss', 'perInt', 'perFrac'])
 
     ##
     # \brief Get a notification from the notification queue, and returns

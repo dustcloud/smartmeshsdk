@@ -9,8 +9,8 @@ REQUIRED_PYTHON_MAJOR = 2
 REQUIRED_PYTHON_MINOR = 6
 
 #======================== private =========================================
-    
-def _verifyPython():        
+
+def _verifyPython():
     import sys
     import platform
 
@@ -21,18 +21,24 @@ def _verifyPython():
     major   = sys.version_info[0]
     minor   = sys.version_info[1]
     micro   = sys.version_info[2]
-    output += ["You are running Python "+str(major)+"."+str(minor)+"."+str(micro)+"\n"]
-    output += ["on platform: " + platform.platform() + ", " + platform.machine()]
+    output += [
+        "You are running Python {0}.{1}.{2} on platform {3}, {4}".format(
+            major,
+            minor,
+            micro,
+            platform.platform(),
+            platform.machine()
+        )
+    ]
     
     # is that enough?
     if major==REQUIRED_PYTHON_MAJOR and minor>=REQUIRED_PYTHON_MINOR:
         goodToGo = True
     else:
-        output += ["You need Python %d.%d\n" % (REQUIRED_PYTHON_MAJOR,
-                                                REQUIRED_PYTHON_MINOR)]
+        output += ["You need at least Python {0}.{1}".format(REQUIRED_PYTHON_MAJOR,REQUIRED_PYTHON_MINOR)]
         goodToGo = False
         
-    return (goodToGo,''.join(output))
+    return (goodToGo,'\n'.join(output))
 
 def _verifyPyserial():
     output = []
@@ -41,21 +47,21 @@ def _verifyPyserial():
     try:
         import serial
         goodToGo = True
-        output +=  ["You have PySerial {0}\n".format(serial.VERSION)]
+        output +=  ["You have PySerial {0}".format(serial.VERSION)]
     except ImportError:
         goodToGo = False
         pyserial_needed = True
 
     if pyserial_needed:
-        output +=  ["You need to install PySerial:\n"]
-        output +=  [" - information http://pyserial.sourceforge.net/\n"]
+        output +=  ["You need to install PySerial:"]
+        output +=  [" - information http://pyserial.sourceforge.net/"]
         try:
             import easy_install
-            output +=  [" - install with 'easy_install pyserial'\n"]
+            output +=  [" - install with 'easy_install pyserial'"]
         except:
-            output +=  [" - download pyserial-2.5.win32.exe from http://sourceforge.net/projects/pyserial/files/pyserial/2.5/\n"]
+            output +=  [" - download pyserial-2.5.win32.exe from http://sourceforge.net/projects/pyserial/files/pyserial/2.5/"]
         
-    return (goodToGo,''.join(output))
+    return (goodToGo,'\n'.join(output))
 
 def _verifyPywin32():
     import os
@@ -70,9 +76,13 @@ def _verifyPywin32():
         import pywintypes
         import win32api
         goodToGo = True
-        fixed_file_info = win32api.GetFileVersionInfo(win32api.__file__, '\\')
-        pywin32_ver = fixed_file_info['FileVersionLS'] >> 16
-        output += ["You have PyWin32 build {0}".format(pywin32_ver)]        
+        try:
+            fixed_file_info = win32api.GetFileVersionInfo(win32api.__file__, '\\')
+            pywin32_ver = fixed_file_info['FileVersionLS'] >> 16
+            output += ["You have PyWin32 build {0}".format(pywin32_ver)]
+        except pywintypes.error:
+            # pypiwin32 can not detect the version resource in its own win32api file
+            output += ["PyWin32 is installed via pypiwin32, but pypiwin32 cannot find the version"]
     except ImportError:
         goodToGo = False
         pywin32_needed = True
@@ -114,7 +124,7 @@ ComponentTests = { PYTHON:   _verifyPython,
                    WEBPY:    _verifyWebPy, }
 
 #======================== public ==========================================
-    
+
 def verifyComponents(elementsToTest):
     for elem in elementsToTest:
         try:
@@ -131,4 +141,3 @@ def verifyComponents(elementsToTest):
     # Other components mostly care about the goodToGo result, and only look at
     # the reason on failure.
     return (True, reason)
-    

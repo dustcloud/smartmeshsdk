@@ -18,6 +18,7 @@ class IpMgrDefinition(ApiDefinition.ApiDefinition):
     INT       = ApiDefinition.FieldFormats.INT
     INTS      = ApiDefinition.FieldFormats.INTS
     HEXDATA   = ApiDefinition.FieldFormats.HEXDATA
+    ARRAY     = ApiDefinition.FieldFormats.ARRAY
     RC        = ApiDefinition.ApiDefinition.RC
     SUBID1    = ApiDefinition.ApiDefinition.SUBID1
     SUBID2    = ApiDefinition.ApiDefinition.SUBID2
@@ -47,7 +48,8 @@ class IpMgrDefinition(ApiDefinition.ApiDefinition):
         'stationId',
     ]
     
-    def __init__(self):
+    def __init__(self, array2scalar = True):
+        ApiDefinition.ApiDefinition.__init__(self, array2scalar)
         self.serializer = ByteArraySerializer.ByteArraySerializer(self)
     
     def default_serializer(self,commandArray,fieldsToFill):
@@ -210,6 +212,7 @@ class IpMgrDefinition(ApiDefinition.ApiDefinition):
             [ 0,   'viewer',                'Viewer-role user has read-only access to non-sensitive network information'],
             [ 1,   'user',                  'User-role user has read-write privileges'],
         ],
+        'protocolVersion' : 4,
     }
     
     # We redefine this attribute inherited from ApiDefinition. See
@@ -282,7 +285,7 @@ class IpMgrDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 22,
             'name'       : 'subscribe',
-            'description': "The subscribe command indicates that the manager should send the external application the specified notifications. It contains two filter fields:\n\n- filter is a bitmask of flags indicating the types of notifications that the client wants to receive\n- unackFilter allows the client to select which of the notifications selected in filter should be sent acknowledged. If a notification is sent as 'acknowledged', thesubsequent notification packets will be queued while waiting for response.\n\nEach subscription request overwrites the previous one. If an application is subscribed to data and then decides he also wants events he should send a subscribe command with both the data and event flags set. To clear all subscriptions, the client should send a subscribe command with the filter set to zero. When a session is initiated between the manager and a client, the subscription filter is initialized to zero.\n\nThe subscribe bitmap uses the values of the notification type enumeration. Some values are unused to provide backwards compatibility with earlier APIs.",
+            'description': "The subscribe command indicates that the manager should send the external application the specified notifications. It contains two filter fields:\n\n- filter is a bitmask of flags indicating the types of notifications that the client wants to receive\n- unackFilter allows the client to select which of the notifications selected in filter should be sent acknowledged. If a notification is sent as 'acknowledged', the subsequent notification packets will be queued while waiting for response.\n\nEach subscription request overwrites the previous one. If an application is subscribed to data and then decides he also wants events he should send a subscribe command with both the data and event flags set. To clear all subscriptions, the client should send a subscribe command with the filter set to zero. When a session is initiated between the manager and a client, the subscription filter is initialized to zero.\n\nThe subscribe bitmap uses the values of the notification type enumeration. Some values are unused to provide backwards compatibility with earlier APIs.",
             'request' : [
                 ['filter',                  HEXDATA,  4,   None],
                 ['unackFilter',             HEXDATA,  4,   None],
@@ -390,7 +393,7 @@ class IpMgrDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 34,
             'name'       : 'exchangeNetworkId',
-            'description': 'The exchangeNetworkId command triggers the manager to distribute a new network ID to all the motes in the network. A callbackId is returned in the response. A commandFinished notification with this callbackId will be sent when the operation is complete.This change is persistent.',
+            'description': 'The exchangeNetworkId command triggers the manager to distribute a new network ID to all the motes in the network. A callbackId is returned in the response. A commandFinished notification with this callbackId will be sent when the operation is complete. This change is persistent.',
             'request'    : [
                 ['id',                      INT,      2,   None],
             ],
@@ -402,7 +405,7 @@ class IpMgrDefinition(ApiDefinition.ApiDefinition):
             },
             'responseCodes': {
                 'RC_OK'                : 'Command received',
-                'RC_IN_PROGRESS'       : 'A command is still pending. Wait until acommandFinishednotification is received for the previous command before retrying.',
+                'RC_IN_PROGRESS'       : 'A command is still pending. Wait until a commandFinished notification is received for the previous command before retrying.',
                 'RC_NACK'              : 'User commands queue is full',
                 'RC_WRITE_FAIL'        : 'Flash write error; cannot save new settings',
             },
@@ -410,7 +413,7 @@ class IpMgrDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 35,
             'name'       : 'radiotestTx',
-            'description': 'The radiotestTx command allows the user to initiate a radio transmission test. It may only be executed if the manager has been booted up in radiotest mode (see setNetworkConfig command). Three types of transmission tests are supported:\n\n- Packet transmission\n- Continuous modulation (CM)\n- Continuous wave, i.e unmodulated signal (CW)\n\nIn a packet transmission test, the device generates a repeatCnt number of packet sequences. Each sequence consists of up to 10 packets with configurable size and delays. Each packet starts with a PHY preamble (5 bytes), followed by a PHY length field (1 byte), followed by data payload of up to 125 bytes, and finally a 2-byte 802.15.4 CRC at the end. Byte 0 of the payload contains stationId of the sender. Bytes 1 and 2 contain the packet number (in big-endian format) that increments with every packet transmitted. Bytes 3..N contain a counter (from 0..N-2) that increments with every byte inside payload. Transmissions occur on the set of channels defined by chanMask , selected inpseudo-randomorder.\n\nIn a continuous modulation test, the device generates continuous pseudo-random modulated signal, centered at the specified channel. The test is stopped by resetting the device.\n\nIn a continuous wave test, the device generates an unmodulated tone, centered at the specified channel. The test tone is stopped by resetting the device.\n\n\n\nChannel numbering is 0-15, corresponding to IEEE 2.4 GHz channels 11-26.\n\nThe station ID is a user selectable value. It is used in packet tests so that a receiver (see radiotestRx) can identify packets from this device in cases where there may be multiple tests running in the same radio space. This field is not used for CM or CW tests.',
+            'description': 'The radiotestTx command allows the user to initiate a radio transmission test. It may only be executed if the manager has been booted up in radiotest mode (see setNetworkConfig command). Four types of transmission tests are supported:\n\n- Packet transmission\n- Continuous modulation (CM)\n- Continuous wave, i.e unmodulated signal (CW)\n- Packet transmission with clear channel assessment (CCA) enabled (Available in Manager > 1.3.x)\n\nIn a packet transmission test, the device generates a repeatCnt number of packet sequences. Each sequence consists of up to 10 packets with configurable size and delays. Each packet starts with a PHY preamble (5 bytes), followed by a PHY length field (1 byte), followed by data payload of up to 125 bytes, and finally a 2-byte 802.15.4 CRC at the end. Byte 0 of the payload contains stationId of the sender. Bytes 1 and 2 contain the packet number (in big-endian format) that increments with every packet transmitted. Bytes 3..N contain a counter (from 0..N-2) that increments with every byte inside payload. Transmissions occur on the set of channels defined by chanMask , selected in pseudo-random order.\n\nIn a continuous modulation test, the device generates continuous pseudo-random modulated signal, centered at the specified channel. The test is stopped by resetting the device.\n\nIn a continuous wave test, the device generates an unmodulated tone, centered at the specified channel. The test tone is stopped by resetting the device.\n\nIn a packet transmission with CCA test, the device is configured identically to that in the packet transmission test, however the device does a clear channel assessment before each transmission and aborts that packet if the channel is busy.\n\nThe station ID is a user selectable value. It is used in packet tests so that a receiver (see radiotestRx) can identify packets from this device in cases where there may be multiple tests running in the same radio space. This field is not used for CM or CW tests. (Available in Manager >= 1.3.0) Channel numbering is 0-15, corresponding to IEEE 2.4 GHz channels 11-26.',
             'request'    : [
                 ['testType',                INT,      1,   'radiotestType'],
                 ['chanMask',                HEXDATA,  2,   None],
@@ -474,7 +477,7 @@ class IpMgrDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 38,
             'name'       : 'getRadiotestStatistics',
-            'description': 'This command retrieves statistics from a previously run radiotestRx command.It may only be executed if the manager has been booted up in radiotest mode (see setNetworkConfig command).',
+            'description': 'This command retrieves statistics from a previously run radiotestRx command. It may only be executed if the manager has been booted up in radiotest mode (see setNetworkConfig command).',
             'request'    : [
             ],
             'response'   : {
@@ -493,7 +496,7 @@ class IpMgrDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 39,
             'name'       : 'setACLEntry',
-            'description': 'The setACLEntry command adds a new entry or updates an existing entry in the Access Control List (ACL).This change is persistent. The maximum number of entries is 1,200.',
+            'description': 'The setACLEntry command adds a new entry or updates an existing entry in the Access Control List (ACL). This change is persistent. The maximum number of entries is 1,200.',
             'request'    : [
                 ['macAddress',              HEXDATA,  8,   None],
                 ['joinKey',                 HEXDATA,  16,  None],
@@ -589,7 +592,7 @@ class IpMgrDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 44,
             'name'       : 'sendData',
-            'description': "The sendData command sends a packet to a mote in the network. The response contains a callbackId. When the manager injects the packet into the network, it will generate a packetSent notification. It is the responsibility of the customer'sapplication layer at the mote to send a response. It is also the responsibility of thecustomer's application layer to timeout if no response is received at the manager if one is expected.\n\nThe sendData command should be used by applications that communicate directly with the manager. If end-to-end (application to mote) IP connectivity is required, the application should use the sendIP command. For a more comprehensive discussion of the distinction, see the SmartMesh IPNetwork User Guide.",
+            'description': "The sendData command sends a packet to a mote in the network. The response contains a callbackId. When the manager injects the packet into the network, it will generate a packetSent notification. It is the responsibility of the customer's application layer at the mote to send a response. It is also the responsibility of the customer's application layer to timeout if no response is received at the manager if one is expected.\n\nThe sendData command should be used by applications that communicate directly with the manager. If end-to-end (application to mote) IP connectivity is required, the application should use the sendIP command. For a more comprehensive discussion of the distinction, see the SmartMesh IP Network User Guide.",
             'request'    : [
                 ['macAddress',              HEXDATA,  8,   None],
                 ['priority',                INT,      1,   'packetPriority'],
@@ -731,9 +734,13 @@ class IpMgrDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 50,
             'name'       : 'setAdvertising',
-            'description': '''The setAdvertising command tells the manager to activate or deactivate advertising. The response is a callbackId. A commandFinished notification with the callbackId is generated when the command propagation is complete.
+            'description': '''The setAdvertising command tells the manager to activate, deactivate, or use slow advertising. The response is a callbackId. A commandFinished notification with the callbackId is generated when the command propagation is complete.
 
-It is dangerous to turn off advertising in the network. When advertising is off, new motes can not join and existing motes can not rejoin the network after a reset. Turning off advertising may be useful in unusual situations, such as to prevent motes from joining the network or to save power. In most cases, it is best to allow advertising to remain under the control of the manager.''',
+With motes prior to version 1.4.1, it is only possible to turn advertising ON or OFF. If building networks consisting primarily of motes 1.4.1 or later, power can be saved by setting advertising to "slow". Set the INI parameter advtimeout to a value (in ms) and set this command to 0.
+
+For example, the default full advertising frequency is approximately once per 2 seconds. It is recommended to set advtimeout = 20000, which will result in an advertising every 20 seconds which will result in a 90% power savings in the cost of advertising.
+
+It is dangerous to turn off advertising in the network. When advertising is off, new motes can not join and existing motes can not rejoin the network after a reset. Turning off advertising is primarily used to save power, or may be useful in for specific use cases where it is desirable to prevent motes from joining the network. In most cases, it is best to allow advertising to remain under the control of the manager.''',
             'request'    : [
                 ['activate',                INT,      1,   'advertisementState'],
             ],
@@ -745,13 +752,13 @@ It is dangerous to turn off advertising in the network. When advertising is off,
             },
             'responseCodes': {
                 'RC_OK'                : 'Command successfully completed',
-                'RC_IN_PROGRESS'       : 'A command is still pending. Wait until acommandFinishednotification is received for the previous command before retrying.',
+                'RC_IN_PROGRESS'       : 'A command is still pending. Wait until a commandFinished notification is received for the previous command before retrying.',
             },
         },
         {
             'id'         : 51,
             'name'       : 'setDownstreamFrameMode',
-            'description': 'The setDownstreamFrameMode command tells the manager to shorten or extend the downstream slotframe. The base slotframe length will be multiplied by the downFrameMultVal for "normal" speed. For "fast" speed the downstream slotframe is the base length.Once this command is executed, the manager switches to manual mode and no longer changes slotframesize automatically. The response is a callbackId. A commandFinished notification with the callbackId is generated when the command propagation is complete.',
+            'description': 'The setDownstreamFrameMode command tells the manager to shorten or extend the downstream slotframe. The base slotframe length will be multiplied by the downFrameMultVal for "normal" speed. For "fast" speed the downstream slotframe is the base length. Once this command is executed, the manager switches to manual mode and no longer changes slotframe size automatically. The response is a callbackId. A commandFinished notification with the callbackId is generated when the command propagation is complete.',
             'request'    : [
                 ['frameMode',               INT,      1,   'downstreamFrameMode'],
             ],
@@ -763,7 +770,7 @@ It is dangerous to turn off advertising in the network. When advertising is off,
             },
             'responseCodes': {
                'RC_OK'                 : 'Command successfully completed',
-               'RC_IN_PROGRESS'        : 'A command is still pending. Wait until acommandFinishednotification is received for the previous command before retrying.',
+               'RC_IN_PROGRESS'        : 'A command is still pending. Wait until a commandFinished notification is received for the previous command before retrying.',
                'RC_INVALID_ARGUMENT'   : 'The downFrameMultVal (as set by setNetworkConfig) is equal to 1, so changing the downstream frame mode would have no effect.',
             },
         },
@@ -832,7 +839,7 @@ It is dangerous to turn off advertising in the network. When advertising is off,
         {
             'id'         : 56,
             'name'       : 'setLicense',
-            'description': 'The setLicense command has been deprecated in Manager >= 1.3.0. There is no longer a need to use a license to enable > 32 mote networks.\n\nThe setLicense command validates and updates the software license key stored in flash. Features enabled or disabled by the license key change will take effect after the device is restarted.If the license parameter is set to all 0x0s, the manager restores the default license. This change is persistent.',
+            'description': 'The setLicense command has been deprecated in Manager >= 1.3.0. There is no longer a need to use a license to enable > 32 mote networks.\n\nThe setLicense command validates and updates the software license key stored in flash. Features enabled or disabled by the license key change will take effect after the device is restarted. If the license parameter is set to all 0x0s, the manager restores the default license. This change is persistent.',
             'request'    : [
                 ['license',                 HEXDATA,  13,  None],
             ],
@@ -1053,7 +1060,7 @@ It is dangerous to turn off advertising in the network. When advertising is off,
         {
             'id'         : 68,
             'name'       : 'setIPConfig',
-            'description': 'The setIPConfig command sets the IPv6 prefix of the mesh network. Only the upper 8 bytes of the IPv6 address are relevant: the lower 8 bytes of the IPv6 address are ignored, and lower 8 bytes of the mask field are reserved and should be set to 0.This change is persistent.',
+            'description': 'The setIPConfig command sets the IPv6 prefix of the mesh network. Only the upper 8 bytes of the IPv6 address are relevant: the lower 8 bytes of the IPv6 address are ignored, and lower 8 bytes of the mask field are reserved and should be set to 0. This change is persistent.',
             'request'    : [
                 ['ipv6Address',             HEXDATA,  16,  None],
                 ['mask',                    HEXDATA,  16,  None],
@@ -1071,7 +1078,7 @@ It is dangerous to turn off advertising in the network. When advertising is off,
         {
             'id'         : 69,
             'name'       : 'deleteMote',
-            'description': 'The deleteMote command deletes a mote from the manager\'s list. A mote can only be deleted if it in the Lost or Unknown states. This change is persistent.',
+            'description': 'The deleteMote command deletes a mote from the manager\'s list. A mote can only be deleted if it is in the Lost state.',
             'request'    : [
                 ['macAddress',              HEXDATA,  8,   None],
             ],
@@ -1090,7 +1097,7 @@ It is dangerous to turn off advertising in the network. When advertising is off,
         {
             'id'         : 70,
             'name'       : 'getMoteLinks',
-            'description': 'The getMoteLinks command returns information about links assigned to the mote. The response contains a list of links starting with Nth link on the mote, where N is supplied as the idx parameter in the request. To retrieve all links on the device the user can call this command with idx that increments by number of links returned with priorresponse, until the command returns RC_END_OF_LIST response code. Note that links assigned to a mote may change between API calls.',
+            'description': 'The getMoteLinks command returns information about links assigned to the mote. The response contains a list of links starting with Nth link on the mote, where N is supplied as the idx parameter in the request. To retrieve all links on the device the user can call this command with idx that increments by number of links returned with prior response, until the command returns RC_END_OF_LIST response code. Note that links assigned to a mote may change between API calls.',
             'request'    : [
                 ['macAddress',              HEXDATA,  8,   None],
                 ['idx',                     INT,      2,   None],
@@ -1101,62 +1108,57 @@ It is dangerous to turn off advertising in the network. When advertising is off,
                     ['idx',                 INT,      2,   None],
                     ['utilization',         INT,      1,   None],
                     ['numLinks',            INT,      1,   None],
-                    ['frameId_1',           INT,      1,   None],  # 1
-                    ['slot_1',              INT,      4,   None],
-                    ['channelOffset_1',     INT,      1,   None],
-                    ['moteId_1',            INT,      2,   None],
-                    ['flags_1',             INT,      1,   None],
-                    ['frameId_2',           INT,      1,   None],  # 2
-                    ['slot_2',              INT,      4,   None],
-                    ['channelOffset_2',     INT,      1,   None],
-                    ['moteId_2',            INT,      2,   None],
-                    ['flags_2',             INT,      1,   None],
-                    ['frameId_3',           INT,      1,   None],  # 3
-                    ['slot_3',              INT,      4,   None],
-                    ['channelOffset_3',     INT,      1,   None],
-                    ['moteId_3',            INT,      2,   None],
-                    ['flags_3',             INT,      1,   None],
-                    ['frameId_4',           INT,      1,   None],  # 4
-                    ['slot_4',              INT,      4,   None],
-                    ['channelOffset_4',     INT,      1,   None],
-                    ['moteId_4',            INT,      2,   None],
-                    ['flags_4',             INT,      1,   None],
-                    ['frameId_5',           INT,      1,   None],  # 5
-                    ['slot_5',              INT,      4,   None],
-                    ['channelOffset_5',     INT,      1,   None],
-                    ['moteId_5',            INT,      2,   None],
-                    ['flags_5',             INT,      1,   None],
-                    ['frameId_6',           INT,      1,   None],  # 6
-                    ['slot_6',              INT,      4,   None],
-                    ['channelOffset_6',     INT,      1,   None],
-                    ['moteId_6',            INT,      2,   None],
-                    ['flags_6',             INT,      1,   None],
-                    ['frameId_7',           INT,      1,   None],  # 7
-                    ['slot_7',              INT,      4,   None],
-                    ['channelOffset_7',     INT,      1,   None],
-                    ['moteId_7',            INT,      2,   None],
-                    ['flags_7',             INT,      1,   None],
-                    ['frameId_8',           INT,      1,   None],  # 8
-                    ['slot_8',              INT,      4,   None],
-                    ['channelOffset_8',     INT,      1,   None],
-                    ['moteId_8',            INT,      2,   None],
-                    ['flags_8',             INT,      1,   None],
-                    ['frameId_9',           INT,      1,   None],  # 9
-                    ['slot_9',              INT,      4,   None],
-                    ['channelOffset_9',     INT,      1,   None],
-                    ['moteId_9',            INT,      2,   None],
-                    ['flags_9',             INT,      1,   None],
-                    ['frameId_10',          INT,      1,   None],  # 10
-                    ['slot_10',             INT,      4,   None],
-                    ['channelOffset_10',    INT,      1,   None],
-                    ['moteId_10',           INT,      2,   None],
-                    ['flags_10',            INT,      1,   None],
+                    ['links',               ARRAY,    10,
+                        [
+                            ['frameId',         INT,      1,   None],
+                            ['slot',            INT,      4,   None],
+                            ['channelOffset',   INT,      1,   None],
+                            ['moteId',          INT,      2,   None],
+                            ['flags',           INT,      1,   None],
+                        ]
+                    ],
                 ],
             },
             'responseCodes': {
                'RC_NOT_FOUND'          : 'No such mote.',
                'RC_INV_STATE'          : 'Mote is not in operational state',
                'RC_END_OF_LIST'        : 'The index requested is greater than number of links.',
+            },
+        },
+        {
+            'id'         : 74,
+            'name'       : 'radiotestRxPER',
+            'description': 'The radiotestRxPER command initiates the Packet Error Rate (PER) test in RX mode. This command may be issued only if the manager has been booted up in radiotest mode (see setNetworkConfig command).\n\nThis command is available in the SmartMesh IP Manager version 1.4.2 or later.',
+            'request'    : [
+            ],
+            'response'   : {
+                'FIELDS':  [
+                    [RC,                    INT,      1,   True],
+                ],
+            },
+            'responseCodes': {
+               'RC_OK'             : 'Command was accepted',
+               'RC_IN_PROGRESS'  : 'The mote is in invalid state to start PER test',
+            },
+        },
+        {
+            'id'         : 75,
+            'name'       : 'radiotestTxPER',
+            'description': 'The radiotestTxPER command initiates the Packet Error Rate (PER) test in TX mode. This command may be issued only if the manager has been booted up in radiotest mode (see setNetworkConfig command).\nChannel numbering is 0-15, corresponding to IEEE 2.4 GHz channels 11-26.\n\nThis command is available in the SmartMesh IP Manager version 1.4.2 or later.',
+            'request'    : [
+                ['txPower',        INTS,      1,   None],
+                ['numPackets',     INT,       2,   None],
+                ['chanMask',       HEXDATA,   2,   None],
+                ['numRepeat',     INT,       2,   None],
+            ],
+            'response'   : {
+                'FIELDS':  [
+                    [RC,                    INT,      1,   True],
+                ],
+            },
+            'responseCodes': {
+               'RC_OK'             : 'Command was accepted',
+               'RC_IN_PROGRESS'  : 'The mote is in invalid state to start PER test',
             },
         },
     ]
@@ -1225,7 +1227,7 @@ It is dangerous to turn off advertising in the network. When advertising is off,
         {
             'id'         : 6,
             'name'       : 'eventNetworkTime',
-            'description': 'The time notification is triggered by the client asserting the TIME pin or by calling the getTime command. This notification contains the time when the TIME pin was asserted (or the getTime command was processed) expressed as:\n\n- ASN The absolute slot number (the number of timeslots since " 7/2/2002 8:00:00 PM PST" if UTC is set on manager, otherwise since Jan 1, 1970)\n\n\n- Uptime The number of seconds since the device was booted\n- Unixtime The number of seconds and microseconds since Jan 1, 1970 in UTC',
+            'description': 'The time notification is triggered by the client asserting the TIME pin or by calling the getTime command. This notification contains the time when the TIME pin was asserted (or the getTime command was processed) expressed as:\n\n- ASN The absolute slot number (the number of timeslots since " 7/2/2002 8:00:00 PM PST" if UTC is set on manager, otherwise since Jan 1, 1970)\n\n\n- Uptime The number of seconds since the device was booted\n- Unix time The number of seconds and microseconds since Jan 1, 1970 in UTC',
             'response'   : {
                 'FIELDS':  [
                     ['uptime',             INT,      4,   None],
@@ -1310,7 +1312,7 @@ It is dangerous to turn off advertising in the network. When advertising is off,
         {
             'id'         : 15,
             'name'       : 'eventJoinFailed',
-            'description': 'The joinFailed event is generated when a mote sends a join request to the manager but the request can not be validated. This notification is available in Manager >= 1.4.1.',
+            'description': 'The joinFailed event is generated when a mote sends a join request to the manager but the request can not be validated. This notification is available in Manager 1.4.1 or later.',
             'response'   : {
                 'FIELDS':  [
                     ['macAddress',        HEXDATA,  8,   None],
@@ -1321,7 +1323,7 @@ It is dangerous to turn off advertising in the network. When advertising is off,
         {
             'id'         : 16,
             'name'       : 'eventInvalidMIC',
-            'description': 'The invalidMIC event is generated when a packet that the manager receives from a mote in the network fails decryption.  This notification is available in Manager >= 1.4.1.',
+            'description': 'The invalidMIC event is generated when a packet that the manager receives from a mote in the network fails decryption. This notification is available in Manager 1.4.1 or later.',
             'response'   : {
                 'FIELDS':  [
                     ['macAddress',        HEXDATA,  8,   None],
@@ -1374,7 +1376,7 @@ It is dangerous to turn off advertising in the network. When advertising is off,
             'name'       : 'notifIpData',
             'description': "The ipData notification contains full IP packet sent by the mote, including 6LoWPAN header, UDP header, and the UDP payload. Manager generates this notification when it receives packet from a mote with destination other than manager's own IP address. The size of the data field can be calculated by subtracting the fixed header size (up to macAddress) from the size of overall notification packet.",
             'response'   : {
-                'System':  [
+                'FIELDS':  [
                     ['utcSecs',            INT,      8,   None],
                     ['utcUsecs',           INT,      4,   None],
                     ['macAddress',         HEXDATA,  8,   None],
@@ -1387,9 +1389,24 @@ It is dangerous to turn off advertising in the network. When advertising is off,
             'name'       : 'notifHealthReport',
             'description': 'The healthReport notifications include the raw payload of health reports received from devices. The payload contains one or more specific health report messages. Each message contains an identifier, length and variable-sized data. The individual healthReport message structures are defined below.',
             'response'   : {
-                'System':  [
+                'FIELDS':  [
                     ['macAddress',         HEXDATA,  8,   None],
                     ['payload',            HEXDATA,  None,None],
+                ],
+            },
+        },
+        {
+            'id'         : 7,
+            'name'       : 'notifRadiotestStatsPER',
+            'description': 'The testRadioStatsPER notification is generated by the manager when PER test in RX mode is completed.\n\nThis command is available in the SmartMesh IP Manager version 1.4.2 or later.',
+            'response'   : {
+                'FIELDS':  [
+                    ['numRxOK',           INT,      2,   None],
+                    ['numRxErr',          INT,      2,   None],
+                    ['numRxInv',          INT,      2,   None],
+                    ['numRxMiss',         INT,      2,   None],
+                    ['perInt',            INT,      2,   None],
+                    ['perFrac',           INT,      2,   None],
                 ],
             },
         },

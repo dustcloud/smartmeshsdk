@@ -89,7 +89,7 @@ def configureLogging():
     for p in [
             os.path.join('.',  'logging.conf'),
             os.path.join('..', 'logging.conf'),
-            os.path.join('bin','logging.conf'),
+            os.path.join('app','logging.conf'),
         ]:
         if os.path.exists(p):
             logconf = p

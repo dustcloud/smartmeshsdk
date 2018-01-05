@@ -22,6 +22,17 @@ def formatMacString(mac,upper=False):
     
     return res
 
+def formatIpString(ip):
+    '''
+    example: [254,128,0,0,0,0,0,0,0,23,13,0,0,48,93,57] -> "fe80:0000:0000:0000:0017:0d00:0030:5d39"
+    '''
+    ipString       = []
+    for i in range(8):
+        ipString  += [''.join(["%.2x"%i for i in ip[i*2:i*2+2]])]
+    ipString       = ':'.join(ipString)
+    
+    return ipString
+
 def formatShortMac(mac):
     '''
     example: 0x1122334455667788 -> "77-88"
@@ -69,3 +80,10 @@ def formatTimestamp(timestamp=None):
         time.strftime(LOG_FORMAT_TIMESTAMP,time.localtime(timestamp)),
         int((timestamp*1000)%1000)
     )
+
+def format_mac_string_to_bytes(mac_string):
+    '''
+    "00-11-22-33-44-55-66-77" -> [0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77]
+    '''
+    return [int(b,16) for b in mac_string.split('-')]
+    

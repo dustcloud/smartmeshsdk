@@ -38,6 +38,7 @@ sys.path.append(os.path.dirname(cryptopy.__file__))
 import traceback
 import base64
 import binascii
+import certifi
 
 # generic SmartMeshSDK imports
 from SmartMeshSDK.protocols.otap       import OTAPStructs
@@ -135,6 +136,11 @@ config = Configuration()
 config.username    = 'dust'
 config.password    = 'dust'
 config.verify_ssl  = False
+
+if os.path.isfile(certifi.where()):
+    config.ssl_ca_cert  = certifi.where()
+else:
+    config.ssl_ca_cert = os.path.join(os.path.dirname(sys.executable), "cacert.pem")
 
 voyager = VManagerApi(host=options.host)
 

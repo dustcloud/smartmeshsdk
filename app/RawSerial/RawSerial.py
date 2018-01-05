@@ -11,12 +11,16 @@ if __name__ == "__main__":
 
 #============================ imports =========================================
 
+# built-in
 import threading
 import serial
 import binascii
 
-from dustCli      import DustCli
-from SmartMeshSDK import sdk_version
+# SmartMeshSDK
+from SmartMeshSDK       import sdk_version
+
+# DustCli
+from dustCli            import DustCli
 
 #============================ defines =========================================
 
@@ -36,7 +40,7 @@ class SerialReceiver(threading.Thread):
         
         # initialize thread
         threading.Thread.__init__(self)
-        self.name = SerialReceiver
+        self.name = 'SerialReceiver'
         
         # start myself
         self.start()
@@ -148,7 +152,12 @@ def tx_clicb(params):
 def main():
     
     # create CLI interface
-    cli = DustCli.DustCli("Raw Serial Application",quit_clicb)
+    cli = DustCli.DustCli(
+        quit_cb  = quit_clicb,
+        versions = {
+            'SmartMesh SDK': sdk_version.VERSION,
+        },
+    )
     cli.registerCommand(
         name                      = 'connect',
         alias                     = 'c',
@@ -171,10 +180,6 @@ def main():
         params                    = ['bytesToTx'],
         callback                  = tx_clicb,
     )
-    cli.start()
-    
-    # print SmartMesh SDK version
-    print 'SmartMesh SDK {0}'.format('.'.join([str(i) for i in sdk_version.VERSION]))
 
 if __name__=='__main__':
     main()

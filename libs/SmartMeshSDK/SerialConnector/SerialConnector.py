@@ -284,7 +284,13 @@ class SerialConnector(ApiConnector):
         
         # check packetId
         (wasValidPacketId, isRepeatId, updateRxPacketId) = self.isValidPacketId(cmdId,isResponse,packetId)
-            
+
+        # raise error if packet id is wrong
+        if not wasValidPacketId:
+            output = "wrong packetId"
+            log.error(output)
+            raise ConnectionError(output)
+        
         # update RxPacketId
         self.paramLock.acquire()
         if isResponse==False and (not isRepeatId) and updateRxPacketId:
@@ -345,8 +351,3 @@ class SerialConnector(ApiConnector):
                 # put received packet in notification buffer
                 self.putNotification((nameArray, fields))
         
-        # raise error if packet id is wrong
-        if not wasValidPacketId:
-            output = "wrong packetId"
-            log.error(output)
-            raise ConnectionError(output)

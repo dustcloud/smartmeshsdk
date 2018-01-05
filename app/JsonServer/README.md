@@ -1,5 +1,5 @@
 This page details the entire JSON API of the `JsonServer` application.
-For a fun tutorial on how to use it, see https://dustcloud.atlassian.net/wiki/display/SMSDK/JsonServer.
+For a fun tutorial on how to use it, click [here](https://dustcloud.atlassian.net/wiki/display/SMSDK/JsonServer).
 
 # Introduction
 
@@ -16,11 +16,123 @@ The following aliases are used throughout this documentation:
 | `{{serialport}}` | serial port a SmartMesh IP manager is connected to (e.g. `COM27`)    |
 | `{{mote}}`       | MAC address of the mote of interest (e.g. `00-17-0d-00-00-38-06-45`) |
 
+# Command Line Interface
+
+The application has a command line interface which allows you to configure and verify the status of the application.
+
+```
+JsonServer - (c) Dust Networks
+
+> SmartMesh SDK 1.1.2.1
+```
+
+Type `help` to see the list of available commands:
+
+```
+> help
+Available commands:
+ - help (h): print this menu
+ - info (i): information about this application
+ - quit (q): quit this application
+ - uptime (ut): how long this application has been running
+ - status (s): get the current status of the application
+ - seriaports (sp): list the available serialports
+ - connectmanager (cm): connect to a manager's API serial port
+ - disconnectmanager (dm): disconnect from a manager's API serial port
+```
+
+The `info` command prints general information about the application:
+
+```
+> info
+General status of the application
+
+current time: Thu Jun 08 14:46:13 2017
+
+4 threads running:
+- MainThread
+- ManagerHandler@COM7
+- WebServer
+- DustCli
+
+This is thread DustCli.
+```
+
+The `uptime` application allows you to see how long the application has been running:
+
+```
+> uptime
+Running since 06/08/2017 14:45:23 (0:01:41.690000 ago)
+```
+
+The `status` command allows you to see status of the application. The example below shows that:
+* the application runs on top of SmartMesh SDK version 1.1.2.1
+* the time on the computer running the application (handy when running a `JsonServer` on a computer in a different timezone)
+* the list of managers. Here, the manager which is supposed to be attached to serial port `COM7` is not there.
+* how long the application has been running
+* the list of threads running (for debugging only)
+
+```
+> status
+{   'SmartMesh SDK version': '1.1.2.1',
+    'current time': '06/08/2017 14:47:20',
+    'managers': {   'COM7': 'disconnected'},
+    'running since': '06/08/2017 14:45:23 (0:01:56.949000 ago)',
+    'threads running': [   'MainThread',
+                           'ManagerHandler@COM7',
+                           'WebServer',
+                           'DustCli']}
+>
+```
+
+The `serialports` command allows you to list all available serial ports:
+
+```
+> serialports
+{   'serialports': ['COM10', 'COM11', 'COM8', 'COM9']}
+```
+
+The `connectmanager` command allows you to connect to an additional SmartMesh IP manager.
+Issuing `status` (as in the example below) allows you to verify the manager was indeed added.
+
+**Note**: you can connect to as many managers as you want.
+
+```
+> connectmanager COM10
+> status
+{   'SmartMesh SDK version': '1.1.2.1',
+    'current time': '06/08/2017 15:02:15',
+    'managers': {   'COM10': 'disconnected', 'COM7': 'disconnected'},
+    'running since': '06/08/2017 15:01:31 (0:00:43.839000 ago)',
+    'threads running': [   'WebServer',
+                           'DustCli',
+                           'ManagerHandler@COM7',
+                           'MainThread',
+                           'ManagerHandler@COM10']}
+```
+
+The `disconnectmanager ` command allows you to disconnect from a manager.
+Issuing `status` (as in the example below) allows you to verify the manager is indeed gone.
+
+```
+> disconnectmanager COM7
+> status
+{   'SmartMesh SDK version': '1.1.2.1',
+    'current time': '06/08/2017 15:04:19',
+    'managers': {   'COM10': 'connected'},
+    'running since': '06/08/2017 15:01:31 (0:02:48.501000 ago)',
+    'threads running': [   'WebServer',
+                           'DustCli',
+                           'MainThread',
+                           'ManagerHandler@COM10',
+                           'COM10_HDLC']}
+```
+
 # JSON API: commands
 
-This section lists examples of requests/responses, i.e. JSON formats sent and received from the `JsonServer` application.
+This section lists examples of requests/responses, i.e. JSON strings sent and received from the `JsonServer` application, over HTTP.
 
-## retrieve `index.html`
+## Retrieve `index.html`
 
 | Method | URL                                     |
 |--------|-----------------------------------------|
@@ -34,7 +146,7 @@ This section lists examples of requests/responses, i.e. JSON formats sent and re
 
 The exact contents of the `index.html` file.
 
-## retrieve a static file
+## Retrieve a static file
 
 | Method | URL                                           |
 |--------|-----------------------------------------------|
@@ -80,7 +192,7 @@ The exact contents of the `static/{{filename}}` file.
 }
 ```
 
-## exercise the raw SmartMesh IP Manager serial API
+## Exercise the raw SmartMesh IP Manager serial API
 
 Through the `JsonServer`, you can call any SmartMesh IP serial API command.
 Just specify in the body of your request the name of the command to call, and the value of any field, if any.
@@ -89,7 +201,7 @@ The HTTP status code is `200` if the serial API command was issued successfully.
 
 You can specify the MAC address of a mote as a string (e.g. `00-01-02-03-04-05-06-07`) or a list (e.g. `[0,1,2,3,4,5,6,7]`); the `JsonServer` app understands both.
 
-### no parameters are present in the request
+### No parameters are present in the request
 
 | Method | URL                                                  |
 |--------|------------------------------------------------------|
@@ -207,11 +319,11 @@ You can specify the MAC address of a mote as a string (e.g. `00-01-02-03-04-05-0
 }
 ```
 
-## exercise the On-Chip Application Protocol (OAP)
+## Exercise the On-Chip Application Protocol (OAP)
 
-**Note**: this is the protocol implemented by the SmartMesh IP motes running the default firmware in master mode.
+**Note**: this is the protocol implemented by the SmartMesh IP motes running the default firmware in _master_ mode.
 
-### read `info` resource
+### Read the `info` resource
 
 | Method | URL                                                |
 |--------|----------------------------------------------------|
@@ -240,7 +352,7 @@ You can specify the MAC address of a mote as a string (e.g. `00-01-02-03-04-05-0
 }
 ```
 
-### read `main` resource
+### Read the `main` resource
 
 | Method | URL                                                |
 |--------|----------------------------------------------------|
@@ -264,7 +376,7 @@ You can specify the MAC address of a mote as a string (e.g. `00-01-02-03-04-05-0
 }
 ```
 
-### write `main` resource
+### Write the `main` resource
 
 | Method | URL                                                |
 |--------|----------------------------------------------------|
@@ -290,7 +402,7 @@ You can specify the MAC address of a mote as a string (e.g. `00-01-02-03-04-05-0
 }
 ```
 
-### read the `digital_in/D0` resource
+### Read the `digital_in/D0` resource
 
 **Note**: the exact same applies for the `digital_in/D1`, `digital_in/D2` and `digital_in/D3` resources.
 
@@ -319,7 +431,7 @@ You can specify the MAC address of a mote as a string (e.g. `00-01-02-03-04-05-0
 }
 ```
 
-### write the `digital_in/D0` resource
+### Write the `digital_in/D0` resource
 
 **Note**: the exact same applies for the `digital_in/D1`, `digital_in/D2` and `digital_in/D3` resources.
 
@@ -349,7 +461,7 @@ You can specify the MAC address of a mote as a string (e.g. `00-01-02-03-04-05-0
 }
 ```
 
-### write the `digital_out/D4`
+### Write the `digital_out/D4`
 
 **Note**: the exact same applies for the `digital_out/D5` and `digital_out/INDICATOR_0` resources.
 
@@ -376,7 +488,7 @@ You can specify the MAC address of a mote as a string (e.g. `00-01-02-03-04-05-0
 }
 ```
 
-### read the `analog/A0` resource
+### Read the `analog/A0` resource
 
 **Note**: the exact same applies for the `analog/A1`, `analog/A2`, `analog/A3` and `temperature` resources.
 
@@ -405,7 +517,7 @@ You can specify the MAC address of a mote as a string (e.g. `00-01-02-03-04-05-0
 }
 ```
 
-### write the `analog/A0` resource
+### Write the `analog/A0` resource
 
 **Note**: the exact same applies for the `analog/A1`, `analog/A2`, `analog/A3` and `temperature` resources.
 
@@ -435,7 +547,7 @@ You can specify the MAC address of a mote as a string (e.g. `00-01-02-03-04-05-0
 }
 ```
 
-### read the `pkgen/echo` resource
+### Read the `pkgen/echo` resource
 
 | Method | URL                                                      |
 |--------|----------------------------------------------------------|
@@ -458,7 +570,7 @@ You can specify the MAC address of a mote as a string (e.g. `00-01-02-03-04-05-0
 }
 ```
 
-### write the `pkgen` resource
+### Write the `pkgen` resource
 
 | Method | URL                                                 |
 |--------|-----------------------------------------------------|
@@ -487,11 +599,11 @@ You can specify the MAC address of a mote as a string (e.g. `00-01-02-03-04-05-0
 }
 ```
 
-## helpers
+## Helpers
 
 The `JsonServer` comes with a number of handy helpers.
 
-### list all available serial port
+### List all available serial ports
 
 | Method | URL                                                  |
 |--------|------------------------------------------------------|
@@ -514,7 +626,7 @@ The `JsonServer` comes with a number of handy helpers.
 }
 ```
 
-### list all motes
+### List all motes
 
 | Method | URL                                            |
 |--------|------------------------------------------------|
@@ -542,7 +654,7 @@ The `JsonServer` comes with a number of handy helpers.
 * the manager is *not* listed
 * motes are grouped by manager, here `COM27` is the serial port the manager is connected to
 
-### list all OAP motes
+### List all OAP motes
 
 **Note**: an "OAP mote" is a mote from which we have already received an OAP notification, or to which we have already sent an OAP request.
 
@@ -568,9 +680,89 @@ The `JsonServer` comes with a number of handy helpers.
 
 **Note**: motes are grouped by manager, here `COM27` is the serial port the manager is connected to
 
-## configuration of the `JsonServer` application
+### Trigger a snapshot
 
-### read the current configuration
+When performing a "snapshot", the JsonServer application issues a number of API commands to retrieve:
+
+* information about all the motes in the network
+* information about all the paths in the network
+
+Depending on the size of your SmartMesh network, this might take a number of seconds.
+Issuing this command just triggers the beginning of a snapshot, and returns the appropriate status code.
+When the snapshot if over, the JsonServer generates a snapshot notification, see below.
+
+| Method  | URL                                               |
+|---------|---------------------------------------------------|
+| `POST`  |`http://{{host}}:{{port}}/api/v1/helpers/snapshot` |
+
+Internally, when a snapshot is triggered, the JsonServer issues:
+* a `getMoteConfig` API command on all motes
+* a `getMoteInfo` API command on all motes
+* a `getNextPathInfo` API command for all paths on all motes
+
+This resource returns the following HTTP status codes
+
+| HTTP status code | meaning                                       |
+|------------------|-----------------------------------------------|
+| `200`            | success, snapshot succesfully triggered       |
+| `503`            | not available, other snapshot already ongoing |
+
+**Note**: only one snapshot can be ongoing for all managers connected to the JsonServer
+
+#### Example body of the request
+
+You must specify the manager you want to start the snapshot on.
+
+```
+{
+    "manager": "COM31"
+}
+```
+
+Optionally, you can also add a `correlationID` field, which contains any string you want, and which will appear also in the snapshot notification.
+
+```
+{
+    "manager": "COM31",
+    "correlationID": "foobar"
+}
+```
+
+#### Example body of the response
+
+*empty*
+
+### Get the latest snapshot
+
+The JsonServer keeps a copy of the latest snapshot for each of the manager's connected to it.
+You can use this resource to retrieve all latest snapshots
+
+| Method  | URL                                               |
+|---------|---------------------------------------------------|
+| `GET`   |`http://{{host}}:{{port}}/api/v1/helpers/snapshot` |
+
+#### Example body of the request
+
+*empty*
+
+#### Example body of the response
+
+The response contains the latest snapshot for each manager.
+In the example below, "0" identifies the manager.
+The format of the snapshot is exactly the same as in a snapshot notification, with the extra `age_seconds` field indicating how long ago the snapshot was taken.
+
+```
+{
+    "0": {
+        "age_seconds": 4,
+        <exact same contents as a snapshot notification>
+    }
+}
+```
+
+## Configuration of the `JsonServer` application
+
+### Read the current configuration
 
 | Method | URL                                     |
 |--------|-----------------------------------------|
@@ -597,7 +789,7 @@ The `JsonServer` comes with a number of handy helpers.
 }
 ```
 
-### change the configuration
+### Change the configuration
 
 | Method  |  URL                                     |
 |---------|------------------------------------------|
@@ -636,7 +828,7 @@ The `JsonServer` comes with a number of handy helpers.
 }
 ```
 
-### adding a manager
+### Adding a manager
 
 **Note**: There is no limit to the number of SmartMesh IP managers you can connect to the `JsonServer` application, you just need to call this function to tell it to connect to a new one.
 
@@ -656,7 +848,7 @@ The `JsonServer` comes with a number of handy helpers.
 
 *empty*
 
-### deleting a manager
+### Deleting a manager
 
 | Method   | URL                                               |
 |----------|---------------------------------------------------|
@@ -676,21 +868,21 @@ The `JsonServer` comes with a number of handy helpers.
 
 # JSON API: notifications
 
-The SmartMesh IP manager issues commands over its serial port.
-The `JsonServer` application translates those serial notifications into JSON strings which it HTTP POST's to some URL.
+The SmartMesh IP manager issues notifications over its serial port.
+The `JsonServer` application translates those serial notifications into JSON strings and performs an HTTP POST with each notification as the JSON body to a configured URL.
 
 The name of the fields and general formatting of the serial and JSON notifications are strictly the same.
 
 The user specifies the list of URLs to post the notifications to, one per type of notification.
 Reading/writing the notification URLs is done by accessing the `notification_urls` configuration.
-You can disable notifications for a particular category by setting its corresponding notification URL to `''` (empty string).
+You can disable notifications for a particular category by setting its corresponding notification URL to `""` (empty string).
 
 All notifications contain a `name` element which indicates what type of notification it is.
-This means that you can configure all `notification_urls` to the same URL and still easily distinguish the different types of notifications.
+This means that you can configure all `notification_urls` to POST to the same URL and still distinguish the different types of notifications.
 
 The MAC address in all notifications are encoded as a string, e.g. `00-01-02-03-04-05-06-07`.
 
-The following subsections give one of more examples for each category of notification.
+The following subsections show examples for each category of notification.
 
 ## `notifData` notifications
 
@@ -905,4 +1097,148 @@ This means that, if notifications on the `JsonServer` are enabled for both `noti
                    u'utcUsecs': 929000},
     u'manager': u'COM27',
     u'name': u'notifIpData'}
+```
+
+## `snapshot` notifications
+
+This notification is generated when a snaphot is done.
+See above for how to trigger a snapshot.
+
+A snapshot notification contains metadata and the (unmodified) response of a number of API commands.
+A snapshot contains general information about the networks, as well as information about all motes, links and paths.
+
+```
+{
+    'manager': 0,
+    'correlationID': 'foobar'.
+    'snapshot': {
+        // metadata
+        
+        u'valid': True
+        u'timestamp_start': u'Wed, 28 Jun 2017 10:07:00 UTC',
+        u'timestamp_stop': u'Wed, 28 Jun 2017 10:07:00 UTC'},
+        'epoch_stop': 1498644420.962,
+        
+        // general
+        
+        u'getSystemInfo': {
+            u'RC': 0,
+            u'hwModel': 16,
+            u'hwRev': 1,
+            u'macAddress': u'00-17-0d-00-00-30-5d-39',
+            u'swBuild': 9,
+            u'swMajor': 1,
+            u'swMinor': 4,
+            u'swPatch': 1
+        },
+        'getNetworkInfo': {
+            u'RC': 0,
+            u'advertisementState': 0,
+            u'asnSize': 7250,
+            u'downFrameState': 1,
+            u'ipv6Address': u'fe80:0000:0000:0000:0017:0d00:0030:5d39',
+            u'maxNumbHops': 3,
+            u'netLatency': 700,
+            u'netPathStability': 99,
+            u'netReliability': 100,
+            u'netState': 0,
+            u'numArrivedPackets': 995,
+            u'numLostPackets': 0,
+            u'numMotes': 3
+        },
+        'getNetworkConfig': {
+            u'RC': 0,
+            u'apTxPower': 8,
+            u'autoStartNetwork': True,
+            u'baseBandwidth': 9000,
+            u'bbMode': 0,
+            u'bbSize': 1,
+            u'bwMult': 300,
+            u'ccaMode': 0,
+            u'channelList': 32767,
+            u'downFrameMultVal': 1,
+            u'frameProfile': 1,
+            u'isRadioTest': 0,
+            u'locMode': 0,
+            u'maxMotes': 101,
+            u'networkId': 430,
+            u'numParents': 2,
+            u'oneChannel': 255
+        },
+        
+        // motes
+        
+        'getMoteInfo': {
+            '00-17-0d-00-00-30-5d-39': {
+                u'RC': 0,
+                u'assignedBw': 0,
+                u'avgLatency': 0,
+                u'hopDepth': 0,
+                u'macAddress': u'00-17-0d-00-00-30-5d-39',
+                u'numGoodNbrs': 3,
+                u'numJoins': 1,
+                u'numNbrs': 3,
+                u'packetsLost': 0,
+                u'packetsReceived': 12,
+                u'requestedBw': 61770,
+                u'state': 4,
+                u'stateTime': 11226,
+                u'totalNeededBw': 2472
+            },
+            ...
+        },
+        'getMoteConfig': {
+            '00-17-0d-00-00-30-5d-39': {
+                'RC': 0,
+                u'isAP': True,
+                u'isRouting': True,
+                u'macAddress': u'00-17-0d-00-00-30-5d-39',
+                u'moteId': 1,
+                u'reserved': 1,
+                u'state': 4,
+            },
+            ...
+        },
+        
+        // links
+        
+        'getMoteLinks': {
+            '00-17-0d-00-00-30-5d-39': {
+                'RC': 0,
+                u'utilization': 1
+                u'links': [
+                    {
+                        'channelOffset': 1,
+                        u'flags': 2,
+                        u'frameId': 1,
+                        u'moteId': 2,
+                        u'slot': 241
+                    },
+                    ...
+                ],
+            },
+            ...
+        },
+        
+        // paths
+        
+        u'getPathInfo': {
+            u'00-17-0d-00-00-30-5d-39': {
+                u'0': {
+                    u'RC': 0,
+                    u'dest': u'00-17-0d-00-00-38-06-f0',
+                    u'direction': 3,
+                    u'numLinks': 2,
+                    u'pathId': 2,
+                    u'quality': 97,
+                    u'rssiDestSrc': -46,
+                    u'rssiSrcDest': 0,
+                    u'source': u'00-17-0d-00-00-30-5d-39'
+                },
+                ...
+            },
+            ...
+        }
+    }
+}
 ```

@@ -48,6 +48,7 @@ class NetworkInfo(object):
             'num_motes': 'int',
             'path_stability': 'float',
             'reliability': 'float',
+            'reuse_mode': 'str',
             'rx_packet_count': 'int',
             'user_queue_size': 'int'
         }
@@ -64,6 +65,7 @@ class NetworkInfo(object):
             'num_motes': 'numMotes',
             'path_stability': 'pathStability',
             'reliability': 'reliability',
+            'reuse_mode': 'reuseMode',
             'rx_packet_count': 'rxPacketCount',
             'user_queue_size': 'userQueueSize'
         }
@@ -79,6 +81,7 @@ class NetworkInfo(object):
         self._num_motes = None
         self._path_stability = None
         self._reliability = None
+        self._reuse_mode = None
         self._rx_packet_count = None
         self._user_queue_size = None
 
@@ -329,6 +332,34 @@ class NetworkInfo(object):
         :type: float
         """
         self._reliability = reliability
+
+    @property
+    def reuse_mode(self):
+        """
+        Gets the reuse_mode of this NetworkInfo.
+        Cell space reuse mode
+
+        :return: The reuse_mode of this NetworkInfo.
+        :rtype: str
+        """
+        return self._reuse_mode
+
+    @reuse_mode.setter
+    def reuse_mode(self, reuse_mode):
+        """
+        Sets the reuse_mode of this NetworkInfo.
+        Cell space reuse mode
+
+        :param reuse_mode: The reuse_mode of this NetworkInfo.
+        :type: str
+        """
+        allowed_values = ["N/A", "none", "upstream", "all"]
+        if reuse_mode not in allowed_values:
+            raise ValueError(
+                "Invalid value for `reuse_mode`, must be one of {0}"
+                .format(allowed_values)
+            )
+        self._reuse_mode = reuse_mode
 
     @property
     def rx_packet_count(self):

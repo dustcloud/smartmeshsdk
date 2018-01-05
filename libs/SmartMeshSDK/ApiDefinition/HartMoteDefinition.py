@@ -18,6 +18,7 @@ class HartMoteDefinition(ApiDefinition.ApiDefinition):
     INT       = ApiDefinition.FieldFormats.INT
     INTS      = ApiDefinition.FieldFormats.INTS
     HEXDATA   = ApiDefinition.FieldFormats.HEXDATA
+    ARRAY     = ApiDefinition.FieldFormats.ARRAY
     RC        = ApiDefinition.ApiDefinition.RC
     SUBID1    = ApiDefinition.ApiDefinition.SUBID1
     SUBID2    = ApiDefinition.ApiDefinition.SUBID2
@@ -27,7 +28,8 @@ class HartMoteDefinition(ApiDefinition.ApiDefinition):
     FLAG_TRAN_ACKED     = 6
     FLAG_TRAN_DIR_RESP  = 7
     
-    def __init__(self):
+    def __init__(self, array2scalar = True):
+        ApiDefinition.ApiDefinition.__init__(self, array2scalar)
         self.serializer = ByteArraySerializer.ByteArraySerializer(self)
     
     def default_serializer(self,commandArray,fieldsToFill):
@@ -276,7 +278,7 @@ class HartMoteDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 0x07,
             'name'       : 'batteryLife',
-            'description': 'The setParameter<batteryLife> command allows the microprocessor to update the remaining battery life information that the mote reports to WirelessHART Gateway in Command 778. This parameter must be set during the Idle state prior to joining, and should be updated periodically throughout operation.This parameter is only used in WirelessHART-compliant devices.\n\nCommand 778 is deprecated in version 7.4 of the HART specification as most existing gateways do not use battery life information.',
+            'description': 'The setParameter<batteryLife> command allows the microprocessor to update the remaining battery life information that the mote reports to WirelessHART Gateway in Command 778. This parameter must be set during the Idle state prior to joining, and should be updated periodically throughout operation. This parameter is only used in WirelessHART-compliant devices.\n\nCommand 778 is deprecated in version 7.4 of the HART specification as most existing gateways do not use battery life information.',
             'request'    : [
                 ['batteryLife',             INT,      2,   None],
                 ['powerStatus',             INT,      1,   'PowerStatus'],
@@ -294,7 +296,7 @@ class HartMoteDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 0x08,
             'name'       : 'service',
-            'description': 'The setParameter<service> command is used to request new device-originated bandwidth services and modify existing device-initiated services (now called "Timetables" in WirelessHART 7.4).Calling thiscommand updates the motes internal service table, which later initiates a request to the network manager for bandwidth allocation. A subsequent serviceIndication notification will be sent indicating the response from the network manager. The getParameter<service> command may be used to read the service table, including the state of the service request.\n\nThe setParameter<service> command may be sent at any time. If the network manager rejects a service request, the microprocessor can try again by re-issuing the setParameter<service> command.\n\nTo delete a service, set the time field of the desired service to zero. Service request flags, application domain, and destination address are ignored by the mote when time equals zero.\n\nNormally all service requests are compared against the power limits set with the setNVParameter<powerInfo> command. Services that would cause the device to exceed its power budget are denied.In Manager 4.1.1, a service request of 1 ms will result in the manager respecting the power limit for publish services, but will allow a block-transfer service requests (see the SmartMesh WirelessHART User\'s Guide section on Services)that would result in a fast pipe being activated.',
+            'description': 'The setParameter<service> command is used to request new device-originated bandwidth services and modify existing device-initiated services (now called "Timetables" in WirelessHART 7.4). Calling this command updates the motes internal service table, which later initiates a request to the network manager for bandwidth allocation. A subsequent serviceIndication notification will be sent indicating the response from the network manager. The getParameter<service> command may be used to read the service table, including the state of the service request.\n\nThe setParameter<service> command may be sent at any time. If the network manager rejects a service request, the microprocessor can try again by re-issuing the setParameter<service> command.\n\nTo delete a service, set the time field of the desired service to zero. Service request flags, application domain, and destination address are ignored by the mote when time equals zero.\n\nNormally all service requests are compared against the power limits set with the setNVParameter<powerInfo> command. Services that would cause the device to exceed its power budget are denied. In Manager 4.1.1, a service request of 1 ms will result in the manager respecting the power limit for publish services, but will allow a block-transfer service requests (see the SmartMesh WirelessHART User\'s Guide section on Services) that would result in a fast pipe being activated.',
             'request'    : [
                 ['serviceId',               INT,      1,   None],
                 ['serviceReqFlags',         INT,      1,   None],
@@ -319,6 +321,7 @@ class HartMoteDefinition(ApiDefinition.ApiDefinition):
             'description': 'The setParameter<hartDeviceStatus> command sets the current status of a WirelessHART device. The value passed in this parameter is used in all subsequent WirelessHART communications between the mote and the manager. This command is only required for WirelessHART-compliant devices. Refer to the HART Command Specifications for the appropriate value to use.',
             'request'    : [
                 ['hartDevStatus',           INT,      1,   None],
+                ['hartExtDevStatus',        INT,      1,   None],
             ],
             'response'   : {
                 'FIELDS':  [
@@ -333,7 +336,7 @@ class HartMoteDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 0x0A,
             'name'       : 'hartDeviceInfo',
-            'description': 'The setParameter<hartDeviceInfo> command is used to set HART device information that the mote passes to gateway during join. This command must be issued prior to join. This command is only required for WirelessHART-compliant devices.Note that the contents of this command are not validated by mote.',
+            'description': 'The setParameter<hartDeviceInfo> command is used to set HART device information that the mote passes to gateway during join. This command must be issued prior to join. This command is only required for WirelessHART-compliant devices. Note that the contents of this command are not validated by mote.',
             'request'    : [
                 ['hartCmd0',                HEXDATA,  22,  None],
                 ['hartCmd20',               HEXDATA,  32,  None],
@@ -388,7 +391,7 @@ class HartMoteDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 0x1a,
             'name'       : 'lock',
-            'description': 'The setParameter<lock> command locks/unlocks select HART commands (ones that affect the configuration changed flag) to a specific master (GW or serial maintenance port) to prevent the other master from changing it. This command is intended for use when the lock is temporary, i.e. it does not persist through power cycle or reset. For nonvolatile locking, use the setNVParameter<lock> command.Note: This parameter is available in devices running mote software >= 1.1.0',
+            'description': 'The setParameter<lock> command locks/unlocks select HART commands (ones that affect the configuration changed flag) to a specific master (GW or serial maintenance port) to prevent the other master from changing it. This command is intended for use when the lock is temporary, i.e. it does not persist through power cycle or reset. For nonvolatile locking, use the setNVParameter<lock> command. Note: This parameter is available in devices running mote software >= 1.1.0',
             'request'    : [
                 ['code',                    INT,      1,   None],
                 ['master',                  INT,      2,   None],
@@ -572,7 +575,7 @@ class HartMoteDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 0x1a,
             'name'       : 'lock',
-            'description': 'The getParameter<lock> command returns the current (RAM resident) lock code and locking master. To determine what the lock status will be after reset, use the getNVParameter<lock> command.Note: This parameter is available in devices running mote software >= 1.1.0',
+            'description': 'The getParameter<lock> command returns the current (RAM resident) lock code and locking master. To determine what the lock status will be after reset, use the getNVParameter<lock> command. Note: This parameter is available in devices running mote software >= 1.1.0',
             'request'    : [
             ],
             'response'   : {
@@ -633,7 +636,7 @@ class HartMoteDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 0x03,
             'name'       : 'networkId',
-            'description': "The setNVParameter<networkId> command may be used to set the persistent Network ID of the mote. The networkId is used to separate networks, and can be set during manufacturing or in the field.The mote reads this value from persistent storage at boot time. Note: while the mote is in Idle state, it is possible to update the value of mote's in-RAM Network ID by using the RAM flag in the header of this command. This avoids the extra reset that is needed to start using the Network ID. Network ID can also be set over the air using HART command 773 in a WirelessHART-compliant network.\n\nAs of version 1.1.1, a network ID of 0xFFFF can be used to indicate that the mote should join the first network heard.\n\n0xFFFF is never used over the air as a valid HART network ID - do not set the Manager's network ID to 0xFFFF.",
+            'description': "The setNVParameter<networkId> command may be used to set the persistent Network ID of the mote. The networkId is used to separate networks, and can be set during manufacturing or in the field. The mote reads this value from persistent storage at boot time. Note: while the mote is in Idle state, it is possible to update the value of mote's in-RAM Network ID by using the RAM flag in the header of this command. This avoids the extra reset that is needed to start using the Network ID. Network ID can also be set over the air using HART command 773 in a WirelessHART-compliant network.\n\nAs of version 1.1.1, a network ID of 0xFFFF can be used to indicate that the mote should join the first network heard.\n\n0xFFFF is never used over the air as a valid HART network ID - do not set the Manager's network ID to 0xFFFF.",
             'request'    : [
                 ['networkId',               INT,      2,   None],
             ],
@@ -697,7 +700,7 @@ class HartMoteDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 0x13,
             'name'       : 'ttl',
-            'description': "The setNVParameter<ttl> command sets the mote's persistent packet Time To Live (TTL) value. TTL specifies the maximum number of hops a packet may traverse before it is discarded from the network. A mote sets the initial value of the TTL field in the packets it generates to this value.The mote reads the value from persistent storage at boot time. To change the TTL used currently, this command may be issued with the RAM option.\n\nThe mote defaults TTL to 127. For compliant devices, the HART specification currently defaults to 32, but this will change to 249 in spec version 7.4, as will the mote default. We suggest not changing the mote default unless HART specifically raises it as a compliance issue when you submit your device for testing.",
+            'description': "The setNVParameter<ttl> command sets the mote's persistent packet Time To Live (TTL) value. TTL specifies the maximum number of hops a packet may traverse before it is discarded from the network. A mote sets the initial value of the TTL field in the packets it generates to this value. The mote reads the value from persistent storage at boot time. To change the TTL used currently, this command may be issued with the RAM option.\n\nThe mote defaults TTL to 127. For compliant devices, the HART specification currently defaults to 32, but this will change to 249 in spec version 7.4, as will the mote default. We suggest not changing the mote default unless HART specifically raises it as a compliance issue when you submit your device for testing.",
             'request'    : [
                 ['timeToLive',              INT,      1,   None],
             ],
@@ -718,7 +721,7 @@ class HartMoteDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 0x14,
             'name'       : 'hartAntennaGain',
-            'description': "The setNVParameter<hartAntennaGain> command stores value of the antenna gain in the mote's persistent storage.This value is added to the conducted output power of the mote when replying to HART command 797 (Write Radio Power Output) and to HART command 798 (Read Radio Output Power). The antenna gain should take into account both the gain of the antenna and any loss (for example, attenuation from a long coax cable) between the mote and the antenna. By default, this value is 2, assuming a +2 dBi antenna gain. To change the transmit power immediately, use the write RAM option of this command.",
+            'description': "The setNVParameter<hartAntennaGain> command stores value of the antenna gain in the mote's persistent storage. This value is added to the conducted output power of the mote when replying to HART command 797 (Write Radio Power Output) and to HART command 798 (Read Radio Output Power). The antenna gain should take into account both the gain of the antenna and any loss (for example, attenuation from a long coax cable) between the mote and the antenna. By default, this value is 2, assuming a +2 dBi antenna gain. To change the transmit power immediately, use the write RAM option of this command.",
             'request'    : [
                 ['antennaGain',             INTS,     1,   None],
             ],
@@ -781,8 +784,6 @@ class HartMoteDefinition(ApiDefinition.ApiDefinition):
             'name'       : 'autojoin',
             'description': "The setNVParameter<autojoin> command allows the microprocessor to change between automatic and manual joining by the mote's networking stack. In manual mode, an explicit join command from the application is required to initiate joining. This setting is persistent and takes effect after mote reset. (Available Mote >= 1.1) Note that auto join mode must not be set if the application is also configured to join (e.g combining 'auto join' with 'master' mode will result in mote not joining).",
             'request'    : [
-                ['reserved',                INT,      4,   None],
-                ['nvParamId',               INT,      1,   None],
                 ['autojoin',                INT,      1,   None],
             ],
             'response'   : {
@@ -822,7 +823,7 @@ class HartMoteDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 0x1a,
             'name'       : 'lock',
-            'description': 'The setNVParameter<lock> command persistently locks/unlocks select HART commands (ones that affect the configuration changed flag) to a specific master (GW or serial maintenance port) to prevent the other master from changing it. This command is intended for use when the lock persists through power cycle or reset. For temporary locking, use the setParameter<lock> command. Bit 7 in the flags field of the API header (see Packet Format) should be set (store in NV & RAM) when calling this command.Note: This parameter is available in devices running mote software >= 1.1.0',
+            'description': 'The setNVParameter<lock> command persistently locks/unlocks select HART commands (ones that affect the configuration changed flag) to a specific master (GW or serial maintenance port) to prevent the other master from changing it. This command is intended for use when the lock persists through power cycle or reset. For temporary locking, use the setParameter<lock> command. Bit 7 in the flags field of the API header (see Packet Format) should be set (store in NV & RAM) when calling this command. Note: This parameter is available in devices running mote software >= 1.1.0',
             'request'    : [
                 ['code',                    INT,      1,   None],
                 ['master',                  INT,      2,   None],
@@ -843,9 +844,29 @@ class HartMoteDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 0x1b,
             'name'       : 'euCompliantMode',
-            'description': 'The setNVParameter<euCompliantMode> command may be used to enforce EN 300 328 duty cycle limits based on output power. This may cause the mote to skip some transmit opportunities to remain within average power limits. Motes below +10 dBm radiated power do not need to duty cycle to meet EN 300 328 requirements.\n\nNote: This parameter is available in version>=1.2.x',
+            'description': 'The setNVParameter<euCompliantMode> command may be used to enforce EN 300 328 duty cycle limits based on output power. This may cause the mote to skip some transmit opportunities to remain within average power limits. Motes below +10 dBm radiated power do not need to duty cycle to meet EN 300 328 requirements.\n\nNote: This parameter is available in version >=1.2.x',
             'request'    : [
                 ['euCompliantMode',         INT,      1,   None],
+            ],
+            'response'   : {
+                'FIELDS':  [
+                ],
+            },
+            'responseCodes': {
+               'RC_OK'                      : 'Operation was successfully completed',
+               'RC_INVALID_LEN'             : 'Invalid packet length',
+               'RC_WRITE_FAIL'              : 'Write did not complete',
+               'RC_LOW_VOLTAGE'             : 'Voltage check failed',
+               'RC_UNKNOWN_PARAM'           : 'Unknown parameter value',
+            },
+            'serializer' : 'serializeSetNv',
+        },
+        {
+            'id'         : 0x1c,
+            'name'       : 'joinShedTime',
+            'description': 'The setNVParameter<joinShedTime> command sets the join shed time u sed with HART command 771/772 to determine when the mote should transition between active and passive search. This command may be issued at any time and takes effect at the next mote boot.',
+            'request'    : [
+                ['joinShedTime',            INT,      4,   None],
             ],
             'response'   : {
                 'FIELDS':  [
@@ -1022,12 +1043,9 @@ class HartMoteDefinition(ApiDefinition.ApiDefinition):
             'name'       : 'autojoin',
             'description': "The getNVParameter<autojoin> command returns the autojoin status stored in mote's persistent storage (i.e. set with setNVParameter<autojoin>). Autojoin can be used to cause a mote in slave mode to join on its own when booted.",
             'request'    : [
-                ['reserved',                INT,      4,   None],
-                ['nvParamId',               INT,      1,   None],
             ],
             'response'   : {
                 'FIELDS':  [
-                    ['nvParamId',           INT,      1,   None],
                     ['autojoin',            INT,      1,   None],
                 ],
             },
@@ -1042,7 +1060,7 @@ class HartMoteDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 0x19,
             'name'       : 'hartCompliantMode',
-            'description': 'The getNVParameter<hartCompliantMode> command may be used to retrieve the HART compliance mode that is used by devices.This mode controls strict compliance to HART specification requirements, specifically:\n\n- join timeouts (faster in non-compliant mode)\n- Keepalive interval (adapts to synch quality in non-compliant mode)\n- Health report format (uses saturating counters in non-compliant mode)\n\nNote: This parameter is available in devices running mote software >= 1.1.0',
+            'description': 'The getNVParameter<hartCompliantMode> command may be used to retrieve the HART compliance mode that is used by devices. This mode controls strict compliance to HART specification requirements, specifically:\n\n- join timeouts (faster in non-compliant mode)\n- Keepalive interval (adapts to synch quality in non-compliant mode)\n- Health report format (uses saturating counters in non-compliant mode)\n\nNote: This parameter is available in devices running mote software >= 1.1.0',
             'request'    : [
             ],
             'response'   : {
@@ -1060,7 +1078,7 @@ class HartMoteDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 0x1a,
             'name'       : 'lock',
-            'description': 'The getNVParameter < lock > command returns the persisted lock code and locking master (those to be used after reset). To determine the current lock status, use the getParameter<lock> command.Note: This parameter is available in devices running mote software >= 1.1.0',
+            'description': 'The getNVParameter < lock > command returns the persisted lock code and locking master (those to be used after reset). To determine the current lock status, use the getParameter<lock> command. Note: This parameter is available in devices running mote software >= 1.1.0',
             'request'    : [
             ],
             'response'   : {
@@ -1091,6 +1109,25 @@ class HartMoteDefinition(ApiDefinition.ApiDefinition):
                'RC_OK'                      : 'Operation was successfully completed',
                'RC_UNKNOWN_PARAM'           : 'Unknown parameter value',
                'RC_READ_FAIL'               : 'Read did not complete',
+            },
+            'serializer' : 'serializeGetNv',
+        },
+        {
+            'id'         : 0x1c,
+            'name'       : 'joinShedTime',
+            'description': 'The getNVParameter<joinShedTime> command returns the join shed time used with HART command 771/772 to determine when the mote should transition between active and passive search.',
+            'request'    : [
+            ],
+            'response'   : {
+                'FIELDS':  [
+                    ['joinShedTime',        INT,      4,   None],
+                ],
+            },
+            'responseCodes': {
+               'RC_OK'                      : 'Operation was successfully completed',
+               'RC_UNKNOWN_PARAM'           : 'Unknown parameter value',
+               'RC_READ_FAIL'               : 'Read did not complete',
+               'RC_LOW_VOLTAGE'             : 'Voltage check failed',
             },
             'serializer' : 'serializeGetNv',
         },
@@ -1164,7 +1201,7 @@ class HartMoteDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 0x05,
             'name'       : 'send',
-            'description': "The send command allows a serial device to send a packet into the network through the mote's serial port. The mote forwards the packet to the network upon receiving it. The microprocessor must not attempt to send data at a rate that exceeds its allocated bandwidth. For a WirelessHART device, the payload of the packet must include the status byte and the extended status byte, followed by one or more sets of HART commands up to the maximum send payload size, as follows:\n\nRequest: Status|Extended Status|Cmd1|Length1|Data1|Cmd2|Length2|Data2...\nResponse: Status|Extended Status|Cmd1|Length1(includes response code)|RC1|Data1|Cmd2|Length2|RC2|Data2...\n\nPrior to sending the payload into the network, the mote caches the value of Status and Extended Status to use in packets it originates locally. The send command is only valid when the mote is in the Operational state. If the mote receives this command when it is not in the Operational state, it returns the error RC_INV_STATE. Note: The serial device can receive a request while the mote is in the process of transition from the Connected state to the Operational state.",
+            'description': "The send command allows a serial device to send a packet into the network through the mote's serial port. The mote forwards the packet to the network upon receiving it. The microprocessor must not attempt to send data at a rate that exceeds its allocated bandwidth. For a WirelessHART device, the payload of the packet must include the status byte and the extended status byte, followed by one or more sets of HART commands up to the maximum send payload size, as follows:\n\nRequest: Status|Extended Status|Cmd1|Length1|Data1|Cmd2|Length2|Data2... Response: Status|Extended Status|Cmd1|Length1(includes response code)|RC1|Data1|Cmd2|Length2|RC2|Data2...\n\nPrior to sending the payload into the network, the mote caches the value of Status and Extended Status to use in packets it originates locally. The send command is only valid when the mote is in the Operational state. If the mote receives this command when it is not in the Operational state, it returns the error RC_INV_STATE. Note: The serial device can receive a request while the mote is in the process of transition from the Connected state to the Operational state.",
             'request'    : [
                 ['tranType',                BOOL,     1,   True],
                 ['tranDir',                 BOOL,     1,   True],
@@ -1189,7 +1226,7 @@ class HartMoteDefinition(ApiDefinition.ApiDefinition):
                'RC_INVALID_VALUE'           : 'Invalid application domain or priority',
                'RC_NOT_FOUND'               : 'Service or route to destination not found',
                'RC_NO_RESOURCES'            : 'Mote buffers are full',
-               'RC_INVALID_STATE'           : 'Mote is not inOperational state',
+               'RC_INVALID_STATE'           : 'Mote is not in Operational state',
             },
             'serializer' : 'serializeSend',
         },
@@ -1258,7 +1295,7 @@ class HartMoteDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 0x0A,
             'name'       : 'hartPayload',
-            'description': 'The hartPayload command allows the microprocessor to forward a HART payload to the mote. The format of the command must be as follows\n\n16-bit command number | data length | data\n\nThe reply (if any) will be in the form of a HART response and sent in the payload of the acknowledgement. The RC_INVALID_VALUE response means that the hartPayload command was given a HART command that the mote does not terminate.',
+            'description': 'The hartPayload command allows the microprocessor to forward a HART payload to the mote. The format of the command must be as follows:\n\n16-bit command number | data length | data\n\nThe reply (if any) will be in the form of a HART response and sent in the payload of the acknowledgement. This command always returns RC_OK - any HART errors are returned within the response payload, e.g. if a command is not implemented, the response payload field will contain the 16-bit command number, a length = 1, and data = 0x40 (HART RC 64).',
             'request'    : [
                 ['payloadLen',              INT,      1,   None],
                 ['payload',                 HEXDATA,  None,None],
@@ -1273,13 +1310,12 @@ class HartMoteDefinition(ApiDefinition.ApiDefinition):
             'responseCodes': {
                'RC_OK'                      : 'Operation was successfully completed',
                'RC_INVALID_LEN'             : 'Invalid packet length',
-               'RC_INVALID_VALUE'           : 'Invalid value',
             },
         },
         {
             'id'         : 0x0B,
             'name'       : 'testRadioTx',
-            'description': 'The testRadioTx command initiates transmission over the radio. This command may only be issued prior to the mote joining the network. While executing this command the mote sends numPackets packets. Each packet consists of a payload of up to 125 bytes, and a 2-byte 802.15.4 CRC at the end. Bytes 0 and 1 contain the packet number (in big-endian format) that increments with every packet transmitted. Bytes 2..N contain a counter (from 0..N-2) that increments with every byte inside payload. Transmissions occur on the specified channel.\n\nIf number of packets parameter is set to 0x00, the mote will generate an unmodulatedtest tone on the selected channel. The test tone can only be stopped by resetting themote.\n\n\n\nChannel numbering is 0-15, corresponding to IEEE 2.4 GHz channels 11-26.\n\nNote: this command is deprecated and should not be used in new designs. The replacement command is testRadioTxExt.',
+            'description': 'The testRadioTx command initiates transmission over the radio. This command may only be issued prior to the mote joining the network. While executing this command the mote sends numPackets packets. Each packet consists of a payload of up to 125 bytes, and a 2-byte 802.15.4 CRC at the end. Bytes 0 and 1 contain the packet number (in big-endian format) that increments with every packet transmitted. Bytes 2..N contain a counter (from 0..N-2) that increments with every byte inside payload. Transmissions occur on the specified channel.\n\nIf number of packets parameter is set to 0x00, the mote will generate an unmodulated test tone on the selected channel. The test tone can only be stopped by resetting the mote.\n\n\n\nChannel numbering is 0-15, corresponding to IEEE 2.4 GHz channels 11-26.\n\n\n\nNote: this command is deprecated and should not be used in new designs. The replacement command is testRadioTxExt.',
             'request'    : [
                 ['channel',                 INT,      1,   None],
                 ['numPackets',              INT,      2,   None],
@@ -1300,7 +1336,7 @@ class HartMoteDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 0x0C,
             'name'       : 'testRadioRx',
-            'description': 'The testRadioRx command clears all previously collected statistics and initiates a test of radio reception for the specified channel and duration. During the test, the mote keeps statistics about the number of packets received (with and without error). The test results may be retrieved using the getParameter<testRadioRxStats> command. The mote must be reset (either hardware or software reset) after radio tests are complete and prior to joining.\n\n\n\nChannel numbering is 0-15, corresponding to IEEE 2.4 GHz channels 11-26.\n\nNote: this command is deprecated and should not be used in new designs. The replacement command is testRadioRxExt.',
+            'description': 'The testRadioRx command clears all previously collected statistics and initiates a test of radio reception for the specified channel and duration. During the test, the mote keeps statistics about the number of packets received (with and without error). The test results may be retrieved using the getParameter<testRadioRxStats> command. The mote must be reset (either hardware or software reset) after radio tests are complete and prior to joining.\n\n\n\nChannel numbering is 0-15, corresponding to IEEE 2.4 GHz channels 11-26.\n\n\n\nNote: this command is deprecated and should not be used in new designs. The replacement command is testRadioRxExt.',
             'request'    : [
                 ['channel',                 INT,      1,   None],
                 ['time',                    INT,      2,   None],
@@ -1400,7 +1436,7 @@ class HartMoteDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 0x14,
             'name'       : 'testRadioRxExt',
-            'description': 'The testRadioRxExt command clears all previously collected statistics and initiates a test of radio reception for the specified channel and duration. During the test, the mote keeps statistics about the number of packets received (with and without error). The test results may be retrieved using the getParameter<testRadioRxStats> command.The mote must be reset (either hardware or software reset) after radio tests are complete and prior to joining.\n\nStation ID is available in IP mote >= 1.4, and WirelessHART mote >= 1.1.2. The station ID is a user selectable value used to isolate traffic if multiple tests are running in the same radio space. It must be set to match the station ID used by the transmitter.\n\n\n\nChannel numbering is 0-15, corresponding to IEEE 2.4 GHz channels 11-26.',
+            'description': 'The testRadioRxExt command clears all previously collected statistics and initiates a test of radio reception for the specified channel and duration. During the test, the mote keeps statistics about the number of packets received (with and without error). The test results may be retrieved using the getParameter<testRadioRxStats> command. The mote must be reset (either hardware or software reset) after radio tests are complete and prior to joining.\n\nStation ID is available in IP Mote 1.4.0 or later, and WirelessHART Mote 1.1.2 or later. The station ID is a user selectable value used to isolate traffic if multiple tests are running in the same radio space. It must be set to match the station ID used by the transmitter.\n\n\n\nChannel numbering is 0-15, corresponding to IEEE 2.4 GHz channels 11-26.',
             'request'    : [
                 ['channelMask',             HEXDATA,  2,   None],
                 ['time',                    INT,      2,   None],
@@ -1414,7 +1450,7 @@ class HartMoteDefinition(ApiDefinition.ApiDefinition):
             'responseCodes': {
                'RC_OK'                      : 'Operation was successfully completed',
                'RC_INVALID_VALUE'           : 'A parameter value is not valid',
-               'RC_INVALID_STATE'           : 'The mote is not inIdle state',
+               'RC_INVALID_STATE'           : 'The mote is not in Idle state',
                'RC_BUSY'                    : 'Another test operation is in progress',
                'RC_INVALID_LEN'             : 'Invalid packet size',
             },
@@ -1424,6 +1460,7 @@ class HartMoteDefinition(ApiDefinition.ApiDefinition):
             'name'       : 'zeroize',
             'description': 'The zeroize (zeroise) command erases flash area that is used to store configuration parameters, such as join keys. This command is intended to satisfy the zeroization requirement of the FIPS-140 standard. After the command executes, the mote should be reset. Available in mote >= 1.1.x\n\nThe zeroize command will render the mote inoperable. It must be re-programmed via SPI or JTAG in order to be useable.',
             'request'    : [
+                ['password',                INT,      4,   None],
             ],
             'response'   : {
                 'FIELDS':  [
@@ -1505,6 +1542,42 @@ class HartMoteDefinition(ApiDefinition.ApiDefinition):
                'RC_INVALID_VALUE'           : 'Invalid value for a parameter',
             },
         },
+        {
+            'id'         : 0x1a,
+            'name'       : 'testRadioRxPER',
+            'description': 'The testRadioRxPER command initiates Packet Error Rate (PER) test in rx mode. This command may be issued only when mote is in Idle state.\n\nThis command is available in WiHART Mote version 1.2.4.1 or later',
+            'request'    : [
+            ],
+            'response'   : {
+                'FIELDS':  [
+                    [RC,                    INT,      1,   True],
+                ],
+            },
+            'responseCodes': {
+               'RC_OK'                      : 'Command was accepted',
+               'RC_INVALID_STATE'           : 'The mote is in invalid state to start PER test',
+            },
+        },
+        {
+            'id'         : 0x1b,
+            'name'       : 'testRadioTxPER',
+            'description': 'The testRadioTxPER command initiates Packet Error Rate (PER) test in tx mode. This command may be issued only when mote is in Idle state.\n\nThis command is available in WiHART Mote version 1.2.4.1 or later',
+            'request'    : [
+                ['txPower',        INTS,      1,   None],
+                ['numPackets',     INT,       2,   None],
+                ['chanMask',       HEXDATA,   2,   None],
+                ['numRepeat',     INT,       2,   None],
+            ],
+            'response'   : {
+                'FIELDS':  [
+                    [RC,                    INT,      1,   True],
+                ],
+            },
+            'responseCodes': {
+               'RC_OK'                      : 'Command was accepted',
+               'RC_INVALID_STATE'           : 'The mote is in invalid state to start PER test',
+            },
+        },
     ]
     
     # We redefine this attribute inherited from ApiDefinition. See
@@ -1513,7 +1586,7 @@ class HartMoteDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 0xd,
             'name'       : 'timeIndication',
-            'description': 'The timeIndication notification applies to mote products that support a time interrupt into the mote. The time packet includes the network time and the current UTC time relative to the manager.\n\nFor LTC5800-WHM based products, driving the TIMEn pin low (assert) wakes the processor. The pin must asserted for a minimum of t strobe s. De-asserting the pin latches the time, and a timeIndication will be generated within t response ms.Refer to the LTC5800-WHM Datasheet for additional information about TIME pin usage.\n\nThe processor will remain awake and drawing current while the TIMEn pin is asserted. To avoid drawing excess current, take care to minimize the duration of the TIMEn pin being asserted past t strobe minimum.',
+            'description': 'The timeIndication notification applies to mote products that support a time interrupt into the mote. The time packet includes the network time and the current UTC time relative to the manager.\n\nFor LTC5800-WHM based products, driving the TIMEn pin low (assert) wakes the processor. The pin must asserted for a minimum of t strobe s. De-asserting the pin latches the time, and a timeIndication will be generated within t response ms. Refer to the LTC5800-WHM Datasheet for additional information about TIME pin usage.\n\nThe processor will remain awake and drawing current while the TIMEn pin is asserted. To avoid drawing excess current, take care to minimize the duration of the TIMEn pin being asserted past t strobe minimum.',
             'response'   : {
                 'FIELDS':  [
                     ['utcSec',              INT,      4,   None],
@@ -1555,7 +1628,7 @@ class HartMoteDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 0x81,
             'name'       : 'dataReceived',
-            'description': 'The dataReceived notification notifies the microprocessor that a packet was received.When the microprocessor receives a reliable dataReceived request, in addition to acknowledging the request with a dataReceived response it must also respond using the send command.',
+            'description': 'The dataReceived notification notifies the microprocessor that a packet was received. When the microprocessor receives a reliable dataReceived request, in addition to acknowledging the request with a dataReceived response it must also respond using the send command.',
             'response'   : {
                 'FIELDS':  [
                     ['srcAddr',             HEXDATA,  2,   None],
@@ -1572,7 +1645,7 @@ class HartMoteDefinition(ApiDefinition.ApiDefinition):
             'response'   : {
                 'FIELDS':  [
                     ['netId',               INT,      2,   None],
-                    ['moteid',              HEXDATA,  2,   None],
+                    ['moteId',              HEXDATA,  2,   None],
                     ['rssi',                INTS,     1,   None],
                     ['joinPri',             INT,      1,   None],
                 ],
@@ -1585,6 +1658,21 @@ class HartMoteDefinition(ApiDefinition.ApiDefinition):
             'response'   : {
                 'FIELDS':  [
                     ['duration',            INT,      4,   None],
+                ],
+            },
+        },
+        {
+            'id'         : 0x1c,
+            'name'       : 'testRadioStatsPER',
+            'description': 'The testRadioStatsPER notification is generated by the mote when PER test in RX mode is completed.\n\nThis command is available in WiHART Mote version 1.2.4 or later.',
+            'response'   : {
+                'FIELDS':  [
+                    ['numRxOK',           INT,      2,   None],
+                    ['numRxErr',          INT,      2,   None],
+                    ['numRxInv',          INT,      2,   None],
+                    ['numRxMiss',         INT,      2,   None],
+                    ['perInt',            INT,      2,   None],
+                    ['perFrac',           INT,      2,   None],
                 ],
             },
         },
