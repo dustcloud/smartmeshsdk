@@ -40,21 +40,6 @@ from dustCli                 import DustCli
 # default TCP port to listen to
 DFLT_TCPPORT = 8081
 
-#============================ configs =========================================
-
-#=== adjust paths for bottle for the exe version of the app
-# static/ folder
-if os.path.exists('static'):
-    BOTTLE_STATIC_PATH = 'static'
-else:
-    BOTTLE_STATIC_PATH = os.path.join('app','SeeTheMesh','static')
-assert os.path.exists(BOTTLE_STATIC_PATH)
-# views/  folder
-if not os.path.exists('views'):
-    newpath = os.path.join('app','SeeTheMesh','views')
-    assert os.path.exists(newpath)
-    bottle.TEMPLATE_PATH.insert(0,newpath)
-
 #============================ helpers =========================================
 
 def formatVersion():
@@ -189,7 +174,7 @@ class AppData(object):
         with self.dataLock:
             return copy.deepcopy(self.stats)
 
-class LatLng(object):
+class LatLngFile(object):
     '''
     {
         "map":                     {
@@ -218,12 +203,12 @@ class LatLng(object):
     _init          = False
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
-            cls._instance = super(LatLng, cls).__new__(cls, *args, **kwargs)
+            cls._instance = super(LatLngFile, cls).__new__(cls, *args, **kwargs)
         return cls._instance
     
     def __init__(self):
         
-        # singleton patterm
+        # singleton pattern
         if self._init:
             return
         self._init = True
@@ -366,129 +351,133 @@ class DataGatherer(threading.Thread):
             
             u'manager':         'COM11',
             u'valid':           True,
-            u'timestamp_start': u'Wed, 28 Jun 2017 10:07:00 UTC',
-            u'timestamp_stop':  u'Wed, 28 Jun 2017 10:07:00 UTC'},
-            'epoch_stop':       1498644420.962,
             
-            // general
+            'snapshot': {
             
-            u'getSystemInfo': {
-                u'RC': 0,
-                u'hwModel': 16,
-                u'hwRev': 1,
-                u'macAddress': u'00-17-0d-00-00-30-5d-39',
-                u'swBuild': 9,
-                u'swMajor': 1,
-                u'swMinor': 4,
-                u'swPatch': 1
-            },
-            'getNetworkInfo': {
-                u'RC': 0,
-                u'advertisementState': 0,
-                u'asnSize': 7250,
-                u'downFrameState': 1,
-                u'ipv6Address': u'fe80:0000:0000:0000:0017:0d00:0030:5d39',
-                u'maxNumbHops': 3,
-                u'netLatency': 700,
-                u'netPathStability': 99,
-                u'netReliability': 100,
-                u'netState': 0,
-                u'numArrivedPackets': 995,
-                u'numLostPackets': 0,
-                u'numMotes': 3
-            },
-            'getNetworkConfig': {
-                u'RC': 0,
-                u'apTxPower': 8,
-                u'autoStartNetwork': True,
-                u'baseBandwidth': 9000,
-                u'bbMode': 0,
-                u'bbSize': 1,
-                u'bwMult': 300,
-                u'ccaMode': 0,
-                u'channelList': 32767,
-                u'downFrameMultVal': 1,
-                u'frameProfile': 1,
-                u'isRadioTest': 0,
-                u'locMode': 0,
-                u'maxMotes': 101,
-                u'networkId': 430,
-                u'numParents': 2,
-                u'oneChannel': 255
-            },
-            
-            // motes
-            
-            'getMoteInfo': {
-                '00-17-0d-00-00-30-5d-39': {
+                u'timestamp_start': u'Wed, 28 Jun 2017 10:07:00 UTC',
+                u'timestamp_stop':  u'Wed, 28 Jun 2017 10:07:00 UTC'},
+                'epoch_stop':       1498644420.962,
+                
+                // general
+                
+                u'getSystemInfo': {
                     u'RC': 0,
-                    u'assignedBw': 0,
-                    u'avgLatency': 0,
-                    u'hopDepth': 0,
+                    u'hwModel': 16,
+                    u'hwRev': 1,
                     u'macAddress': u'00-17-0d-00-00-30-5d-39',
-                    u'numGoodNbrs': 3,
-                    u'numJoins': 1,
-                    u'numNbrs': 3,
-                    u'packetsLost': 0,
-                    u'packetsReceived': 12,
-                    u'requestedBw': 61770,
-                    u'state': 4,
-                    u'stateTime': 11226,
-                    u'totalNeededBw': 2472
+                    u'swBuild': 9,
+                    u'swMajor': 1,
+                    u'swMinor': 4,
+                    u'swPatch': 1
                 },
-                ...
-            },
-            'getMoteConfig': {
-                '00-17-0d-00-00-30-5d-39': {
-                    'RC': 0,
-                    u'isAP': True,
-                    u'isRouting': True,
-                    u'macAddress': u'00-17-0d-00-00-30-5d-39',
-                    u'moteId': 1,
-                    u'reserved': 1,
-                    u'state': 4,
+                'getNetworkInfo': {
+                    u'RC': 0,
+                    u'advertisementState': 0,
+                    u'asnSize': 7250,
+                    u'downFrameState': 1,
+                    u'ipv6Address': u'fe80:0000:0000:0000:0017:0d00:0030:5d39',
+                    u'maxNumbHops': 3,
+                    u'netLatency': 700,
+                    u'netPathStability': 99,
+                    u'netReliability': 100,
+                    u'netState': 0,
+                    u'numArrivedPackets': 995,
+                    u'numLostPackets': 0,
+                    u'numMotes': 3
                 },
-                ...
-            },
-            
-            // links
-            
-            'getMoteLinks': {
-                '00-17-0d-00-00-30-5d-39': {
-                    'RC': 0,
-                    u'utilization': 1
-                    u'links': [
-                        {
-                            'channelOffset': 1,
-                            u'flags': 2,
-                            u'frameId': 1,
-                            u'moteId': 2,
-                            u'slot': 241
-                        },
-                        ...
-                    ],
+                'getNetworkConfig': {
+                    u'RC': 0,
+                    u'apTxPower': 8,
+                    u'autoStartNetwork': True,
+                    u'baseBandwidth': 9000,
+                    u'bbMode': 0,
+                    u'bbSize': 1,
+                    u'bwMult': 300,
+                    u'ccaMode': 0,
+                    u'channelList': 32767,
+                    u'downFrameMultVal': 1,
+                    u'frameProfile': 1,
+                    u'isRadioTest': 0,
+                    u'locMode': 0,
+                    u'maxMotes': 101,
+                    u'networkId': 430,
+                    u'numParents': 2,
+                    u'oneChannel': 255
                 },
-                ...
-            },
-            
-            // paths
-            
-            u'getPathInfo': {
-                u'00-17-0d-00-00-30-5d-39': {
-                    u'0': {
+                
+                // motes
+                
+                'getMoteInfo': {
+                    '00-17-0d-00-00-30-5d-39': {
                         u'RC': 0,
-                        u'dest': u'00-17-0d-00-00-38-06-f0',
-                        u'direction': 3,
-                        u'numLinks': 2,
-                        u'pathId': 2,
-                        u'quality': 97,
-                        u'rssiDestSrc': -46,
-                        u'rssiSrcDest': 0,
-                        u'source': u'00-17-0d-00-00-30-5d-39'
+                        u'assignedBw': 0,
+                        u'avgLatency': 0,
+                        u'hopDepth': 0,
+                        u'macAddress': u'00-17-0d-00-00-30-5d-39',
+                        u'numGoodNbrs': 3,
+                        u'numJoins': 1,
+                        u'numNbrs': 3,
+                        u'packetsLost': 0,
+                        u'packetsReceived': 12,
+                        u'requestedBw': 61770,
+                        u'state': 4,
+                        u'stateTime': 11226,
+                        u'totalNeededBw': 2472
                     },
                     ...
                 },
-                ...
+                'getMoteConfig': {
+                    '00-17-0d-00-00-30-5d-39': {
+                        'RC': 0,
+                        u'isAP': True,
+                        u'isRouting': True,
+                        u'macAddress': u'00-17-0d-00-00-30-5d-39',
+                        u'moteId': 1,
+                        u'reserved': 1,
+                        u'state': 4,
+                    },
+                    ...
+                },
+                
+                // links
+                
+                'getMoteLinks': {
+                    '00-17-0d-00-00-30-5d-39': {
+                        'RC': 0,
+                        u'utilization': 1
+                        u'links': [
+                            {
+                                'channelOffset': 1,
+                                u'flags': 2,
+                                u'frameId': 1,
+                                u'moteId': 2,
+                                u'slot': 241
+                            },
+                            ...
+                        ],
+                    },
+                    ...
+                },
+                
+                // paths
+                
+                u'getPathInfo': {
+                    u'00-17-0d-00-00-30-5d-39': {
+                        u'0': {
+                            u'RC': 0,
+                            u'dest': u'00-17-0d-00-00-38-06-f0',
+                            u'direction': 3,
+                            u'numLinks': 2,
+                            u'pathId': 2,
+                            u'quality': 97,
+                            u'rssiDestSrc': -46,
+                            u'rssiSrcDest': 0,
+                            u'source': u'00-17-0d-00-00-30-5d-39'
+                        },
+                        ...
+                    },
+                    ...
+                }
             }
         }
         '''
@@ -866,18 +855,23 @@ class WebServer(object):
     
     HUB_LABEL = 'hub'
     
-    def __init__(self,dataGatherer,tcpport,showhub):
+    def __init__(self,dataGatherer,tcpport,showhub,BOTTLE_STATIC_PATH,BOTTLE_TEMPLATE_PATH,LatLngClass):
         
         # store params
-        self.dataGatherer    = dataGatherer
-        self.tcpport         = tcpport
-        self.showhub         = showhub
+        self.dataGatherer         = dataGatherer
+        self.tcpport              = tcpport
+        self.showhub              = showhub
+        self.BOTTLE_STATIC_PATH   = BOTTLE_STATIC_PATH
+        self.BOTTLE_TEMPLATE_PATH = BOTTLE_TEMPLATE_PATH
         
         # local variables
-        self.dataGeneration  = None
-        self.topology        = ''
+        self.dataGeneration       = None
+        self.topology             = ''
+        self.LatLng               = LatLngClass
         
-        # web server routing
+        # web server
+        if self.BOTTLE_TEMPLATE_PATH:
+            bottle.TEMPLATE_PATH.insert(0,self.BOTTLE_TEMPLATE_PATH)
         self.websrv   = bottle.Bottle()
         #=== interact with JsonServer
         self.websrv.route('/snapshot',                'POST',   self._webhandle_snapshot_POST)
@@ -955,7 +949,7 @@ class WebServer(object):
     def _webhandle_static_GET(self,path):
         return bottle.static_file(
             path,
-            root=BOTTLE_STATIC_PATH,
+            root=self.BOTTLE_STATIC_PATH,
         )
     
     # hidden API
@@ -1001,13 +995,13 @@ class WebServer(object):
             lng    = rxjson['lng']
             if '-' in title:
                 title = '00-17-0d-00-00-{0}'.format(title)
-            LatLng().setMote(title,lat,lng)
+            self.LatLng().setMote(title,lat,lng)
             
             AppData().bumpDataGeneration()
         elif (sorted(rxjson.keys())==sorted(['centerlat','centerlng','zoom'])):
             # update position/zoom of map
             
-            LatLng().setMap(
+            self.LatLng().setMap(
                 rxjson['centerlat'],
                 rxjson['centerlng'],
                 rxjson['zoom'],
@@ -1069,15 +1063,15 @@ class WebServer(object):
         returnVal['generation'] = AppData().getDataGeneration()
         
         #=== map
-        returnVal['map'] = LatLng().getMap()
+        returnVal['map'] = self.LatLng().getMap()
         
         #=== nodes
         returnVal['nodes'] = []
         # box
         returnVal['nodes'] += [
             {
-                'latitude':  LatLng().getBox()[0],
-                'longitude': LatLng().getBox()[1],
+                'latitude':  self.LatLng().getBox()[0],
+                'longitude': self.LatLng().getBox()[1],
                 'title':     'box',
                 'infotext':  'box',
                 'icon':      '/static/icon_box.png',
@@ -1087,8 +1081,8 @@ class WebServer(object):
         if self.showhub:
             returnVal['nodes'] += [
                 {
-                    'latitude':  LatLng().getHub()[0],
-                    'longitude': LatLng().getHub()[1],
+                    'latitude':  self.LatLng().getHub()[0],
+                    'longitude': self.LatLng().getHub()[1],
                     'title':     self.HUB_LABEL,
                     'infotext':  'hub',
                     'icon':      'http://maps.google.com/mapfiles/ms/micons/sunny.png',
@@ -1121,8 +1115,8 @@ class WebServer(object):
             
             returnVal['nodes'] += [
                 {
-                    'latitude':  LatLng().getMote(mote['macAddress'])[0],
-                    'longitude': LatLng().getMote(mote['macAddress'])[1],
+                    'latitude':  self.LatLng().getMote(mote['macAddress'])[0],
+                    'longitude': self.LatLng().getMote(mote['macAddress'])[1],
                     'title':     mote['macAddress'][-8:],
                     'infotext':  infotext,
                     'style':     style,
@@ -1159,10 +1153,10 @@ class WebServer(object):
                     {
                         'sourceidx':             nodelabels.index(path['source'][-8:]),
                         'destidx':               nodelabels.index(path['dest'][-8:]),
-                        'source_latitude':       LatLng().getMote(path['source'])[0],
-                        'source_longitude':      LatLng().getMote(path['source'])[1],
-                        'dest_latitude':         LatLng().getMote(path['dest'])[0],
-                        'dest_longitude':        LatLng().getMote(path['dest'])[1],
+                        'source_latitude':       self.LatLng().getMote(path['source'])[0],
+                        'source_longitude':      self.LatLng().getMote(path['source'])[1],
+                        'dest_latitude':         self.LatLng().getMote(path['dest'])[0],
+                        'dest_longitude':        self.LatLng().getMote(path['dest'])[1],
                         'infotext':              infotext,
                         'color':                 linkcolor,
                         'opacity':               1.0,
@@ -1182,10 +1176,10 @@ class WebServer(object):
                         {
                             'sourceidx':             nodelabels.index(mote['macAddress'][-8:]),
                             'destidx':               nodelabels.index(self.HUB_LABEL),
-                            'source_latitude':       LatLng().getMote(mote['macAddress'])[0],
-                            'source_longitude':      LatLng().getMote(mote['macAddress'])[1],
-                            'dest_latitude':         LatLng().getMote(self.HUB_LABEL)[0],
-                            'dest_longitude':        LatLng().getMote(self.HUB_LABEL)[1],
+                            'source_latitude':       self.LatLng().getMote(mote['macAddress'])[0],
+                            'source_longitude':      self.LatLng().getMote(mote['macAddress'])[1],
+                            'dest_latitude':         self.LatLng().getMote(self.HUB_LABEL)[0],
+                            'dest_longitude':        self.LatLng().getMote(self.HUB_LABEL)[1],
                             'infotext':              '',
                             'color':                 'blue',
                             'opacity':               0.7,
@@ -1197,12 +1191,15 @@ class WebServer(object):
 
 class SeeTheMesh(object):
     
-    def __init__(self,managerconnection,tcpport,showhub):
+    def __init__(self,managerconnection,tcpport,showhub,BOTTLE_STATIC_PATH,BOTTLE_TEMPLATE_PATH,LatLngClass):
         
         # store params
         self.managerconnection    = managerconnection
         self.tcpport              = tcpport
         self.showhub              = showhub
+        self.BOTTLE_STATIC_PATH   = BOTTLE_STATIC_PATH
+        self.BOTTLE_TEMPLATE_PATH = BOTTLE_TEMPLATE_PATH
+        self.LatLngClass          = LatLngClass
         
         # start the appropriate dataGatherer subclass
         found = False
@@ -1217,9 +1214,12 @@ class SeeTheMesh(object):
 
         # interfaces
         self.webServer            = WebServer(
-            dataGatherer     = self.dataGatherer,
-            tcpport          = self.tcpport,
-            showhub          = self.showhub
+            dataGatherer          = self.dataGatherer,
+            tcpport               = self.tcpport,
+            showhub               = self.showhub,
+            BOTTLE_STATIC_PATH    = self.BOTTLE_STATIC_PATH,
+            BOTTLE_TEMPLATE_PATH  = self.BOTTLE_TEMPLATE_PATH,
+            LatLngClass           = self.LatLngClass,
         )
         self.cli                  = DustCli.DustCli(
             quit_cb  = self._clihandle_quit,
@@ -1272,9 +1272,28 @@ def main(args):
     SeeTheMesh(**args)
 
 if __name__=="__main__":
+    # command line arguments
     parser = argparse.ArgumentParser()
     parser.add_argument('--managerconnection', default='serial')
     parser.add_argument('--tcpport',           default=DFLT_TCPPORT)
     parser.add_argument('--showhub',           default=False)
     args = vars(parser.parse_args())
+    
+    # where Bottle folders are
+    # static/ folder
+    if os.path.exists('static'):
+        args['BOTTLE_STATIC_PATH'] = 'static'
+    else:
+        args['BOTTLE_STATIC_PATH'] = os.path.join('app','SeeTheMesh','static')
+    assert os.path.exists(args['BOTTLE_STATIC_PATH'])
+    # views/  folder
+    if os.path.exists('views'):
+        args['BOTTLE_TEMPLATE_PATH'] = None
+    else:
+        args['BOTTLE_TEMPLATE_PATH'] = os.path.join('app','SeeTheMesh','views')
+        assert os.path.exists(args['BOTTLE_TEMPLATE_PATH'])
+    
+    # which LatLng class to use
+    args['LatLngClass'] = LatLngFile
+    
     main(args)

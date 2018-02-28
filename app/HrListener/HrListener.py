@@ -55,16 +55,14 @@ log.addHandler(NullHandler())
 
 #============================ setup/teardown ==================================
 
+# logging
 def setup_module(function):
-    
-    # setup logging
     for loggerName in LOG_MODULES:
         temp = logging.getLogger(loggerName)
         temp.setLevel(logging.DEBUG)
         temp.addHandler(logHandler)
 
 # global
-
 AppUtils.configureLogging()
 
 # HR logs (do last)
@@ -100,12 +98,12 @@ class notifClient(object):
         
         # variables
         self.data      = []
-        self.data.append(['mac' , '# Device HRs', '# Neighbors HRs', '# Discovered HRs']) # header
+        self.data.append(['mac' , '# Device HRs', '# Neighbors HRs', '# Discovered HRs', '# RSSI HRs']) # header
         self.dataLock  = threading.Lock()
         self.hrParser  = HrParser.HrParser()
         
         # log
-        hrlog.info("============= START LOGGING HEALTH REPORTS ==============")
+        hrlog.info("========= START LOGGING HEALTH REPORTS =========")
         
         # subscriber
         self.subscriber = IpMgrSubscribe.IpMgrSubscribe(self.connector)
@@ -136,7 +134,7 @@ class notifClient(object):
     def disconnect(self):
         
         # log
-        hrlog.info("============== STOP LOGGING HEALTH REPORTS =============")
+        hrlog.info("========= STOP LOGGING HEALTH REPORTS ==========")
         
         self.connector.disconnect()
     
@@ -161,9 +159,9 @@ class notifClient(object):
             with self.dataLock:
                 # format of data:
                 # [
-                #     [''                        , 'Device', 'Neighbors', 'Discovered'],
-                #     ['11-11-11-11-11-11-11-11' ,        0,           3,            2],
-                #     ['22-22-22-22-22-22-22-22' ,        0,           3,            2],
+                #     [''                        , 'Device', 'Neighbors', 'Discovered', 'RSSI'],
+                #     ['11-11-11-11-11-11-11-11' ,        0,           3,            2,      4],
+                #     ['22-22-22-22-22-22-22-22' ,        0,           3,            2,      5],
                 # ]
                 
                 # find notifName row
@@ -175,7 +173,7 @@ class notifClient(object):
                 
                 # create row if needed
                 if not found:
-                    self.data.append([mac,0,0,0])
+                    self.data.append([mac,0,0,0,0])
                     row = self.data[-1]
                 
                 # increment counters
@@ -185,6 +183,8 @@ class notifClient(object):
                     row[2] += 1
                 if 'Discovered' in hr:
                     row[3] += 1
+                if 'Extended' in hr:
+                    row[4] += 1
         
         except Exception as err:
             print type(err)

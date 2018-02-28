@@ -46,8 +46,8 @@ class dustFrameProgress(dustFrame.dustFrame):
             self.container,
             font             = dustStyle.FONT_BODY,
             bg               = dustStyle.COLOR_BG,
-            width            = 100,
-            height           = 10,
+            width            = 120,
+            height           = 20,
             state            = 'disabled',
             yscrollcommand   = yscrollbar.set,
         )

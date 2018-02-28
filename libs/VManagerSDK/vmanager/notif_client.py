@@ -76,6 +76,7 @@ class NotifThread(threading.Thread):
         self.done = True
 
     def parse_notif(self, notif_input):
+        notif_input = notif_input.decode('utf-8')
         self.input_buffer += notif_input
         notifs = self.input_buffer.split('\r\n')
         # the last element of notifs is empty if the input ended with \r\n
