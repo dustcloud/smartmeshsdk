@@ -72,7 +72,9 @@ def parse_oap_notif(data, index = 0):
             raise SystemError("unknown OAP sample with channel={0}").format(channel)
         
         #===== populate result structure
-        
+		
+        if channel[0]==ANALOG_ADDRESS or channel[0]==DIGITAL_IN_ADDRESS:
+            result.input                    = channel[1] 
         result.packet_timestamp             = (secs, usecs)
         result.rate                         = rate
         result.num_samples                  = num_samples
