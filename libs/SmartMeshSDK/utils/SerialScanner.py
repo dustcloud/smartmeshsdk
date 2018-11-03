@@ -165,7 +165,7 @@ class SerialScanner(object):
                 self.goOn = False
                 serialHandler.close()
                 while listenThread.isAlive():
-                    pass # wait for listenThread to stop
+                    time.sleep(0.5) # wait for listenThread to stop
             except serial.SerialException:
                 pass # happens when serial port unavailable
         def _listenForMgrHello(self,serialport,serialHandler,isManager,dataLock):
