@@ -38,6 +38,14 @@ from dustCli                 import DustCli
 
 pp = pprint.PrettyPrinter(indent=4)
 
+def str2bool(v):
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+		
 #============================ classes =========================================
 
 class JsonServer(object):
@@ -478,10 +486,10 @@ def main(args):
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--tcpport',        default=8080)
-    parser.add_argument('--autoaddmgr',     default=True)
-    parser.add_argument('--autodeletemgr',  default=True)
-    parser.add_argument('--serialport',     default=None)
-    parser.add_argument('--configfilename', default='JsonServer.config')
+    parser.add_argument('--tcpport',                    default=8080)
+    parser.add_argument('--autoaddmgr',   type=str2bool,default=True)
+    parser.add_argument('--autodeletemgr',type=str2bool,default=True)
+    parser.add_argument('--serialport',                 default=None)
+    parser.add_argument('--configfilename',             default='JsonServer.config')
     args = vars(parser.parse_args())
     main(args)

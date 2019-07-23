@@ -96,8 +96,14 @@ class ByteArraySerializer(object):
                         raise SystemError('unknown field format='+field.format)
                     
                     # padding
-                    while len(thisFieldByteArray)<field.length:
-                        thisFieldByteArray  = [0x00]+thisFieldByteArray
+                    if field.length :
+                        numPadding = field.length - len(thisFieldByteArray)
+                        if numPadding > 0 :
+                            padding = [0] * numPadding
+                            if   field.format==ApiDefinition.FieldFormats.STRING:
+                                thisFieldByteArray  = thisFieldByteArray + padding
+                            else :
+                                thisFieldByteArray  = padding + thisFieldByteArray
                 
                 byteArray = byteArray+thisFieldByteArray
         

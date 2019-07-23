@@ -149,29 +149,20 @@ class SerialScanner(object):
                 serialHandler = serial.Serial(self.serialport,baudrate=115200)
                 serialHandler.setRTS(False)
                 serialHandler.setDTR(True)
-                listenThread = threading.Thread(
-                    target = self._listenForMgrHello,
-                    args = (
-                        self.serialport,
-                        serialHandler,
-                        self.isManager,
-                        self.dataLock,
-                    ),
+                serialHandler.timeout = 1
+                self._listenForMgrHello(
+                    self.serialport,
+                    serialHandler,
+                    self.isManager
                 )
-                listenThread.name      = 'listenThread@{0}'.format(self.serialport)
-                listenThread.daemon    = True
-                listenThread.start()
-                listenThread.join(SerialScanner.WAITFORMGRHELLO_TOUT)
-                self.goOn = False
                 serialHandler.close()
-                while listenThread.isAlive():
-                    pass # wait for listenThread to stop
             except serial.SerialException:
                 pass # happens when serial port unavailable
-        def _listenForMgrHello(self,serialport,serialHandler,isManager,dataLock):
+        def _listenForMgrHello(self,serialport,serialHandler,isManager):
             try:
                 rxBuff = []
-                while True:
+                start_time = time.time()
+                while time.time() - start_time < SerialScanner.WAITFORMGRHELLO_TOUT:
                     c = serialHandler.read(1)
                     if c:
                         rxBuff += [ord(c)]
@@ -181,8 +172,8 @@ class SerialScanner(object):
                             return
             except Exception as err:
                 if self.goOn:
-                    print err
+                    print(err)
         def _contains_mrgHello(self,l):
             MSG_HELLO    = [126,0,3,0,2,4,0,155,56,126]
-            len_mrgHello = len(MSG_HELLO)
-            return any(l[i:len_mrgHello+i]==MSG_HELLO for i in xrange(len(l) - len_mrgHello+1))
+            len_mgrHello = len(MSG_HELLO)
+            return any(l[i:len_mgrHello+i]==MSG_HELLO for i in xrange(len(l) - len_mgrHello+1))

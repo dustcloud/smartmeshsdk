@@ -9,6 +9,21 @@ if __name__ == "__main__":
     sys.path.insert(0, os.path.join(here, '..', '..','libs'))
     sys.path.insert(0, os.path.join(here, '..', '..','external_libs'))
 
+#============================ verify installation =============================
+
+from SmartMeshSDK.utils import SmsdkInstallVerifier
+(goodToGo,reason) = SmsdkInstallVerifier.verifyComponents(
+    [
+        SmsdkInstallVerifier.PYTHON,
+        SmsdkInstallVerifier.PYSERIAL,
+    ]
+)
+if not goodToGo:
+    print "Your installation does not allow this application to run:\n"
+    print reason
+    raw_input("Press any button to exit")
+    sys.exit(1)
+
 #============================ imports =========================================
 
 # built-in
@@ -24,6 +39,7 @@ from SmartMeshSDK.ApiException                    import APIError, \
                                                          ConnectionError,  \
                                                          CommandTimeoutError
 from SmartMeshSDK.protocols.NetworkHealthAnalyzer import NetworkHealthAnalyzer
+from SmartMeshSDK.protocols.Hr                    import HrParser
 
 # DustCli
 from dustCli      import DustCli
@@ -33,11 +49,10 @@ from dustCli      import DustCli
 #============================ globals =========================================
 
 connector          = None
-notifThread        = None
 snapshotThread     = None
 
 #============================ helpers =========================================
-
+    
 def printExcAndQuit(err):
     
     output  = []
@@ -56,46 +71,6 @@ def printExcAndQuit(err):
 
 #============================ threads =========================================
 
-class NotifThread(object):
-    
-    def __init__(self,connector):
-        
-        # store params
-        self.connector = connector
-        
-        # subscriber
-        self.subscriber = IpMgrSubscribe.IpMgrSubscribe(self.connector)
-        self.subscriber.start()
-        self.subscriber.subscribe(
-            notifTypes =    [
-                                IpMgrSubscribe.IpMgrSubscribe.NOTIFHEALTHREPORT,
-                            ],
-            fun =           self._notifHealthReportCb,
-            isRlbl =        True,
-        )
-        '''
-        self.subscriber.subscribe(
-            notifTypes =    [
-                                IpMgrSubscribe.IpMgrSubscribe.ERROR,
-                                IpMgrSubscribe.IpMgrSubscribe.FINISH,
-                            ],
-            fun =           self.disconnectedCallback,
-            isRlbl =        True,
-        )
-        '''
-    
-    #======================== public ==========================================
-    
-    def disconnect(self):
-        self.connector.disconnect()
-    
-    #======================== private =========================================
-    
-    def _notifHealthReportCb(self, notifName, notifParams):
-        print notifName
-        print notifParams
-        print "TODO _notifHealthReportCb"
-
 class SnapshotThread(threading.Thread):
     
     SNAPSHOTDELAY_INITIAL_S = 5
@@ -104,15 +79,29 @@ class SnapshotThread(threading.Thread):
     def __init__(self,connector):
         
         # store params
-        self.connector                 = connector
+        self.connector                         = connector
         
         # local variables
-        self.goOn                      = True
-        self.dataLock                  = threading.RLock()
-        self.delayCounter              = self.SNAPSHOTDELAY_INITIAL_S
-        self.snapshotPeriod            = self.DFLT_SNAPSHOTPERIOD
-        self.networkHealthAnalyzer     = NetworkHealthAnalyzer.NetworkHealthAnalyzer()
-        self.lastResults               = ""
+        self.goOn                              = True
+        self.dataLock                          = threading.RLock()
+        self.delayCounter                      = self.SNAPSHOTDELAY_INITIAL_S
+        self.snapshotPeriod                    = self.DFLT_SNAPSHOTPERIOD
+        self.networkHealthAnalyzer             = NetworkHealthAnalyzer.NetworkHealthAnalyzer()
+        self.hrParser                          = HrParser.HrParser()
+        self.lastResults                       = ""
+        self.dataForAnalyzer                   = {}
+        self.dataForAnalyzer['devicehr']      = {}
+        
+        # subscribe
+        self.subscriber = IpMgrSubscribe.IpMgrSubscribe(self.connector)
+        self.subscriber.start()
+        self.subscriber.subscribe(
+            notifTypes =    [
+                                IpMgrSubscribe.IpMgrSubscribe.NOTIFHEALTHREPORT,
+                            ],
+            fun =           self._notifHealthReportCb,
+            isRlbl =        False,
+        )
         
         # initialize parent
         threading.Thread.__init__(self)
@@ -120,8 +109,6 @@ class SnapshotThread(threading.Thread):
         
         # start itself
         self.start()
-    
-    #======================== thread ==========================================
     
     def run(self):
         
@@ -174,19 +161,39 @@ class SnapshotThread(threading.Thread):
         
         with self.dataLock:
             self.goOn = False
-    
+
     #======================== private =========================================
     
+    def _notifHealthReportCb(self, notifName, notifParams):
+    
+        try:
+            with self.dataLock:
+            
+                assert notifName==IpMgrSubscribe.IpMgrSubscribe.NOTIFHEALTHREPORT
+            
+                mac        = notifParams.macAddress
+                hr         = self.hrParser.parseHr(notifParams.payload)
+                
+            if ('Device' in hr):
+                
+                self.dataForAnalyzer['devicehr'][tuple(mac)] = hr['Device']
+            
+        except Exception as err:
+            print type(err)
+            print err
+            raise
+            
     def _doSnapshot(self):
         
         try:
             with self.dataLock:
                 
-                dataForAnalyzer       = {}
-                motes                 = []
-                
+                self.dataForAnalyzer['moteinfo']       = {}
+                self.dataForAnalyzer['networkpaths']   = {}
+                self.dataForAnalyzer['networkinfo']    = {}         
+                motes                                  = []
+
                 # getMoteConfig on all motes
-                dataForAnalyzer['moteinfo']     = {}
                 currentMac            = (0,0,0,0,0,0,0,0) # start getMoteConfig() iteration with the 0 MAC address
                 continueAsking        = True
                 while continueAsking:
@@ -197,16 +204,15 @@ class SnapshotThread(threading.Thread):
                     else:
                         currentMac    = res.macAddress
                         motes        += [currentMac]
-                        dataForAnalyzer['moteinfo'][tuple(currentMac)] = self._namedTupleToDict(res)
-                
+                        self.dataForAnalyzer['moteinfo'][tuple(currentMac)] = self._namedTupleToDict(res)
+                                                
                 # getMoteInfo on all motes
                 for mac in motes:
                     res = self.connector.dn_getMoteInfo(mac)
                     for (k,v) in self._namedTupleToDict(res).items():
-                        dataForAnalyzer['moteinfo'][tuple(mac)][k] = v
+                        self.dataForAnalyzer['moteinfo'][tuple(mac)][k] = v
                 
-                # get path info on all paths of all motes
-                dataForAnalyzer['networkpaths'] = {}
+                # getNextPathInfo on all paths of all motes
                 for mac in motes:
                     currentPathId  = 0
                     continueAsking = True
@@ -215,16 +221,20 @@ class SnapshotThread(threading.Thread):
                             res = self.connector.dn_getNextPathInfo(mac,0,currentPathId)
                             fromMAC = tuple(res.source)
                             toMAC   = tuple(res.dest)
-                            dataForAnalyzer['networkpaths'][(fromMAC,toMAC)] = self._namedTupleToDict(res)
+                            self.dataForAnalyzer['networkpaths'][(fromMAC,toMAC)] = self._namedTupleToDict(res)
                         except APIError:
                             continueAsking = False
                         else:
                             currentPathId  = res.pathId
+							
+                # getNetworkInfo
+                res = self.connector.dn_getNetworkInfo()
+                self.dataForAnalyzer['networkinfo'] = self._namedTupleToDict(res)
                 
                 print "running test at {0}".format(self._now())
                 
                 # run NetworkHealthAnalyzer
-                results = self.networkHealthAnalyzer.analyze(dataForAnalyzer)
+                results = self.networkHealthAnalyzer.analyze(self.dataForAnalyzer)
                 
                 # format the results
                 self.lastResults = self._formatResults(results)
@@ -234,7 +244,7 @@ class SnapshotThread(threading.Thread):
         
         except Exception as err:
             printExcAndQuit(err)
-    
+            
     def _formatResults(self,results):
         output     = []
         output    += ['']
@@ -288,17 +298,17 @@ class SnapshotThread(threading.Thread):
     def _now(self):
         return time.strftime("%Y-%m-%d %H:%M:%S",time.localtime())
 
+
 #============================ CLI handlers ====================================
 
 def connect_clicb(params):
     global connector
-    global notifThread
     global snapshotThread
     
     # filter params
     port = params[0]
     
-    # create a coonnector
+    # create a connector
     connector = IpMgrConnectorSerial.IpMgrConnectorSerial()
     
     # connect to the manager
@@ -310,7 +320,6 @@ def connect_clicb(params):
         printExcAndQuit(err)
     
     # start threads
-    notifThread         = NotifThread(connector)
     snapshotThread      = SnapshotThread(connector)
 
 def now_clicb(params):
@@ -339,13 +348,10 @@ def period_clicb(params):
 
 def quit_clicb():
     global connector
-    global notifThread
     global snapshotThread
     
     if connector:
         connector.disconnect()
-    if notifThread:
-        notifThread.disconnect()
     if snapshotThread:
         snapshotThread.close()
     
