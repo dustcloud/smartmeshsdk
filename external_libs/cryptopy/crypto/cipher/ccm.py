@@ -10,6 +10,11 @@
 
     Copyright © (c) 2002 by Paul A. Lambert
     Read LICENSE.txt for license information.
+
+Modified for SmartmeshSDK: Wed 30 Mar 2011
+Modification: Fix CCM bug - with no additional authentication data there should be no authlen prefix, commented out bad test cases
+See MODIFICATIONS.txt for exact changes made to file.
+
 """
 from crypto.cipher.base import BlockCipherWithIntegrity, noPadding
 from crypto.common      import xor

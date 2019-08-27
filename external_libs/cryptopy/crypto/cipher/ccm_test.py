@@ -7,6 +7,11 @@
     Read LICENSE.txt for license information.
 
     July 24, 2002
+
+Modified for SmartmeshSDK: Wed 30 Mar 2011
+Modification: Fix CCM bug - with no additional authentication data there should be no authlen prefix, commented out bad test cases
+See MODIFICATIONS.txt for exact changes made to file.
+
 """
 import unittest
 from crypto.cipher.ccm      import CCM

@@ -4,6 +4,11 @@
 
     Copyright (c) 2002 by Paul A. Lambert
     Read LICENSE.txt for license information.
+
+Modified for SmartmeshSDK - Tue 10 May 2011
+Modification: Use python hashlib module to avoid deprecation warnings
+See MODIFICATIONS.txt for exact changes made to file.
+
 """
 import hashlib
 from crypto.hash.hash import Hash

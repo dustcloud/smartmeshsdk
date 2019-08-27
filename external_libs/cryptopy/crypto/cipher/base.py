@@ -10,6 +10,11 @@
     Read LICENSE.txt for license information.
 
     2002-04-25   changed block input
+
+Modified for SmartmeshSDK: Tue 05 Apr 2011
+Modification: Avoid zero-padding for data that ends on a block boundary
+See MODIFICATIONS.txt for exact changes made to file.
+
 """
 from crypto.errors import DecryptNotBlockAlignedError
 from crypto.keyedHash.pbkdf2 import pbkdf2
