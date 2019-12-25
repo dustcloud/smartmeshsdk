@@ -478,9 +478,9 @@ def main(args):
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--tcpport',        default=8080)
-    parser.add_argument('--autoaddmgr',     default=True)
-    parser.add_argument('--autodeletemgr',  default=True)
+    parser.add_argument('--tcpport', type=int, default=8080)
+    parser.add_argument('--autoaddmgr', action='store_false', help='to disable autoaddmgr thread', default=True)
+    parser.add_argument('--autodeletemgr', action='store_false', help='to disable autodeletemgr thread', default=True)
     parser.add_argument('--serialport',     default=None)
     parser.add_argument('--configfilename', default='JsonServer.config')
     args = vars(parser.parse_args())
