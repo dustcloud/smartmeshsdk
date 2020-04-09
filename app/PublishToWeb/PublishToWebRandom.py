@@ -14,7 +14,7 @@ SERVER_PORT        = '80'
 
 #============================ main ============================================
 
-print 'PublishToWebRandom - (c) Dust Networks'
+print ('PublishToWebRandom - (c) Dust Networks')
 
 while True:
     time.sleep(1)
@@ -37,6 +37,6 @@ while True:
             }
         )
     except Exception as err:
-        print err
+        print (err)
     else:
-        print 'sent mac={0} temperature={1:.2f}C'.format(mac,temperature)
+        print ('sent mac={0} temperature={1:.2f}C'.format(mac,temperature))

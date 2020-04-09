@@ -10,6 +10,7 @@ default SmartMesh IP mote SW running in "master" mode.
 
 import sys
 import os
+from builtins import input
 if __name__ == "__main__":
     here = sys.path[0]
     sys.path.insert(0, os.path.join(here, '..', 'libs'))
@@ -62,40 +63,40 @@ def sendapacket(mymac, mydata):
     except:
         print ('\n   ERROR -- Could not send data.\n')
     else:
-        print '\n   Sending string "{0}" to {1} \n'.format(mydata, mymac)
+        print ('\n   Sending string "{0}" to {1} \n'.format(mydata, mymac))
 
 #============================ main ============================================
 
 try:
     # print Script name and SmartMesh SDK version
-    print '\nVMgr_OAPsend (c) Dust Networks'
-    print 'SmartMesh SDK {0}\n'.format('.'.join([str(i) for i in sdk_version.VERSION]))
+    print ('\nVMgr_OAPsend (c) Dust Networks')
+    print ('SmartMesh SDK {0}\n'.format('.'.join([str(i) for i in sdk_version.VERSION])))
 
     # ask the user for VManager hostname/IP address
-    mgrhost = raw_input('Enter the IP address of the manager (e.g. {0} ):'.format(DFLT_VMGR_HOST))
+    mgrhost = input('Enter the IP address of the manager (e.g. {0} ):'.format(DFLT_VMGR_HOST))
     if mgrhost == "":
         mgrhost = DFLT_VMGR_HOST
     
     # ask the user for mote's MAC address
-    macaddr = raw_input('Enter MAC address of mote to send to (e.g. {0} ):'.format(DFLT_MOTE_MAC))
+    macaddr = input('Enter MAC address of mote to send to (e.g. {0} ):'.format(DFLT_MOTE_MAC))
     if macaddr == "":
         macaddr = DFLT_MOTE_MAC
     macaddr = macaddr.upper()       # Make sure all letters are upper case
-    if len(macaddr) <> 23:          # Basic error checking
+    if len(macaddr) < 23 or len(macaddr) > 23:          # Basic error checking
         sys.exit('\n\nMote Mac address entered is invalid\n')
 
     # ask the user for command
-    userinput = raw_input(
+    userinput = input(
         '\nEnter the desired command;\n'
         '1=Temperature ON/OFF\n'
         '2=PKGen ON/OFF or service only\n'
         '3=LED ON/OFF')
     if userinput == "1":
         # 1=Temperature ON/OFF
-        userinput = raw_input('\nTurn Temperature publish ON or OFF?')
+        userinput = input('\nTurn Temperature publish ON or OFF?')
         if userinput.upper() == "ON" or userinput == "":
             tempOn = 1
-            userinput = raw_input('\nEnter the desired publish rate in ms (e.g. {0} ):'.format(DFLT_RATE))
+            userinput = input('\nEnter the desired publish rate in ms (e.g. {0} ):'.format(DFLT_RATE))
             if userinput == "":
                 pktPeriod = DFLT_RATE
             else:
@@ -118,7 +119,7 @@ try:
     elif userinput == "2":
         # '2=PKGen ON/OFF or service only
         
-        userinput = raw_input(
+        userinput = input(
             '\nEnter the desired PKGen mode;\n'
             '1=Turn PKGen ON\n'
             '2=Turn PKGen OFF\n'
@@ -132,7 +133,7 @@ try:
 
         if userinput == "1":
             # 1=Turn PKGen ON
-            userinput = raw_input('Enter the desired publish rate in ms (e.g. {0} ):'.format(DFLT_RATE))
+            userinput = input('Enter the desired publish rate in ms (e.g. {0} ):'.format(DFLT_RATE))
             if userinput != "":
                 pktPeriod = int(userinput)
 
@@ -143,12 +144,12 @@ try:
         elif userinput == "3":
             # 3=PKGen service Bandwidth request only - no publishing
             numPkt = 1
-            userinput = raw_input('Enter the desired bandwidth in ms (e.g. {0} ):'.format(DFLT_RATE))
+            userinput = input('Enter the desired bandwidth in ms (e.g. {0} ):'.format(DFLT_RATE))
             if userinput != "":
                 pktPeriod = int(userinput)
 
         else:
-            print 'Just use defaults to turn PKGen on'
+            print ('Just use defaults to turn PKGen on')
 
         oap_msg = OAPMessage.build_oap(
             seq          = 0,
@@ -167,7 +168,7 @@ try:
 
     elif userinput == "3":
         # 3=LED ON/OFF
-        userinput = raw_input('Turn Blue LED ON or OFF?')
+        userinput = input('Turn Blue LED ON or OFF?')
         
         if userinput.upper() == "ON" or userinput == "":
             ledVal = 1
@@ -206,11 +207,11 @@ try:
         loop = 3
     else:
         loop = 1
-    for x in xrange(loop):
+    for x in range(loop):
         sendapacket(macaddr, oap_msg_b64)
         time.sleep(2)
 
-    print 'Script ended normally'
+    print ('Script ended normally')
 
 except:
     traceback.print_exc()

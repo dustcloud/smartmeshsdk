@@ -10,11 +10,11 @@ if __name__ == '__main__':
 
 #============================ imports =========================================
 
-import Tkinter
+import tkinter
 
-import dustGuiLib
-import dustFrame
-from   dustStyle import dustStyle
+from . import dustGuiLib
+from . import dustFrame
+from  .dustStyle import dustStyle
 
 #============================ body ============================================
 
@@ -74,13 +74,13 @@ class dustFrameTable(dustFrame.dustFrame):
                                  text=str(data[row][column]),
                                  border=1,
                                  bg=dustStyle.COLOR_BG,
-                                 relief=Tkinter.RIDGE,
+                                 relief=tkinter.RIDGE,
                                  borderwidth=1,
                                  padx=3,
                                  pady=3)
                 self._add(temp,row,
                                column,
-                               sticky=Tkinter.W+Tkinter.E)
+                               sticky=tkinter.W+tkinter.E)
                 self.guiElems[-1].append(temp)
         
         # apply display options
@@ -99,7 +99,7 @@ class dustFrameTable(dustFrame.dustFrame):
     #======================== helpers =========================================
     
     def _applyDisplayOptions(self,displayOptions):
-        for k,v in displayOptions.items():
+        for k,v in list(displayOptions.items()):
             if k=='rowColors':
                 self._applyRowColors(v)
     
@@ -137,9 +137,9 @@ class exampleApp(object):
         self.window.mainloop()
     
     def _closeCb(self):
-        print " _closeCb called"
+        print (" _closeCb called")
 
 if __name__ == '__main__':
     import threading
-    from dustWindow import dustWindow
+    from .dustWindow import dustWindow
     exampleApp()

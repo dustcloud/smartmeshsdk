@@ -20,7 +20,7 @@ import urllib3
 import traceback
 import base64
 import certifi
-
+from builtins import input
 # generic SmartMeshSDK imports
 from SmartMeshSDK                      import sdk_version
 # VManager-specific imports
@@ -43,16 +43,16 @@ def process_data(mydata):
     '''
     macaddr = mydata.mac_address
     datapayload = int((base64.b64decode(mydata.payload)).encode('hex'),16)
-    print ' Data from mote {0} --> {1}'.format(macaddr, datapayload)
+    print (' Data from mote {0} --> {1}'.format(macaddr, datapayload))
     
 #============================ main ============================================
 
 try:
     # print banner
-    print '\nVMgr_BasicExample (c) Dust Networks'
-    print 'SmartMesh SDK {0}\n'.format('.'.join([str(i) for i in sdk_version.VERSION]))
+    print ('\nVMgr_BasicExample (c) Dust Networks')
+    print ('SmartMesh SDK {0}\n'.format('.'.join([str(i) for i in sdk_version.VERSION])))
 
-    mgrhost = raw_input('Enter the IP address of the manager (e.g. {0} ): '.format(DFLT_VMGR_HOST))
+    mgrhost = input('Enter the IP address of the manager (e.g. {0} ): '.format(DFLT_VMGR_HOST))
     if mgrhost == "":
         mgrhost = DFLT_VMGR_HOST
 
@@ -72,8 +72,8 @@ try:
 
     # read and display network configuration
     netConfig = voyager.networkApi.get_network_config()
-    print '\n==== Display current network Configuration'
-    print netConfig
+    print ('\n==== Display current network Configuration')
+    print (netConfig)
 
     # update system configuration
     sysConfig = SystemWriteConfig()
@@ -82,17 +82,17 @@ try:
 
     # read a configuration setting
     mysetting = voyager.systemApi.get_system_config()
-    print '\n==== Set and display current location'
-    print mysetting.location
+    print ('\n==== Set and display current location')
+    print (mysetting.location)
 
     # start listening for data notifications
     voyager.get_notifications('data', notif_callback=process_data)
 
-    print '\n==== Subscribe to data notifications and display'
-    reply = raw_input ('Waiting for notifications , Press any key to stop\n\n')
+    print ('\n==== Subscribe to data notifications and display')
+    reply = input ('Waiting for notifications , Press any key to stop\n\n')
 
     voyager.stop_notifications()
-    print 'Script ended normally'
+    print ('Script ended normally')
 
 except:
     traceback.print_exc()

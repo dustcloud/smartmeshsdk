@@ -7,6 +7,7 @@ import logging
 import time
 from   datetime import timedelta
 import traceback
+from builtins import input
 
 class NullLogHandler(logging.Handler):
     def emit(self, record):
@@ -52,16 +53,16 @@ class DustCli(threading.Thread):
         self.name            = 'DustCli'
         
         # print banner
-        print '{0} - (c) Analog Devices, Dust Networks products'.format(self.appName)
+        print ('{0} - (c) Analog Devices, Dust Networks products'.format(self.appName))
         if self.versions:
-            print '  running versions:'
-            length = max([len(k) for k in self.versions.keys()])
-            for (k,v) in versions.items():
+            print ('  running versions:')
+            length = max([len(k) for k in list(self.versions.keys())])
+            for (k,v) in list(versions.items()):
                 while len(k)<length:
                     k += ' '
                 if type(v) in [tuple,list]:
                     v = '.'.join([str(e) for e in v])
-                print '    - {0}: {1}'.format(k,v)
+                print ('    - {0}: {1}'.format(k,v))
         
         # register system commands (user commands registered by child object)
         self._registerCommand_internal(
@@ -108,7 +109,7 @@ class DustCli(threading.Thread):
             while self.goOn:
                 
                 # CLI stops here each time a user needs to call a command
-                params = raw_input('> ')
+                params = input('> ')
                 
                 # log
                 self.log.debug('Following command entered:'+params)
@@ -121,7 +122,7 @@ class DustCli(threading.Thread):
                 if len(params)==2 and params[1]=='?':
                     if not self._printUsageFromName(params[0]):
                         if not self._printUsageFromAlias(params[0]):
-                            print ' unknown command or alias \''+params[0]+'\''
+                            print (' unknown command or alias \''+params[0]+'\'')
                     continue
 
                 # find this command
@@ -143,7 +144,7 @@ class DustCli(threading.Thread):
                         if not self._printUsageFromName(params[0]):
                             self._printUsageFromAlias(params[0])
                 else:
-                    print ' unknown command or alias \''+params[0]+'\''
+                    print (' unknown command or alias \''+params[0]+'\'')
         
         except Exception as err:
             output  = []
@@ -153,7 +154,7 @@ class DustCli(threading.Thread):
             output += ['\ncall stack:\n']
             output += [traceback.format_exc()]
             output  = '\n'.join(output)
-            print output
+            print (output)
             self.log.critical(output)
             raise
     
@@ -219,7 +220,7 @@ class DustCli(threading.Thread):
                     usageString  = ''.join(usageString)
         
         if usageString:
-            print usageString
+            print (usageString)
             return True
         else:
             return False
@@ -249,7 +250,7 @@ class DustCli(threading.Thread):
                     command['description']
                 )]
         
-        print '\n'.join(output)
+        print ('\n'.join(output))
     
     def _handleInfo(self,params):
         output  = []
@@ -263,7 +264,7 @@ class DustCli(threading.Thread):
             output += ['- {0}'.format(t)]
         output += ['This is thread {0}.'.format(threading.currentThread().getName())]
         
-        print '\n'.join(output)
+        print ('\n'.join(output))
     
     def _handleQuit(self,params):
         
@@ -278,10 +279,10 @@ class DustCli(threading.Thread):
         
         upTime = timedelta(seconds=time.time()-self.startTime)
         
-        print 'Running since {0} ({1} ago)'.format(
+        print ('Running since {0} ({1} ago)'.format(
             time.strftime("%m/%d/%Y %H:%M:%S",time.localtime(self.startTime)),
-            upTime,
-        )
+                upTime))
+    
     
     #======================== helpers =========================================
     
@@ -290,10 +291,10 @@ class DustCli(threading.Thread):
 if __name__=='__main__':
 
     def quitCallback():
-        print "quitting!"
+        print ("quitting!")
 
     def echoCallback(params):
-        print "echo {0}!".format(params[0])
+        print ("echo {0}!".format(params))
         
     cli = DustCli(
         "DustCli App",

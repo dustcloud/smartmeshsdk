@@ -15,9 +15,10 @@ Command line options include
    Example:   BlinkPacketSend.py -c COM11 -n 0 -p 2
 ''' 
 #============================ adjust path =====================================
-
+from __future__ import print_function
 import sys
 import os
+
 if __name__ == "__main__":
     here = sys.path[0]
     sys.path.insert(0, os.path.join(here, '..', '..','libs'))
@@ -76,7 +77,7 @@ class NotifListener(threading.Thread):
 def mynotifIndication(mynotif):
     # Check for txDone notification, then print status information
     if mynotif[0]==['txDone']:
-        for key, value in mynotif[1].items():
+        for key, value in list(mynotif[1].items()):
             if key == "status":
                 if value == 0:
                     print ('\n     txDone Status = {0}, Blink packet successfully sent\n'.format(value))
@@ -85,7 +86,7 @@ def mynotifIndication(mynotif):
                 NotifEventDone.set()
 
 def mydisconnectedIndication():
-    print 'Mote was disconnected\n'
+    print ('Mote was disconnected\n')
 
 #============================ command line options=============================
 import optparse
@@ -102,11 +103,11 @@ parser.add_option("-p", "--packets", dest='packets', default=1,
 #============================ main ============================================
 
 try:
-    print 'BlinkPacketSend (c) Dust Networks'
-    print 'SmartMesh SDK {0}\n'.format('.'.join([str(b) for b in sdk_version.VERSION]))
-    print 'Note: Use with Manager Data capture utility to receive the packets\n'
+    print ('BlinkPacketSend (c) Dust Networks')
+    print ('SmartMesh SDK {0}\n'.format('.'.join([str(b) for b in sdk_version.VERSION])))
+    print ('Note: Use with Manager Data capture utility to receive the packets\n')
     
-    print 'using the following parameters: {0}\n'.format(options)
+    print ('using the following parameters: {0}\n'.format(options))
     
     #=====
 
@@ -124,7 +125,7 @@ try:
     mynotifListener.start()
 
     #=====
-    print "\n- sending {0} Blink packet(s) with discovered neighbors set to {1}\n".format(int(options.packets),int(options.neighbors))
+    print ("\n- sending {0} Blink packet(s) with discovered neighbors set to {1}\n".format(int(options.packets),int(options.neighbors)))
 
     for i in range(0, int(options.packets)):
         try:
@@ -132,20 +133,20 @@ try:
                 fIncludeDscvNbrs    = int(options.neighbors),
                 payload             = [ord(i) for i in STRING_TO_PUBLISH],
             )
-            print '    Requested a Blink with payload --> "{0}"'.format(STRING_TO_PUBLISH)
+            print ('    Requested a Blink with payload --> "{0}"'.format(STRING_TO_PUBLISH))
         except Exception as err:
             print ("Could not execute dn_blink: {0}\n".format(err))
                
-        print "...waiting for packet sent Notifaction",
+        print ("...waiting for packet sent Notifaction", end=' ')
         while not NotifEventDone.is_set():
-            print '.',
+            print ('.', end=' ')
             time.sleep(1)
 
         NotifEventDone.clear()
 
     moteconnector.disconnect()
   
-    print 'Script ended normally.'
+    print ('Script ended normally.')
 
 except Exception as err:
     output  = []
@@ -161,11 +162,11 @@ except Exception as err:
     output += ["=============================="]
     output += [""]
     output  = '\n'.join(output)
-    print output
+    print (output)
     
     tout = 20
     while tout:
-        print 'closing in {0} s...'.format(tout)
+        print ('closing in {0} s...'.format(tout))
         time.sleep(1)
         tout -= 1
     sys.exit()

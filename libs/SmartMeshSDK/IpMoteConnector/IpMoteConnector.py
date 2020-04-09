@@ -4,7 +4,7 @@ This module was generated automatically. Do not edit directly.
 
 import collections
 from   SmartMeshSDK import ApiException
-from   IpMoteConnectorInternal import IpMoteConnectorInternal
+from   .IpMoteConnectorInternal import IpMoteConnectorInternal
 
 ##
 # \addtogroup IpMoteConnector
@@ -526,7 +526,7 @@ class IpMoteConnector(IpMoteConnectorInternal):
     ##
     # The setParameter<euCompliantMode> command may be used to set the EN 300 328 compliance mode that is used by the device. When enabled, the mote may skip some transmit opportunities to remain within average power limits. Motes below +10 dBm radiated power do not need to duty cycle to meet EN 300 328 requirements.
     # 
-    # Note: This parameter is available in devices running mote software >=1.4.x
+    # Note: This parameter is available in devices running IP Mote 1.4.0 or later.
     # 
     # \param euCompliantMode 1-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
@@ -999,11 +999,15 @@ class IpMoteConnector(IpMoteConnectorInternal):
     #     There is no restriction on the value of this field.
     # - <tt>rxFailed</tt>: 2-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
+    # - <tt>aveRSSI</tt>: 1-byte field formatted as a ints.<br/>
+    #     There is no restriction on the value of this field.
+    # - <tt>aveLQI</tt>: 1-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
     # 
-    Tuple_dn_getParameter_testRadioRxStats = collections.namedtuple("Tuple_dn_getParameter_testRadioRxStats", ['RC', 'rxOk', 'rxFailed'])
+    Tuple_dn_getParameter_testRadioRxStats = collections.namedtuple("Tuple_dn_getParameter_testRadioRxStats", ['RC', 'rxOk', 'rxFailed', 'aveRSSI', 'aveLQI'])
 
     ##
-    # The getParameter<testRadioRxStats> command retrieves statistics for the latest radio test performed using the testRadioRx command. The statistics show the number of good and bad packets (CRC failures) received during the test
+    # The getParameter<testRadioRxStats> command retrieves statistics for the latest radio test performed using the testRadioRx command. The radio test statistics contain the number of good packets received, the number of bad packets (CRC failures) received, the average RSSI (in dBm) of successfully received packets, and the average link quality indicator (LQI) of successfully received packets during the test.
     # 
     # 
     # 
@@ -2321,6 +2325,102 @@ class IpMoteConnector(IpMoteConnectorInternal):
     def dn_testRadioTxPER(self, txPower, numPackets, chanMask, numRepeat) :
         res = IpMoteConnectorInternal.send(self, ['testRadioTxPER'], {"txPower" : txPower, "numPackets" : numPackets, "chanMask" : chanMask, "numRepeat" : numRepeat})
         return IpMoteConnector.Tuple_dn_testRadioTxPER(**res)
+
+    ##
+    # The named tuple returned by the dn_testXtalComp() function.
+    # 
+    # - <tt>RC</tt>: 1-byte field formatted as a int.<br/>
+    #     This field can only take one of the following values:
+    #      - 0: RC_OK
+    #      - 1: RC_ERROR
+    #      - 3: RC_BUSY
+    #      - 4: RC_INVALID_LEN
+    #      - 5: RC_INVALID_STATE
+    #      - 6: RC_UNSUPPORTED
+    #      - 7: RC_UNKNOWN_PARAM
+    #      - 8: RC_UNKNOWN_CMD
+    #      - 9: RC_WRITE_FAIL
+    #      - 10: RC_READ_FAIL
+    #      - 11: RC_LOW_VOLTAGE
+    #      - 12: RC_NO_RESOURCES
+    #      - 13: RC_INCOMPLETE_JOIN_INFO
+    #      - 14: RC_NOT_FOUND
+    #      - 15: RC_INVALID_VALUE
+    #      - 16: RC_ACCESS_DENIED
+    #      - 18: RC_ERASE_FAIL
+    # - <tt>avgFreqMeas</tt>: 4-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    # - <tt>ppFreqMeas</tt>: 2-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    # 
+    Tuple_dn_testXtalComp = collections.namedtuple("Tuple_dn_testXtalComp", ['RC', 'avgFreqMeas', 'ppFreqMeas'])
+
+    ##
+    # The testXtalComp command initiates 32kHz crystal test to check frequency accuracy. This command may be issues only when mote is in Idle state.
+    # 
+    # This command is available in SmartMesh IP Mote version 1.5.0 or later.
+    # 
+    # \param bias 1-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    # \param spinDownMs 2-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    # \param spinUpMs 2-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    # \param iterations 1-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    # 
+    # \returns The response to the command, formatted as a #Tuple_dn_testXtalComp named tuple.
+    # 
+    def dn_testXtalComp(self, bias, spinDownMs, spinUpMs, iterations) :
+        res = IpMoteConnectorInternal.send(self, ['testXtalComp'], {"bias" : bias, "spinDownMs" : spinDownMs, "spinUpMs" : spinUpMs, "iterations" : iterations})
+        return IpMoteConnector.Tuple_dn_testXtalComp(**res)
+
+    ##
+    # The named tuple returned by the dn_testXtal() function.
+    # 
+    # - <tt>RC</tt>: 1-byte field formatted as a int.<br/>
+    #     This field can only take one of the following values:
+    #      - 0: RC_OK
+    #      - 1: RC_ERROR
+    #      - 3: RC_BUSY
+    #      - 4: RC_INVALID_LEN
+    #      - 5: RC_INVALID_STATE
+    #      - 6: RC_UNSUPPORTED
+    #      - 7: RC_UNKNOWN_PARAM
+    #      - 8: RC_UNKNOWN_CMD
+    #      - 9: RC_WRITE_FAIL
+    #      - 10: RC_READ_FAIL
+    #      - 11: RC_LOW_VOLTAGE
+    #      - 12: RC_NO_RESOURCES
+    #      - 13: RC_INCOMPLETE_JOIN_INFO
+    #      - 14: RC_NOT_FOUND
+    #      - 15: RC_INVALID_VALUE
+    #      - 16: RC_ACCESS_DENIED
+    #      - 18: RC_ERASE_FAIL
+    # - <tt>pullVal</tt>: 1-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    # - <tt>ppmErr</tt>: 4-byte field formatted as a ints.<br/>
+    #     There is no restriction on the value of this field.
+    # 
+    Tuple_dn_testXtal = collections.namedtuple("Tuple_dn_testXtal", ['RC', 'pullVal', 'ppmErr'])
+
+    ##
+    # The testXtal command is used to determine the optimal value to center the 20MHz crystal oscillator given a particular PCB layout and crystal combination. It is used to measure the 20MHz crystal, after which the user must enter trim values into the device's fuse table for access by software. See the Board Specific Configuration Guide for fuse table details.
+    # 
+    # This command may only be used when the mote's radio is not active, i.e in the slave mode and prior to joining the network. This function requires the mote be connected to the DC9010 programming board. It could take up to 30 seconds for the command to execute. After using this command, reboot the mote to continue normal operation.
+    # 
+    # This command is available in SmartMesh IP Mote version 1.5.0 or later.
+    # 
+    # \param trimOpt 1-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    # \param tempGrade 1-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    # 
+    # \returns The response to the command, formatted as a #Tuple_dn_testXtal named tuple.
+    # 
+    def dn_testXtal(self, trimOpt, tempGrade) :
+        res = IpMoteConnectorInternal.send(self, ['testXtal'], {"trimOpt" : trimOpt, "tempGrade" : tempGrade})
+        return IpMoteConnector.Tuple_dn_testXtal(**res)
 
     #======================== notifications ===================================
     

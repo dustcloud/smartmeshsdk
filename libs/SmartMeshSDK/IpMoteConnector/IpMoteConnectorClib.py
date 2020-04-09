@@ -3,7 +3,7 @@ import pprint
 import serial
 import traceback
 import os
-
+from builtins import int
 import IpMoteConnector as IpMoteConnectorOriginal
 
 #============================ decide whether can run ==========================
@@ -335,8 +335,6 @@ class IpMoteConnector(ApiConnector,threading.Thread):
         for (f,_) in theseFields:
             rawVal = getattr(notif.contents,f)
             if  isinstance(rawVal,int):
-                returnVal[f] = rawVal
-            elif isinstance(rawVal,long):
                 returnVal[f] = int(rawVal)
             else:
                 returnVal[f] = [int(b) for b in rawVal]
@@ -439,8 +437,6 @@ class IpMoteConnector(ApiConnector,threading.Thread):
         for (f,_) in theseFields:
             rawVal = getattr(c_notif.contents,f)
             if  isinstance(rawVal,int):
-                py_notif[f] = rawVal
-            elif isinstance(rawVal,long):
                 py_notif[f] = int(rawVal)
             else:
                 py_notif[f] = [int(b) for b in rawVal]

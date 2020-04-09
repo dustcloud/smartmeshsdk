@@ -11,11 +11,11 @@ if __name__ == '__main__':
 #============================ imports =========================================
 
 import re
-import tkFileDialog
+import tkinter.filedialog
 
-import dustGuiLib
-import dustFrame
-from   dustStyle                       import dustStyle
+from . import dustGuiLib
+from . import dustFrame
+from  .dustStyle                       import dustStyle
 
 from   SmartMeshSDK.LbrConnector       import LbrConnector
 from   SmartMeshSDK.ApiException       import ConnectionError
@@ -190,7 +190,7 @@ class dustFrameLBRConnection(dustFrame.dustFrame):
     
     def _getReadAuthenticationFile(self):
         # open authentication file
-        authFile = tkFileDialog.askopenfile(
+        authFile = tkinter.filedialog.askopenfile(
                         mode        ='r',
                         title       = 'Select an LBR authentication file',
                         multiple    = False,
@@ -235,11 +235,11 @@ class exampleApp(object):
         self.window.mainloop()
     
     def _closeCb(self):
-        print " _closeCb called"
+        print (" _closeCb called")
     def _connectCb(self,param):
-        print " _connectCb called with param="+str(param)
+        print (" _connectCb called with param="+str(param))
 
 if __name__ == '__main__':
     import threading
-    from dustWindow import dustWindow
+    from .dustWindow import dustWindow
     exampleApp()

@@ -29,12 +29,12 @@ class FindManager(object):
            cb = self._availablemanagers_cb,
         )
     def _availablemanagers_cb(self,serialport):
-        print "manager available on port {0}".format(serialport)
+        print ("manager available on port {0}".format(serialport))
 
 #============================ CLI handlers ====================================
 
 def quit_clicb():
-    print "bye, bye!"
+    print ("bye, bye!")
     sys.exit(0)
 
 #============================ main ============================================

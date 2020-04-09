@@ -4,7 +4,7 @@ This module was generated automatically. Do not edit directly.
 
 import collections
 from   SmartMeshSDK import ApiException
-from   IpMgrConnectorMuxInternal import IpMgrConnectorMuxInternal
+from   .IpMgrConnectorMuxInternal import IpMgrConnectorMuxInternal
 
 ##
 # \addtogroup IpMgrConnectorMux
@@ -534,8 +534,6 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     # The radiotestRx command clears all previously collected statistics and initiates radio reception on the specified channel. It may only be executed if the manager has been booted up in radiotest mode (see setNetworkConfig command). During the test, the device keeps statistics about the number of packets received (with and without error). The test results may be retrieved using the getRadiotestStatistics command.
     # 
     # The station ID is a user selectable value. It must be set to match the station ID used by the transmitter. Station ID is used to isolate traffic if multiple tests are running in the same radio space.
-    # 
-    # 
     # 
     # Channel numbering is 0-15, corresponding to IEEE 2.4 GHz channels 11-26.
     # 
@@ -1991,6 +1989,92 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
         res = IpMgrConnectorMuxInternal.send(self, ['radiotestTxPER'], {"txPower" : txPower, "numPackets" : numPackets, "chanMask" : chanMask, "numRepeat" : numRepeat})
         return IpMgrConnectorMux.Tuple_dn_radiotestTxPER(**res)
 
+    ##
+    # The named tuple returned by the dn_radiotestXtalComp() function.
+    # 
+    # - <tt>RC</tt>: 1-byte field formatted as a int.<br/>
+    #     This field can only take one of the following values:
+    #      - 0: RC_OK
+    #      - 1: RC_INVALID_COMMAND
+    #      - 2: RC_INVALID_ARGUMENT
+    #      - 11: RC_END_OF_LIST
+    #      - 12: RC_NO_RESOURCES
+    #      - 13: RC_IN_PROGRESS
+    #      - 14: RC_NACK
+    #      - 15: RC_WRITE_FAIL
+    #      - 16: RC_VALIDATION_ERROR
+    #      - 17: RC_INV_STATE
+    #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
+    # - <tt>avgFreqMeas</tt>: 4-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    # - <tt>ppFreqMeas</tt>: 2-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    # 
+    Tuple_dn_radiotestXtalComp = collections.namedtuple("Tuple_dn_radiotestXtalComp", ['RC', 'avgFreqMeas', 'ppFreqMeas'])
+
+    ##
+    # The radiotestXtalComp command initiates 32kHz crystal test to check frequency accuracy. This command may be issues only if the manager has been booted up in radiotest mode.
+    # 
+    # This command is available in SmartMesh IP Manager version 1.5.0. or later.
+    # 
+    # \param bias 1-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    # \param spinDownMs 2-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    # \param spinUpMs 2-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    # \param iterations 1-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    # 
+    # \returns The response to the command, formatted as a #Tuple_dn_radiotestXtalComp named tuple.
+    # 
+    def dn_radiotestXtalComp(self, bias, spinDownMs, spinUpMs, iterations) :
+        res = IpMgrConnectorMuxInternal.send(self, ['radiotestXtalComp'], {"bias" : bias, "spinDownMs" : spinDownMs, "spinUpMs" : spinUpMs, "iterations" : iterations})
+        return IpMgrConnectorMux.Tuple_dn_radiotestXtalComp(**res)
+
+    ##
+    # The named tuple returned by the dn_radiotestXtal() function.
+    # 
+    # - <tt>RC</tt>: 1-byte field formatted as a int.<br/>
+    #     This field can only take one of the following values:
+    #      - 0: RC_OK
+    #      - 1: RC_INVALID_COMMAND
+    #      - 2: RC_INVALID_ARGUMENT
+    #      - 11: RC_END_OF_LIST
+    #      - 12: RC_NO_RESOURCES
+    #      - 13: RC_IN_PROGRESS
+    #      - 14: RC_NACK
+    #      - 15: RC_WRITE_FAIL
+    #      - 16: RC_VALIDATION_ERROR
+    #      - 17: RC_INV_STATE
+    #      - 18: RC_NOT_FOUND
+    #      - 19: RC_UNSUPPORTED
+    # - <tt>pullVal</tt>: 1-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    # - <tt>ppmErr</tt>: 4-byte field formatted as a ints.<br/>
+    #     There is no restriction on the value of this field.
+    # 
+    Tuple_dn_radiotestXtal = collections.namedtuple("Tuple_dn_radiotestXtal", ['RC', 'pullVal', 'ppmErr'])
+
+    ##
+    # The radiotestXtal command is used to determine the optimal value to center the 20MHz crystal oscillator frequency given a particular PCB layout and crystal combination. It is used to measure 20MHz crystal, after which the user must enter trim values into the device' fuse table for access by software. See the Board Specific Configuration Guide for fuse table details.
+    # 
+    # This command may only be used when the manager's radio is not active, i.e in the radiotest mode. This function requires the manager be connected to the DC9010 programming board. It could take up to 30 sec for command to execute. After using this command, reboot the manager to continue normal operation.
+    # 
+    # This command is available in SmartMesh IP Manager version 1.5.0 or later.
+    # 
+    # \param trimOpt 1-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    # \param tempGrade 1-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    # 
+    # \returns The response to the command, formatted as a #Tuple_dn_radiotestXtal named tuple.
+    # 
+    def dn_radiotestXtal(self, trimOpt, tempGrade) :
+        res = IpMgrConnectorMuxInternal.send(self, ['radiotestXtal'], {"trimOpt" : trimOpt, "tempGrade" : tempGrade})
+        return IpMgrConnectorMux.Tuple_dn_radiotestXtal(**res)
+
     #======================== notifications ===================================
     
     ##
@@ -2090,6 +2174,8 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     # 
     # This notification is sent when a mote's state changes to Lost , which indicates that the mote is not responding to downstream messages.
     #
+    # The moteLost event is not generated when a mote rejoins the network, however if the motest trace is on, the manager will mark a transition between Lost and Negotiating1 when it receives the mote's join request.
+    #
     # Formatted as a Tuple_eventMoteLost named tuple. It contains the following fields:
     #   - <tt>eventId</tt> 4-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
@@ -2102,13 +2188,18 @@ class IpMgrConnectorMux(IpMgrConnectorMuxInternal):
     ##
     # \brief EVENTNETWORKTIME notification.
     # 
-    # The time notification is triggered by the client asserting the TIME pin or by calling the getTime command. This notification contains the time when the TIME pin was asserted (or the getTime command was processed) expressed as:
+    # The networkTime notification is triggered by the client asserting the TIMEn pin (if enabled - see below) or by calling the getTime command. This notification contains the time when the TIMEn pin was asserted (or the getTime command was processed) expressed as:
     # 
     # - ASN The absolute slot number (the number of timeslots since " 7/2/2002 8:00:00 PM PST" if UTC is set on manager, otherwise since Jan 1, 1970)
     # 
-    # 
     # - Uptime The number of seconds since the device was booted
+    # 
     # - Unix time The number of seconds and microseconds since Jan 1, 1970 in UTC
+    #
+    # The TIMEn input is disabled by default on Managers. Enabling TIMEn requires a custom fuse table (see the Board Specific Configuration Guide for details). Notifications for TIMEn strobe are available in Manager 1.4.2 or later.
+    # For LTC5800-IPM based products, driving the TIMEn pin low (assert) wakes the processor. The pin must asserted for a minimum of t strobe s. De-asserting the pin latches the time, and a networkTime notification will be generated within t response ms. Refer to the LTC5800-IPM Datasheet for additional information about TIMEn pin usage.
+    # 
+    # The processor will remain awake and drawing current while the TIMEn pin is asserted. To avoid drawing excess current, take care to minimize the duration of the TIMEn pin being asserted past t strobe minimum.
     #
     # Formatted as a Tuple_eventNetworkTime named tuple. It contains the following fields:
     #   - <tt>eventId</tt> 4-byte field formatted as a int.<br/>

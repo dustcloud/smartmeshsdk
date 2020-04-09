@@ -32,7 +32,7 @@ def _verifyPython():
     ]
     
     # is that enough?
-    if major==REQUIRED_PYTHON_MAJOR and minor>=REQUIRED_PYTHON_MINOR:
+    if (major>REQUIRED_PYTHON_MAJOR) or (major==REQUIRED_PYTHON_MAJOR and minor>=REQUIRED_PYTHON_MINOR):
         goodToGo = True
     else:
         output += ["You need at least Python {0}.{1}".format(REQUIRED_PYTHON_MAJOR,REQUIRED_PYTHON_MINOR)]

@@ -10,6 +10,7 @@ then doing a "reload" to activate.
 
 import sys
 import os
+from builtins import input
 if __name__ == "__main__":
     here = sys.path[0]
     sys.path.insert(0, os.path.join(here, '..', 'libs'))
@@ -39,10 +40,10 @@ urllib3.disable_warnings() # disable warnings that show up about self-signed cer
 
 try:
     # print banner
-    print '\nVMgr_UserCreate-Delete Example (c) Dust Networks'
-    print 'SmartMesh SDK {0}\n'.format('.'.join([str(i) for i in sdk_version.VERSION]))
+    print ('\nVMgr_UserCreate-Delete Example (c) Dust Networks')
+    print ('SmartMesh SDK {0}\n'.format('.'.join([str(i) for i in sdk_version.VERSION])))
 
-    mgrhost = raw_input('Enter the IP address of the manager (e.g. {0} ): '.format(DFLT_VMGR_HOST))
+    mgrhost = input('Enter the IP address of the manager (e.g. {0} ): '.format(DFLT_VMGR_HOST))
     if mgrhost == "":
         mgrhost = DFLT_VMGR_HOST
 
@@ -64,16 +65,16 @@ try:
     userName       = "user1"
     userExists     = False
     # read the list of users first (in Config area) to see if it already exists
-    print "\n The current users in Config are ..."
+    print ("\n The current users in Config are ...")
     myUsers = voyager.usersApi.get_config_users()
     for x in myUsers.users:
-        print '    {0}'.format(x.user_id)
+        print ('    {0}'.format(x.user_id))
         if x.user_id == userName:
             userExists = True
 
     # create the new user if not already there
     if not userExists:
-        print '\n Creating a new user called {0}\n'.format(userName)
+        print ('\n Creating a new user called {0}\n'.format(userName))
         userConfigbody = UserWriteConfig()
         userConfigbody.description     = "NewUser1"
         userConfigbody.password        = "secretpw"
@@ -84,22 +85,22 @@ try:
     voyager.configApi.reload_config()
 
     # read the list of users in "Active" area
-    print "\n The current Active users are ..."
+    print ("\n The current Active users are ...")
     myActiveUsers = voyager.usersApi.get_users()
     for x in myActiveUsers.users:
         print ('    {0}'.format(x.user_id))
     
     # Delete the user from the system (Config area then reload)
-    print "\n Deleting the user we just created"
+    print ("\n Deleting the user we just created")
     voyager.usersApi.delete_config_user(userName)
     voyager.configApi.reload_config()
 
-    print "\n The current Active users are now ..."
+    print ("\n The current Active users are now ...")
     myActiveUsers = voyager.usersApi.get_users()
     for x in myActiveUsers.users:
         print ('    {0}'.format(x.user_id))
 
-    print 'Script ended normally'
+    print ('Script ended normally')
     
 except:
     traceback.print_exc()

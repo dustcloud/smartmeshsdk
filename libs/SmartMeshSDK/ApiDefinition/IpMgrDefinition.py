@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-import ApiDefinition
-import ByteArraySerializer
+from . import ApiDefinition
+from . import ByteArraySerializer
 
 class IpMgrDefinition(ApiDefinition.ApiDefinition):
     '''
@@ -457,7 +457,7 @@ class IpMgrDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 37,
             'name'       : 'radiotestRx',
-            'description': 'The radiotestRx command clears all previously collected statistics and initiates radio reception on the specified channel. It may only be executed if the manager has been booted up in radiotest mode (see setNetworkConfig command). During the test, the device keeps statistics about the number of packets received (with and without error). The test results may be retrieved using the getRadiotestStatistics command.\n\nThe station ID is a user selectable value. It must be set to match the station ID used by the transmitter. Station ID is used to isolate traffic if multiple tests are running in the same radio space.\n\n\n\nChannel numbering is 0-15, corresponding to IEEE 2.4 GHz channels 11-26.',
+            'description': 'The radiotestRx command clears all previously collected statistics and initiates radio reception on the specified channel. It may only be executed if the manager has been booted up in radiotest mode (see setNetworkConfig command). During the test, the device keeps statistics about the number of packets received (with and without error). The test results may be retrieved using the getRadiotestStatistics command.\n\nThe station ID is a user selectable value. It must be set to match the station ID used by the transmitter. Station ID is used to isolate traffic if multiple tests are running in the same radio space.\n\nChannel numbering is 0-15, corresponding to IEEE 2.4 GHz channels 11-26.',
             'request'    : [
                 ['mask',                    HEXDATA,  2,   None],
                 ['duration',                INT,      2,   None],
@@ -1161,6 +1161,48 @@ It is dangerous to turn off advertising in the network. When advertising is off,
                'RC_IN_PROGRESS'  : 'The mote is in invalid state to start PER test',
             },
         },
+        {
+            'id'         : 76,
+            'name'       : 'radiotestXtalComp',
+            'description': 'The radiotestXtalComp command initiates 32kHz crystal test to check frequency accuracy. This command may be issues only if the manager has been booted up in radiotest mode.\n\nThis command is available in SmartMesh IP Manager version 1.5.0. or later.',
+            'request'    : [
+                ['bias',            INT,      1,   None],
+                ['spinDownMs',      INT,      2,   None],
+                ['spinUpMs',        INT,      2,   None],
+                ['iterations',      INT,      1,   None],
+            ],
+            'response'   : {
+                'FIELDS':  [
+                    [RC,            INT,      1,   True],
+                    ['avgFreqMeas', INT,      4,   None],	
+                    ['ppFreqMeas',  INT,      2,   None],					
+                ],
+            },
+            'responseCodes': {
+               'RC_OK'                      : 'Command was accepted',
+               'RC_VALIDATION_ERROR'        : 'The device is marginal',
+            },
+        },
+        {
+            'id'         : 77,
+            'name'       : 'radiotestXtal',
+            'description': "The radiotestXtal command is used to determine the optimal value to center the 20MHz crystal oscillator frequency given a particular PCB layout and crystal combination. It is used to measure 20MHz crystal, after which the user must enter trim values into the device' fuse table for access by software. See the Board Specific Configuration Guide for fuse table details.\n\nThis command may only be used when the manager's radio is not active, i.e in the radiotest mode. This function requires the manager be connected to the DC9010 programming board. It could take up to 30 sec for command to execute. After using this command, reboot the manager to continue normal operation.\n\nThis command is available in SmartMesh IP Manager version 1.5.0 or later.",
+            'request'    : [
+                ['trimOpt',        INT,     1,   None],
+                ['tempGrade',      INT,     1,   None],
+            ],
+            'response'   : {
+                'FIELDS':  [
+                    [RC,           INT,     1,   True],
+                    ['pullVal',    INT,     1,   None],	
+                    ['ppmErr',     INTS,    4,   None],					
+                ],
+            },
+            'responseCodes': {
+               'RC_OK'                      : 'Command was accepted',
+               'RC_INV_STATE'               : 'The manager is in invalid state to start Xtal test',
+            },
+        },
     ]
     
     subCommandsEvents = [
@@ -1217,7 +1259,7 @@ It is dangerous to turn off advertising in the network. When advertising is off,
         {
             'id'         : 5,
             'name'       : 'eventMoteLost',
-            'description': "This notification is sent when a mote's state changes to Lost , which indicates that the mote is not responding to downstream messages.",
+            'description': "This notification is sent when a mote's state changes to Lost , which indicates that the mote is not responding to downstream messages.\n\nThe moteLost event is not generated when a mote rejoins the network, however if the motest trace is on, the manager will mark a transition between Lost and Negotiating1 when it receives the mote's join request.",
             'response'   : {
                 'FIELDS':  [
                     ['macAddress',         HEXDATA,  8,   None],
@@ -1227,7 +1269,7 @@ It is dangerous to turn off advertising in the network. When advertising is off,
         {
             'id'         : 6,
             'name'       : 'eventNetworkTime',
-            'description': 'The time notification is triggered by the client asserting the TIME pin or by calling the getTime command. This notification contains the time when the TIME pin was asserted (or the getTime command was processed) expressed as:\n\n- ASN The absolute slot number (the number of timeslots since " 7/2/2002 8:00:00 PM PST" if UTC is set on manager, otherwise since Jan 1, 1970)\n\n\n- Uptime The number of seconds since the device was booted\n- Unix time The number of seconds and microseconds since Jan 1, 1970 in UTC',
+            'description': 'The networkTime notification is triggered by the client asserting the TIMEn pin (if enabled - see below) or by calling the getTime command. This notification contains the time when the TIMEn pin was asserted (or the getTime command was processed) expressed as:\n\n- ASN The absolute slot number (the number of timeslots since " 7/2/2002 8:00:00 PM PST" if UTC is set on manager, otherwise since Jan 1, 1970)\n\n- Uptime The number of seconds since the device was booted\n\n- Unix time The number of seconds and microseconds since Jan 1, 1970 in UTC\n\nThe TIMEn input is disabled by default on Managers. Enabling TIMEn requires a custom fuse table (see the Board Specific Configuration Guide for details). Notifications for TIMEn strobe are available in Manager 1.4.2 or later.\nFor LTC5800-IPM based products, driving the TIMEn pin low (assert) wakes the processor. The pin must asserted for a minimum of t strobe s. De-asserting the pin latches the time, and a networkTime notification will be generated within t response ms. Refer to the LTC5800-IPM Datasheet for additional information about TIMEn pin usage.\n\nThe processor will remain awake and drawing current while the TIMEn pin is asserted. To avoid drawing excess current, take care to minimize the duration of the TIMEn pin being asserted past t strobe minimum.',
             'response'   : {
                 'FIELDS':  [
                     ['uptime',             INT,      4,   None],

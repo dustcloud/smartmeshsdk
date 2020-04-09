@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 #============================ adjust path =====================================
+from __future__ import print_function
 
 import sys
 import os
@@ -50,7 +51,9 @@ def str2bool(v):
 
 class JsonServer(object):
     
-    def __init__(self, tcpport, autoaddmgr, autodeletemgr, serialport, configfilename):
+    NOTIF_TIMEOUT = 5  # seconds
+
+    def __init__(self, tcpport, autoaddmgr, autodeletemgr, serialport, configfilename, allowremote):
         
         # store params
         self.tcpport              = tcpport
@@ -58,6 +61,10 @@ class JsonServer(object):
         self.autodeletemgr        = autodeletemgr
         self.serialport           = serialport
         self.configfilename       = configfilename
+        if allowremote:
+            self.host = '0.0.0.0'
+        else:
+            self.host = '127.0.0.1'
         
         # local variables
         self.jsonManager          = JsonManager.JsonManager(
@@ -195,7 +202,7 @@ class JsonServer(object):
             target = self._bottle_try_running_forever,
             args   = (self.websrv.run,),
             kwargs = {
-                'host'          : '127.0.0.1',
+                'host'          : self.host,
                 'port'          : self.tcpport,
                 'quiet'         : True,
                 'debug'         : False,
@@ -214,17 +221,17 @@ class JsonServer(object):
                 args[0](**kwargs) # blocking
             except socket.error as err:
                 if err[0]==10013:
-                    print 'FATAL: cannot open TCP port {0}.'.format(kwargs['port'])
-                    print '    Is another application running on that port?'
+                    print ('FATAL: cannot open TCP port {0}.'.format(kwargs['port']))
+                    print ('    Is another application running on that port?')
                 else:
-                    print logError(err)
+                    print (logError(err))
             except Exception as err:
-                print logError(err)
-            print '    Trying again in {0} seconds'.format(RETRY_PERIOD),
+                print (logError(err))
+            print ('    Trying again in {0} seconds'.format(RETRY_PERIOD), end=' ')
             for _ in range(RETRY_PERIOD):
                 time.sleep(1)
-                print '.',
-            print ''
+                print ('.', end=' ')
+            print ('')
     
     #======================== CLI handlers ====================================
     
@@ -233,7 +240,7 @@ class JsonServer(object):
         self.jsonManager.close()
         
         time.sleep(.3)
-        print "bye bye."
+        print ("bye bye.")
     
     def _clihandle_status(self,params):
         pp.pprint(self.jsonManager.status_GET())
@@ -466,6 +473,7 @@ class JsonServer(object):
                         'headers'     : {
                             'Content-type': 'application/json',
                         },
+                        'timeout'     : self.NOTIF_TIMEOUT,
                     }
                 )
                 notifthread.name = '{0}->{1}'.format(notifName,url)
@@ -477,7 +485,7 @@ class JsonServer(object):
         except requests.exceptions.ConnectionError:
             pass
         except Exception as err:
-            print err
+            print (err)
     
 #============================ main ============================================
 
@@ -487,9 +495,10 @@ def main(args):
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--tcpport',                    default=8080)
-    parser.add_argument('--autoaddmgr',   type=str2bool,default=False)
-    parser.add_argument('--autodeletemgr',type=str2bool,default=False)
+    parser.add_argument('--autoaddmgr',   type=str2bool,default=True)
+    parser.add_argument('--autodeletemgr',type=str2bool,default=True)
     parser.add_argument('--serialport',                 default=None)
     parser.add_argument('--configfilename',             default='JsonServer.config')
+    parser.add_argument('--allowremote',  type=str2bool,default=False)
     args = vars(parser.parse_args())
     main(args)

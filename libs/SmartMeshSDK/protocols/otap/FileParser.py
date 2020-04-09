@@ -3,9 +3,9 @@
 import os
 import struct
 
-from GenStructs import parse_obj
-from OTAPStructs import FileHeader, FileInfo, OtapHandshakeHeader, parse_otap_file
-import OTAPMic
+from .GenStructs import parse_obj
+from .OTAPStructs import FileHeader, FileInfo, OtapHandshakeHeader, parse_otap_file
+from . import OTAPMic
 
 # DN_API_OTAP_DATA_SIZE = 82
 # maximum word-aligned block size to fit OTAP data command in 82 bytes of payload
@@ -49,7 +49,7 @@ class FileParser(object):
     # blockify_data is separate from load_file in case we need to resize the blocks
     def blockify_data(self, block_size = BLOCK_SIZE):
         self.blocks = []
-        for idx in xrange(0, len(self.data), block_size):
+        for idx in range(0, len(self.data), block_size):
             self.blocks.append(self.data[idx:idx+block_size])
 
     def get_handshake_data(self):

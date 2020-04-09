@@ -10,6 +10,7 @@ and published to the Grafana instance at http://clouddata.dustcloud.org/
 
 import sys
 import os
+from builtins import input
 if __name__ == "__main__":
     here = sys.path[0]
     sys.path.insert(0, os.path.join(here, '..', 'libs'))
@@ -66,9 +67,9 @@ def handle_oap_notif(mac, oap_notif):
                 }
             )
         except Exception as err:
-            print err
+            print (err)
         else:
-            print 'sent mac={0} temperature={1:.2f}C'.format(mac, temp)
+            print ('sent mac={0} temperature={1:.2f}C'.format(mac, temp))
 
 def process_data(data_notif):
     '''
@@ -86,8 +87,8 @@ def process_data(data_notif):
 
 try:
     # print banner
-    print '\nVMgr_PublishToWeb (c) Dust Networks'
-    print 'SmartMesh SDK {0}'.format('.'.join([str(b) for b in sdk_version.VERSION]))
+    print ('\nVMgr_PublishToWeb (c) Dust Networks')
+    print ('SmartMesh SDK {0}'.format('.'.join([str(b) for b in sdk_version.VERSION])))
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -132,11 +133,11 @@ try:
     # start listening for data notifications
     voyager.get_notifications('data', notif_callback=process_data)
 
-    print '\n==== Subscribing to data notifications and publish to clouddata.dustcloud.org'
-    reply = raw_input('Forwarding notifications. Press any key to stop\n\n')
+    print ('\n==== Subscribing to data notifications and publish to clouddata.dustcloud.org')
+    reply = input('Forwarding notifications. Press any key to stop\n\n')
 
     voyager.stop_notifications()
-    print 'Script ended normally'
+    print ('Script ended normally')
 
 except:
     traceback.print_exc()

@@ -10,12 +10,12 @@ if __name__ == '__main__':
 
 #============================ imports =========================================
 
-import Tkinter
+import tkinter
 import traceback
 
-import dustGuiLib
-import dustFrame
-from   dustStyle import dustStyle
+from . import dustGuiLib
+from . import dustFrame
+from  .dustStyle import dustStyle
 
 from   SmartMeshSDK.ApiDefinition import ApiDefinition
 from   SmartMeshSDK.ApiException  import CommandError, \
@@ -56,10 +56,10 @@ class dustFrameCommand(dustFrame.dustFrame):
         dustFrame.dustFrame.apiLoaded(self,apiDef)
         
         with self.guiLock:
-            self.commandToSend = Tkinter.StringVar()
+            self.commandToSend = tkinter.StringVar()
             self.commandToSend.trace_variable('w',self._handleCommandSelected)
             
-            self.subcommandToSend = Tkinter.StringVar()
+            self.subcommandToSend = tkinter.StringVar()
             self.subcommandToSend.trace_variable('w',self._handleSubCommandSelected)
         
         self.commandDropDownOptions = self.apiDef.getNames(ApiDefinition.ApiDefinition.COMMAND)
@@ -167,7 +167,7 @@ class dustFrameCommand(dustFrame.dustFrame):
             
         # create a frame for all fields and add GUI elements
         with self.guiLock:
-            self.fieldsFrame = Tkinter.Frame(
+            self.fieldsFrame = tkinter.Frame(
                 self.container,
                 borderwidth=10,
                 bg=dustStyle.COLOR_BG,
@@ -207,7 +207,7 @@ class dustFrameCommand(dustFrame.dustFrame):
                         self.fieldsFrame,
                         text           = c['fieldNames'][i],
                         bg             = dustStyle.COLOR_BG,
-                        relief         = Tkinter.RIDGE,
+                        relief         = tkinter.RIDGE,
                         borderwidth    = 1,
                         background     = headerColor,
                         padx           = 3,
@@ -217,7 +217,7 @@ class dustFrameCommand(dustFrame.dustFrame):
                 c['fieldNamesGui'][-1].grid(
                     row                = 0,
                     column             = i,
-                    sticky             = Tkinter.W+Tkinter.E,
+                    sticky             = tkinter.W+tkinter.E,
                 )
                 
                 # display row 1: value
@@ -226,7 +226,7 @@ class dustFrameCommand(dustFrame.dustFrame):
                         optionValues = c['fieldOptions'][i].optionDescs
                     else:
                         optionValues = ['True','False']
-                    c['fieldValuesString'] += [Tkinter.StringVar()]
+                    c['fieldValuesString'] += [tkinter.StringVar()]
                     c['fieldValuesGui']    += [
                         dustGuiLib.OptionMenu(
                             self.fieldsFrame,
@@ -250,7 +250,7 @@ class dustFrameCommand(dustFrame.dustFrame):
                 c['fieldValuesGui'][-1].grid(
                     row      = 1,
                     column   = i,
-                    sticky   = Tkinter.W+Tkinter.E,
+                    sticky   = tkinter.W+tkinter.E,
                 )
                 
                 # display row 2: format and length
@@ -263,7 +263,7 @@ class dustFrameCommand(dustFrame.dustFrame):
                         self.fieldsFrame,
                         text           = fieldFormatsString,
                         bg             = dustStyle.COLOR_BG,
-                        relief         = Tkinter.RIDGE,
+                        relief         = tkinter.RIDGE,
                         borderwidth    = 1,
                         padx           = 3,
                         pady           = 3,
@@ -272,7 +272,7 @@ class dustFrameCommand(dustFrame.dustFrame):
                 c['fieldFormatsGui'][-1].grid(
                     row      = 2,
                     column   = i,
-                    sticky   = Tkinter.W+Tkinter.E,
+                    sticky   = tkinter.W+tkinter.E,
                 )
         
         # subcommands
@@ -309,7 +309,7 @@ class dustFrameCommand(dustFrame.dustFrame):
             for c in self.guiElems:
                 for i in range(len(c['fieldNames'])):
                     if c['fieldNames'][i] in self.apiDef.OPTIONAL:
-                        if c['fieldValuesGui'][i].get(1.0,Tkinter.END).rstrip('\n')=='':
+                        if c['fieldValuesGui'][i].get(1.0,tkinter.END).rstrip('\n')=='':
                             c['fieldValuesGui'][i].insert(1.0,"0")
         
         # collect data from fields, put in c['fieldValuesRaw']
@@ -325,7 +325,7 @@ class dustFrameCommand(dustFrame.dustFrame):
                         ]
                     else:
                         c['fieldValuesRaw'] += [
-                            c['fieldValuesGui'][i].get(1.0,Tkinter.END).rstrip('\n')
+                            c['fieldValuesGui'][i].get(1.0,tkinter.END).rstrip('\n')
                         ]
         
         # turn c['fieldValuesRaw'] into c['fieldValues'] (also check for length)
@@ -498,16 +498,16 @@ class exampleApp(object):
         self.window.mainloop()
     
     def _closeCb(self):
-        print " _closeCb called"
+        print (" _closeCb called")
     def _selectedCb(self,param):
-        print " _selectedCb called with param="+str(param)
+        print (" _selectedCb called with param="+str(param))
     def _responseCb(self):
-        print " _responseCb called"
+        print (" _responseCb called")
     def _responseErrorCb(self,param):
-        print " _responseErrorCb called with param="+str(param)
+        print (" _responseErrorCb called with param="+str(param))
 
 if __name__ == '__main__':
     import threading
-    from dustWindow import dustWindow
+    from .dustWindow import dustWindow
     from SmartMeshSDK.ApiDefinition import IpMgrDefinition
     exampleApp()

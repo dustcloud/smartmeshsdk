@@ -281,6 +281,10 @@ class HrParser(object):
         remainder            = payload[numBytes:]
         
         # apply the format string
+        try:
+            fields               = struct.unpack(fmt,hrstring)
+        except TypeError:
+            hrstring = bytes([ord(b) for b in hrstring])
         fields               = struct.unpack(fmt,hrstring)
         
         for (d,v) in zip(desc,fields):

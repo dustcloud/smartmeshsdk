@@ -70,11 +70,11 @@ class LatencyCalculator(threading.Thread) :
                     self.keepRunning = False
                     output = 'Connector appears disconnected, quitting thread'
                     log.error(output)
-                    print output
+                    print (output)
                 except Exception as err:
                     output = "unexpected {0}: {1}".format(type(err),err)
                     log.critical(output)
-                    print output
+                    print (output)
                 else:
                     if   isinstance(self.apiDef,IpMgrDefinition.IpMgrDefinition):
                         self.lockNetworkTime = float(res.utcSecs)+(float(res.utcUsecs)/1000000.0)
@@ -83,7 +83,7 @@ class LatencyCalculator(threading.Thread) :
                     else:
                         output = "apiDef of type {0} unexpected".format(type(self.apiDef))
                         log.critical(output)
-                        print output
+                        print (output)
                         raise SystemError(output)
                     
                     self.numNetworkTimeAcquisitions += 1

@@ -215,7 +215,7 @@ class LbrConnector(ApiConnector):
             except ssl.SSLError as err:
                 self._abortConnectionWithError(connectParams,'SSL wrapping failed.')
             except Exception as err:
-                print err
+                print (err)
             else:
                 output  = ''
                 output += 'Peer validated:\n'

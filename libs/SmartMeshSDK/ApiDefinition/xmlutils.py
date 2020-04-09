@@ -36,7 +36,7 @@ def xml_obj_to_dict(xml_obj):
             else:
                 attrs[n] = v
             if ch_node.hasAttributes():
-                for name, val in ch_node.attributes.items():
+                for name, val in list(ch_node.attributes.items()):
                     attr_name = n + name.capitalize()
                     attrs[attr_name] = val
 

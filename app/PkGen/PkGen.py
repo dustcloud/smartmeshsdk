@@ -4,6 +4,7 @@
 
 import sys
 import os
+from builtins import input
 if __name__ == "__main__":
     here = sys.path[0]
     sys.path.insert(0, os.path.join(here, '..', '..','libs'))
@@ -19,9 +20,9 @@ from SmartMeshSDK.utils import SmsdkInstallVerifier
     ]
 )
 if not goodToGo:
-    print "Your installation does not allow this application to run:\n"
-    print reason
-    raw_input("Press any button to exit")
+    print ("Your installation does not allow this application to run:\n")
+    print (reason)
+    input("Press any button to exit")
     sys.exit(1)
 
 #============================ imports =========================================
@@ -192,7 +193,7 @@ class notifClient(object):
         else:
             output = "apiDef of type {0} unexpected".format(type(self.apiDef))
             log.critical(output)
-            print output
+            print (output)
             raise SystemError(output)
     
     #======================== public ==========================================
@@ -226,7 +227,7 @@ class notifClient(object):
             self.rateCalc[mac].clearBuf()
         if mac in self.data:
             self.updates[mac] = []
-            for k,v in self.data[mac].items():
+            for k,v in list(self.data[mac].items()):
                 if   k in [COL_PKGEN_NUM,]:
                     self.updates[mac].append(k)
                     self.data[mac][k] = 0
@@ -265,7 +266,7 @@ class notifClient(object):
         else:
             output = "apiDef of type {0} unexpected".format(type(self.apiDef))
             log.critical(output)
-            print output
+            print (output)
             raise SystemError(output)
         
         # record current time
@@ -351,12 +352,12 @@ class notifClient(object):
             else:
                 output = "apiDef of type {0} unexpected".format(type(self.apiDef))
                 log.critical(output)
-                print output
+                print (output)
                 raise SystemError(output)
         
         except Exception as err:
             output = traceback.format_exc()
-            print output
+            print (output)
             log.critical(output)
         
         finally:
@@ -376,7 +377,7 @@ class notifClient(object):
         else:
             output = "apiDef of type {0} unexpected".format(type(self.apiDef))
             log.critical(output)
-            print output
+            print (output)
             raise SystemError(output)
     
     def _handle_oap_notif(self,mac,notif):
@@ -572,9 +573,10 @@ class PkGenGui(object):
                 )
             )
     
-    def _moteListFrameCb_PkGenSet(self,mac,(val1,val2,val3)):
+    def _moteListFrameCb_PkGenSet(self,mac,values):
         
         # log
+        (val1,val2,val3) = values
         log.debug("_moteListFrameCb_PkGenSet")
         
         # send the OAP message
@@ -588,7 +590,7 @@ class PkGenGui(object):
                                         cb=None,                                    # callback
                                       )
         except APIError as err:
-            print "[WARNING] {0}".format(err)
+            print ("[WARNING] {0}".format(err))
         else:
             # update status
             self.statusFrame.write(
@@ -652,7 +654,7 @@ class PkGenGui(object):
         else:
             output = "apiDef of type {0} unexpected".format(type(self.apiDef))
             log.critical(output)
-            print output
+            print (output)
             raise SystemError(output)
         
         return returnVal
@@ -701,14 +703,14 @@ class PkGenGui(object):
         (isMoteActive,data,updates) = self.notifClientHandler.getData()
         
         # update the frame
-        for mac,data in data.items():
+        for mac,data in list(data.items()):
             
             # detect new motes
             if mac not in self.oap_clients:
                 self._addNewMote(mac)
             
             # update
-            for columnname,columnval in data.items():
+            for columnname,columnval in list(data.items()):
                 if columnname in updatable_columns:
                     if ((mac in updates) and (columnname in updates[mac])):
                         self.moteListFrame.update(mac,columnname,columnval)
@@ -749,7 +751,7 @@ class PkGenGui(object):
         else:
             output = "apiDef of type {0} unexpected".format(type(self.apiDef))
             log.critical(output)
-            print output
+            print (output)
             raise SystemError(output)
 
 #============================ main ============================================

@@ -18,7 +18,7 @@ if __name__ == "__main__":
 import urllib3
 import traceback
 import certifi
-
+from builtins import input
 # generic SmartMeshSDK imports
 from SmartMeshSDK                      import sdk_version
 # VManager-specific imports
@@ -43,7 +43,7 @@ def process_notif(notif):
             'ipPacketReceived'
         ):
         # handle data notifications
-        print ' Data notification --> Type={0}'.format(notif.type)
+        print (' Data notification --> Type={0}'.format(notif.type))
 
     elif notif.type in (
             'deviceHealthReport', 
@@ -52,7 +52,7 @@ def process_notif(notif):
             'rawMoteNotification',
         ):
         # handle health reports
-        print '   HR notification --> Type={0}'.format(notif.type)
+        print ('   HR notification --> Type={0}'.format(notif.type))
         
     elif notif.type in (
             'configChanged', 
@@ -61,21 +61,21 @@ def process_notif(notif):
             'configRestored',
         ):
         # handle config notifications
-        print '     Config notification --> Type={0}'.format(notif.type)
+        print ('     Config notification --> Type={0}'.format(notif.type))
         
     else:
         # handle all other event notifications
-        print '       Event notification --> Type={0}'.format(notif.type)
+        print ('       Event notification --> Type={0}'.format(notif.type))
 
 #============================ main ============================================
 
 try:
     # print banner
-    print '\nVMgr_AllNotifications (c) Dust Networks'
-    print 'SmartMesh SDK {0}\n'.format('.'.join([str(i) for i in sdk_version.VERSION]))
+    print ('\nVMgr_AllNotifications (c) Dust Networks')
+    print ('SmartMesh SDK {0}\n'.format('.'.join([str(i) for i in sdk_version.VERSION])))
 
     # ask the user which Manager IP to connect to, and which mote to monitor
-    mgrhost = raw_input('Enter the IP address of the manager (e.g. {0} ): '.format(DFLT_VMGR_HOST))
+    mgrhost = input('Enter the IP address of the manager (e.g. {0} ): '.format(DFLT_VMGR_HOST))
     if mgrhost == "":
         mgrhost = DFLT_VMGR_HOST
 
@@ -96,11 +96,11 @@ try:
     # start listening for hr notifications
     voyager.get_notifications(notif_callback=process_notif)
 
-    print '\n==== Subscribing to all notifications'
-    reply = raw_input ('\n Waiting for notifications from mote, Press any key to stop\n')
+    print ('\n==== Subscribing to all notifications')
+    reply = input ('\n Waiting for notifications from mote, Press any key to stop\n')
 
     voyager.stop_notifications()
-    print 'Script ended normally'
+    print ('Script ended normally')
 
 except:
     traceback.print_exc()

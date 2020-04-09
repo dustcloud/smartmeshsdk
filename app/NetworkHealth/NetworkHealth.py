@@ -2,8 +2,12 @@
 
 #============================ adjust path =====================================
 
+from argparse import ArgumentParser
 import sys
 import os
+import errno
+from builtins import input
+
 if __name__ == "__main__":
     here = sys.path[0]
     sys.path.insert(0, os.path.join(here, '..', '..','libs'))
@@ -19,9 +23,9 @@ from SmartMeshSDK.utils import SmsdkInstallVerifier
     ]
 )
 if not goodToGo:
-    print "Your installation does not allow this application to run:\n"
-    print reason
-    raw_input("Press any button to exit")
+    print ("Your installation does not allow this application to run:\n")
+    print (reason)
+    input("Press any button to exit")
     sys.exit(1)
 
 #============================ imports =========================================
@@ -46,11 +50,13 @@ from dustCli      import DustCli
 
 #============================ defines =========================================
 
+DEFAULT_OUTPUT_FILE = 'testresults.txt'
+
 #============================ globals =========================================
 
 connector          = None
 snapshotThread     = None
-
+outputFile         = None
 #============================ helpers =========================================
     
 def printExcAndQuit(err):
@@ -66,7 +72,7 @@ def printExcAndQuit(err):
     output += ["Script ended because of an error. Press Enter to exit."]
     output  = '\n'.join(output)
     
-    raw_input(output)
+    input(output)
     sys.exit(1)
 
 #============================ threads =========================================
@@ -76,10 +82,11 @@ class SnapshotThread(threading.Thread):
     SNAPSHOTDELAY_INITIAL_S = 5
     DFLT_SNAPSHOTPERIOD     = 3600
     
-    def __init__(self,connector):
+    def __init__(self,connector,outputFile):
         
         # store params
         self.connector                         = connector
+        self.outputFile                        = outputFile
         
         # local variables
         self.goOn                              = True
@@ -155,7 +162,7 @@ class SnapshotThread(threading.Thread):
     
     def printLastResults(self):
         with self.dataLock:
-            print self.lastResults
+            print (self.lastResults)
     
     def close(self):
         
@@ -179,8 +186,8 @@ class SnapshotThread(threading.Thread):
                 self.dataForAnalyzer['devicehr'][tuple(mac)] = hr['Device']
             
         except Exception as err:
-            print type(err)
-            print err
+            print (type(err))
+            print (err)
             raise
             
     def _doSnapshot(self):
@@ -209,7 +216,7 @@ class SnapshotThread(threading.Thread):
                 # getMoteInfo on all motes
                 for mac in motes:
                     res = self.connector.dn_getMoteInfo(mac)
-                    for (k,v) in self._namedTupleToDict(res).items():
+                    for (k,v) in list(self._namedTupleToDict(res).items()):
                         self.dataForAnalyzer['moteinfo'][tuple(mac)][k] = v
                 
                 # getNextPathInfo on all paths of all motes
@@ -231,7 +238,7 @@ class SnapshotThread(threading.Thread):
                 res = self.connector.dn_getNetworkInfo()
                 self.dataForAnalyzer['networkinfo'] = self._namedTupleToDict(res)
                 
-                print "running test at {0}".format(self._now())
+                print ("running test at {0}".format(self._now()))
                 
                 # run NetworkHealthAnalyzer
                 results = self.networkHealthAnalyzer.analyze(self.dataForAnalyzer)
@@ -288,9 +295,14 @@ class SnapshotThread(threading.Thread):
         return input
     
     def _logResults(self,results):
-        
-        with open('testresults.txt','a') as f:
+        try:
+            with open(self.outputFile,'a') as f:
             f.write(results)
+        except IOError as e:
+            if e.errno == errno.ENOENT:
+                print('error: file path "{0}" could not be created.'.format(self.outputFile))
+            elif e.errno == errno.EACCES:
+                print('error: cannot create file "{0}", permission denied.'.format(self.outputFile))
     
     def _namedTupleToDict(self,nt):
         return dict(nt._asdict())
@@ -304,6 +316,7 @@ class SnapshotThread(threading.Thread):
 def connect_clicb(params):
     global connector
     global snapshotThread
+    global outputFile
     
     # filter params
     port = params[0]
@@ -320,7 +333,7 @@ def connect_clicb(params):
         printExcAndQuit(err)
     
     # start threads
-    snapshotThread      = SnapshotThread(connector)
+    snapshotThread      = SnapshotThread(connector,outputFile)  
 
 def now_clicb(params):
     global snapshotThread
@@ -338,11 +351,11 @@ def period_clicb(params):
     try:
         period = int(params[0])
     except ValueError:
-        print 'you should pass an integer, "{0}" is not'.format(params[0])
+        print ('you should pass an integer, "{0}" is not'.format(params[0]))
         return
     
     if not snapshotThread:
-        print "connect first before setting the period"
+        print ("connect first before setting the period")
     else:
         snapshotThread.setSnapshotPeriod(period)
 
@@ -356,11 +369,17 @@ def quit_clicb():
         snapshotThread.close()
     
     time.sleep(.3)
-    print "bye bye."
+    print ("bye bye.")
 
 #============================ main ============================================
 
 def main():
+    global outputFile
+    
+    parser = ArgumentParser()    
+    parser.add_argument("-o", "--outputFile", dest="outputFile", default=DEFAULT_OUTPUT_FILE, help="result log outputFile")
+    args = parser.parse_args()
+    outputFile = args.outputFile
     
     # create CLI interface
     cli = DustCli.DustCli(

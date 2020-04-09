@@ -84,7 +84,7 @@ class NetworkHealthAnalyzer(object):
                 'This test could not run because device health reports are not received from the motes yet. \n'
             ]
         else :                     
-            for (mac,dev_hr) in data['devicehr'].items(): 
+            for (mac,dev_hr) in list(data['devicehr'].items()): 
                     
                 # count number of packets generated/failed network-wide
                 numTxOk     += dev_hr['numTxOk'] 
@@ -165,7 +165,7 @@ class NetworkHealthAnalyzer(object):
         numPktsGenerated     = 0
         numPktsLost          = 0
         
-        for (mac,moteinfo) in data['moteinfo'].items():            
+        for (mac,moteinfo) in list(data['moteinfo'].items()):            
         
             # count number of packets received/lost network-wide
             numPktsGenerated += moteinfo['packetsReceived'] 
@@ -282,68 +282,6 @@ class NetworkHealthAnalyzer(object):
         # return test result
         return (outcome,description)
 		
-	#===== average network latency
-	
-    MAX_NETWORKLATENCY = 2000
-    
-    def _nettest_networkLatency(self,data):
-        '''
-        <p>
-            This test verifies that the average network latency is below the MAX_NETWORKLATENCY threshold.
-        </p>
-        <p>
-           Network latency is the average time (in milliseconds) taken for packets generated at mote to reach the manager.
-        </p>
-        <p>
-            This test is run once for the whole network.
-        </p>
-        '''
-        
-        descPASS             = []
-        descFAIL             = []
-        descNOTRUN           = []
-        
-        # run the test  
-        if (data['networkinfo']['netLatency']<self.MAX_NETWORKLATENCY):
-            descPASS    += [
-                'Network latency is {0} ms, which is below than the maximum network latency threshold {1} ms. \n'.format(
-                    data['networkinfo']['netLatency'],
-                    self.MAX_NETWORKLATENCY,
-                )
-            ]
-        else:
-            descFAIL    += [
-                'Network latency is {0} ms, which is above than the maximum network latency threshold {1} ms. \n'.format(
-                    data['networkinfo']['netLatency'],
-                    self.MAX_NETWORKLATENCY,
-                )
-            ]
-        
-        # decide outcome
-        if   descFAIL:
-            outcome     = self.TEST_OUTCOME_FAIL
-        elif descPASS:
-            outcome     = self.TEST_OUTCOME_PASS
-        else:
-            outcome     = self.TEST_OUTCOME_NOTRUN
-        
-        # write report
-        description  = []
-        if descPASS:
-            description  += ["PASS:"]
-            description  += descPASS
-        if descFAIL:
-            description  += ["FAIL:"]
-            description  += descFAIL
-        if descNOTRUN:
-            description  += ["NOTRUN:"]
-            description  += descNOTRUN
-        description = '<br/>'.join(description)
-        
-        # return test result
-        return (outcome,description)
-    
-    
     
     #===== multiple joins
     
@@ -366,14 +304,14 @@ class NetworkHealthAnalyzer(object):
         descNOTRUN           = []
 		
 		# get the number of times AP joined
-        for (mac,moteinfo) in data['moteinfo'].items():   
+        for (mac,moteinfo) in list(data['moteinfo'].items()):   
             
             if ('isAP' in moteinfo and moteinfo['isAP']==True):
                 APJoins = moteinfo['numJoins']
                 APmac   = mac
                 break
                 
-        for (mac,moteinfo) in data['moteinfo'].items():
+        for (mac,moteinfo) in list(data['moteinfo'].items()):
                
             # run the test
             if ('numJoins' in moteinfo and 'isAP' in moteinfo and moteinfo['isAP']==False):		
@@ -443,7 +381,7 @@ class NetworkHealthAnalyzer(object):
         
         # get all the paths in the network
         
-        for (mac,moteinfo) in data['moteinfo'].items():
+        for (mac,moteinfo) in list(data['moteinfo'].items()):
             
             (numTx,numRx)    = self._countTxRxLinks(data['networkpaths'],mac)
             
@@ -527,7 +465,7 @@ class NetworkHealthAnalyzer(object):
         descFAIL             = []
         descNOTRUN           = []
         
-        for (mac,moteinfo) in data['moteinfo'].items():        
+        for (mac,moteinfo) in list(data['moteinfo'].items()):
             
             # run the test            
             if moteinfo['numGoodNbrs']>self.MIN_NUMGOODNEIGHBORS:
@@ -593,7 +531,7 @@ class NetworkHealthAnalyzer(object):
         descFAIL             = []
         descNOTRUN           = []
         
-        for (mac,moteinfo) in data['moteinfo'].items():
+        for (mac,moteinfo) in list(data['moteinfo'].items()):
             
             # run the test           
             if (moteinfo['avgLatency']>self.MAX_MOTELATENCY):
@@ -663,14 +601,14 @@ class NetworkHealthAnalyzer(object):
         singleParentMotes    = []
         
         # count number of parents for each mote
-        for mac in data['moteinfo'].keys():
+        for mac in list(data['moteinfo'].keys()):
             numParents[mac] = 0
-            for ((fromMote,toMote),pathInfo) in data['networkpaths'].items():
+            for ((fromMote,toMote),pathInfo) in list(data['networkpaths'].items()):
                 if fromMote==mac and pathInfo['direction']==2 and pathInfo['numLinks']>0:
                     numParents[mac] += 1
         
         # count number of single-parents motes
-        for (mac,n) in numParents.items():
+        for (mac,n) in list(numParents.items()):
             if n==1:
                 singleParentMotes      = [mac]
         
@@ -737,7 +675,7 @@ class NetworkHealthAnalyzer(object):
         descFAIL             = []
         descNOTRUN           = []
         
-        for (mac,moteinfo) in data['moteinfo'].items():        
+        for (mac,moteinfo) in list(data['moteinfo'].items()):        
             
             #run the test    
             if moteinfo['totalNeededBw']>=moteinfo['assignedBw']:
@@ -811,7 +749,7 @@ class NetworkHealthAnalyzer(object):
                 'This test could not run because device health reports are not received from the motes yet. \n'
             ]
         else :                     
-            for (mac,dev_hr) in data['devicehr'].items():
+            for (mac,dev_hr) in list(data['devicehr'].items()):
             
                 if not dev_hr['numTxOk']:
                     descNOTRUN += [
@@ -865,6 +803,7 @@ class NetworkHealthAnalyzer(object):
         # return test result
         return (outcome,description)  
   
+  
     #===== mote congestion
     
     AVG_QUEUE_LEN  = 1
@@ -897,7 +836,7 @@ class NetworkHealthAnalyzer(object):
                 'This test could not run because device health reports are not received from the motes yet. \n'
             ]
         else :                     
-            for (mac,dev_hr) in data['devicehr'].items():          
+            for (mac,dev_hr) in list(data['devicehr'].items()):          
             
                 # run the test
                 avgQueueLen  = (dev_hr['queueOcc'] & 0x0F)
@@ -981,7 +920,7 @@ class NetworkHealthAnalyzer(object):
         descFAIL             = []
         descNOTRUN           = []
         
-        for ((fromMote,toMote),pathInfo) in data['networkpaths'].items():
+        for ((fromMote,toMote),pathInfo) in list(data['networkpaths'].items()):
                      
             # run the test
             linkStability = pathInfo['quality']
@@ -1068,7 +1007,7 @@ class NetworkHealthAnalyzer(object):
         numTx           = 0
         numRx           = 0
         
-        for ((fromMote,toMote),pathInfo) in paths.items():
+        for ((fromMote,toMote),pathInfo) in list(paths.items()):
             
             if mac!=fromMote and mac!=toMote:
                 continue

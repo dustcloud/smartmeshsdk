@@ -95,13 +95,13 @@ class FilterExpr(object):
         try: 
             if len(self.attrib_whitelist):
                 result = False
-                for attr, valary in self.attrib_whitelist.items():
+                for attr, valary in list(self.attrib_whitelist.items()):
                     for val in valary:
                         if obj.__dict__[attr] == val:
                             return True
             
             if len(self.attrib_blacklist):
-                for attr, valary in self.attrib_blacklist.items():
+                for attr, valary in list(self.attrib_blacklist.items()):
                     for val in valary:
                         if obj.__dict__[attr] == val:
                             return False

@@ -63,7 +63,7 @@ class SerialMuxTable(object):
             pass
 
     def find_com_port(self, com_port):
-        return [smc for smc in self._service_map.values()
+        return [smc for smc in list(self._service_map.values())
                 if smc.com_port == com_port][0]
 
     def find_config(self, config_name):
@@ -75,7 +75,7 @@ class SerialMuxTable(object):
 
     def get_ports(self):
         'Returns the list of all ports configured with Serial Mux services'
-        return [smc.com_port for smc in self._service_map.values()]
+        return [smc.com_port for smc in list(self._service_map.values())]
 
     def get_mux_version(self):
         return 'unknown'

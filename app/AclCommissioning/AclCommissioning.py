@@ -1,9 +1,11 @@
 #!/usr/bin/python
 
 #============================ adjust path =====================================
-
+from __future__ import print_function
 import sys
 import os
+from builtins import input
+
 if __name__ == "__main__":
     here = sys.path[0]
     sys.path.insert(0, os.path.join(here, '..', '..','libs'))
@@ -19,9 +21,9 @@ from SmartMeshSDK.utils import SmsdkInstallVerifier
     ]
 )
 if not goodToGo:
-    print "Your installation does not allow this application to run:\n"
-    print reason
-    raw_input("Press any button to exit")
+    print ("Your installation does not allow this application to run:\n")
+    print (reason)
+    input("Press any button to exit")
     sys.exit(1)
 
 #============================ imports =========================================
@@ -61,16 +63,16 @@ try:
     manager        = IpMgrConnectorSerial.IpMgrConnectorSerial()
     mote           = IpMoteConnector.IpMoteConnector()
     
-    print 'ACL Commissioning (c) Dust Networks'
-    print 'SmartMesh SDK {0}\n'.format('.'.join([str(b) for b in sdk_version.VERSION]))
+    print ('ACL Commissioning (c) Dust Networks')
+    print ('SmartMesh SDK {0}\n'.format('.'.join([str(b) for b in sdk_version.VERSION])))
     
-    print '==== Connect to manager'
-    serialport     = raw_input("Serial port of SmartMesh IP Manager (e.g. {0}): ".format(DEFAULT_MGRSERIALPORT))
+    print ('==== Connect to manager')
+    serialport     = input("Serial port of SmartMesh IP Manager (e.g. {0}): ".format(DEFAULT_MGRSERIALPORT))
     serialport     = serialport.strip()
     if not serialport:
         serialport = DEFAULT_MGRSERIALPORT
     manager.connect({'port': serialport})
-    print 'Connected to manager at {0}.\n'.format(serialport)
+    print ('Connected to manager at {0}.\n'.format(serialport))
     
     #===== Connect to the mote, get MAC, create a join key, and configure it
     # Then keep going in a loop until the last mote is done
@@ -78,46 +80,46 @@ try:
     motecount      = 1
     try:
         while True:
-            print '==== Connect mote {0} to your computer (or Ctrl+C to quit)'.format(motecount)
+            print ('==== Connect mote {0} to your computer (or Ctrl+C to quit)'.format(motecount))
             
-            serialport = raw_input("    Serial port of SmartMesh IP Mote (e.g. {0}): ".format(DEFAULT_MOTESERIALPORT))
+            serialport = input("    Serial port of SmartMesh IP Mote (e.g. {0}): ".format(DEFAULT_MOTESERIALPORT))
             serialport = serialport.strip()
             if not serialport:
                 serialport = DEFAULT_MOTESERIALPORT
             mote.connect({'port': serialport})
-            print '    Connected to mote at {0}.'.format(serialport)        
+            print ('    Connected to mote at {0}.'.format(serialport))        
             
             joinKey = [random.randint(0x00,0xff) for _ in range(16)]
-            print '    Random join key: {0}'.format(FormatUtils.formatBuffer(joinKey))
+            print ('    Random join key: {0}'.format(FormatUtils.formatBuffer(joinKey)))
             
             macAddress = mote.dn_getParameter_macAddress().macAddress
-            print '    mote\'s MAC address: {0}'.format(FormatUtils.formatBuffer(macAddress))
+            print ('    mote\'s MAC address: {0}'.format(FormatUtils.formatBuffer(macAddress)))
             
-            print '    Writing joinKey in mote...',
+            print ('    Writing joinKey in mote...', end=' ')
             mote.dn_setParameter_joinKey(
                 joinKey      = joinKey
             )
-            print 'done.'
+            print ('done.')
             
-            print '    Configuring joinKey in manager...',
+            print ('    Configuring joinKey in manager...', end=' ')
             manager.dn_setACLEntry(
                 macAddress   = macAddress,
                 joinKey      = joinKey,
             )
-            print 'done.'
+            print ('done.')
             
-            print '    Disconnecting from mote...',
+            print ('    Disconnecting from mote...', end=' ')
             mote.disconnect()
-            print 'done.'
-            print ''
+            print ('done.')
+            print ('')
             
             motecount += 1
     except KeyboardInterrupt:
         pass
     
-    print '\n\n==== disconnect from manager'
+    print ('\n\n==== disconnect from manager')
     manager.disconnect()
-    print 'done.\n'
+    print ('done.\n')
 
 except Exception as err:
     output  = []
@@ -125,8 +127,8 @@ except Exception as err:
     output += ['CRASH']
     output += [str(err)]
     output += [traceback.format_exc()]
-    print '\n'.join(output)
+    print ('\n'.join(output))
 else:
-    print 'Script ended normally'
+    print ('Script ended normally')
 finally:
-    raw_input("Press Enter to close.")
+    input("Press Enter to close.")

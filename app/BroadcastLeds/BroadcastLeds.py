@@ -4,6 +4,7 @@
 
 import sys
 import os
+from builtins import input
 if __name__ == "__main__":
     here = sys.path[0]
     sys.path.insert(0, os.path.join(here, '..', '..','libs'))
@@ -50,7 +51,7 @@ def printExcAndQuit(err):
     output += ["Script ended because of an error. Press Enter to exit."]
     output  = '\n'.join(output)
     
-    raw_input(output)
+    input(output)
     sys.exit(1)
 
 #============================ objects =========================================
@@ -148,13 +149,13 @@ class OapTxRx(object):
             
             # abort if already busy
             if self.state!=self.ST_IDLE:
-                print "aborting, still busy with previous command (state={0})".format(self.state)
+                print ("aborting, still busy with previous command (state={0})".format(self.state))
                 return
             
             # remember whether we're setting the LED "on" or "off"
             self.ledVal           = ledVal
             
-            print '\n===== set LED {0}\n'.format(self.ledVal)
+            print ('\n===== set LED {0}\n'.format(self.ledVal))
             
             # retrieve the MAC addresses of all operational nodes
             self.expectedOAPResp  = []
@@ -173,7 +174,7 @@ class OapTxRx(object):
             
             # abort if no nodes in network
             if not self.expectedOAPResp:
-                print "aborting, no nodes in network"
+                print ("aborting, no nodes in network")
                 return
             
             # reset stats
@@ -209,10 +210,10 @@ class OapTxRx(object):
         
         with self.dataLock:
             
-            print ' --> sending broadcast (attempt {0}/{1})'.format(
+            print (' --> sending broadcast (attempt {0}/{1})'.format(
                 self.numBcastAttempts,
                 self.MAX_NUM_BCAST
-            )
+            ))
             
             # send OAP packet
             self._sendOap([0xff]*8)
@@ -228,11 +229,11 @@ class OapTxRx(object):
         
         with self.dataLock:
             
-            print ' --> sending unicast to {0} (attempt {1}/{2})'.format(
+            print (' --> sending unicast to {0} (attempt {1}/{2})'.format(
                 u.formatMacString(macToSendTo),
                 self.numUnicastAttempts,
                 self.MAX_NUM_UNICASTS,
-            )
+            ))
             
             # send OAP packet
             self._sendOap(macToSendTo)
@@ -295,26 +296,26 @@ class OapTxRx(object):
                         self.ST_SENDING_BCASTS,
                         self.ST_SENDING_UNICASTS
                     ]:
-                    print "ERROR: receiving unexpected OAP response (state={0},mac={1})".format(
+                    print ("ERROR: receiving unexpected OAP response (state={0},mac={1})".format(
                         self.state,
                         u.formatMacString(notifParams.macAddress),
-                    )
+                    ))
                     return
                 
                 # verify that MAC address is indeed in the list
                 if notifParams.macAddress not in self.expectedOAPResp:
                     if notifParams.macAddress in [mac for (_,mac,_,_) in self.rtts]:
-                        print "INFO: additional OAP response from {0}".format(
+                        print ("INFO: additional OAP response from {0}".format(
                             u.formatMacString(notifParams.macAddress),
-                        )
+                        ))
                     else:
-                        print "WARNING: receiving OAP response from unexpected mote {0} (response to multiple broadcasts?)".format(
+                        print ("WARNING: receiving OAP response from unexpected mote {0} (response to multiple broadcasts?)".format(
                             u.formatMacString(notifParams.macAddress),
-                        )
+                        ))
                     return
                 
                 # remove that mote from list of expected ACKs
-                print " <-- first response from {0}".format(u.formatMacString(notifParams.macAddress))
+                print (" <-- first response from {0}".format(u.formatMacString(notifParams.macAddress)))
                 self.expectedOAPResp.remove(notifParams.macAddress)
                 self._printExpectedOAPResp()
                 
@@ -349,7 +350,7 @@ class OapTxRx(object):
                                 self._sendUnicast(self.lastUnicastDest)
                             except APIError:
                                 # can happen if not is declared "lost" by manager
-                                print "WARNING: APIError when sending unicast (mote lost?)"
+                                print ("WARNING: APIError when sending unicast (mote lost?)")
                                 
                                 # remove from list of expected responses
                                 self.expectedOAPResp.remove(self.lastUnicastDest)
@@ -392,7 +393,7 @@ class OapTxRx(object):
         
         with self.dataLock:
             
-            print 'timeout! (state={0})'.format(self.state)
+            print ('timeout! (state={0})'.format(self.state))
             
             assert self.state in [
                 self.ST_SENDING_BCASTS,
@@ -419,10 +420,10 @@ class OapTxRx(object):
                         # I've sent MAX_NUM_UNICASTS times to this address
                         
                         # declare it failed
-                        print "ERROR {0} didn't respond after {1} unicast attempts".format(
+                        print ("ERROR {0} didn't respond after {1} unicast attempts".format(
                             u.formatMacString(self.lastUnicastDest),
                             self.numUnicastAttempts,
-                        )
+                        ))
                         
                         # remove from list of expected responses
                         self.expectedOAPResp.remove(self.lastUnicastDest)
@@ -452,7 +453,7 @@ class OapTxRx(object):
                             self._sendUnicast(self.lastUnicastDest)
                         except APIError:
                             # can happen if not is declared "lost" by manager
-                            print "WARNING: APIError when sending unicast (more lost?)"
+                            print ("WARNING: APIError when sending unicast (more lost?)")
                             
                             # remove from list of expected responses
                             self.expectedOAPResp.remove(self.lastUnicastDest)
@@ -543,16 +544,16 @@ class OapTxRx(object):
             output  = '\n'.join(output)
             
             # print
-            print output
+            print (output)
     
     def _printExpectedOAPResp(self):
         with self.dataLock:
-            print '   expectedOAPResp ({0} items):'.format(len(self.expectedOAPResp))
+            print ('   expectedOAPResp ({0} items):'.format(len(self.expectedOAPResp)))
             if self.expectedOAPResp:
                 for mac in self.expectedOAPResp:
-                    print '     - {0}'.format(u.formatMacString(mac))
+                    print ('     - {0}'.format(u.formatMacString(mac)))
             else:
-                print '     (empty)'
+                print ('     (empty)')
 
 #============================ CLI handlers ====================================
 
@@ -565,7 +566,7 @@ def quit_clicb():
         # can happen if connector not created
         pass
     
-    print "bye bye."
+    print ("bye bye.")
     time.sleep(0.3)
 
 def connect_clicb(params):

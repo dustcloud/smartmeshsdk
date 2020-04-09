@@ -1,5 +1,5 @@
 import threading
-from Queue import Queue
+from queue import Queue
 
 class NotifWorker(threading.Thread):
     '''
@@ -25,9 +25,9 @@ class NotifWorker(threading.Thread):
             # TODO: need a sentinel task to indicate shutdown
             try:
                 func(*args, **kargs)
-            except Exception, e:
+            except Exception as e:
                 # TODO: log this somewhere
-                print "NotifWorker task raised Exception:"
-                print e
+                print ("NotifWorker task raised Exception:")
+                print (e)
             self.tasks.task_done()
 

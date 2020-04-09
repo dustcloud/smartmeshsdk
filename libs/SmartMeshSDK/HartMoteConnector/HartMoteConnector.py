@@ -4,7 +4,7 @@ This module was generated automatically. Do not edit directly.
 
 import collections
 from   SmartMeshSDK import ApiException
-from   HartMoteConnectorInternal import HartMoteConnectorInternal
+from   .HartMoteConnectorInternal import HartMoteConnectorInternal
 
 ##
 # \addtogroup HartMoteConnector
@@ -40,6 +40,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # 
     Tuple_dn_setParameter_txPower = collections.namedtuple("Tuple_dn_setParameter_txPower", ['RC'])
 
@@ -77,6 +78,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # 
     Tuple_dn_setParameter_joinDutyCycle = collections.namedtuple("Tuple_dn_setParameter_joinDutyCycle", ['RC'])
 
@@ -116,6 +118,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # 
     Tuple_dn_setParameter_batteryLife = collections.namedtuple("Tuple_dn_setParameter_batteryLife", ['RC'])
 
@@ -162,6 +165,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # - <tt>numServices</tt>: 1-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
     # 
@@ -219,6 +223,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # 
     Tuple_dn_setParameter_hartDeviceStatus = collections.namedtuple("Tuple_dn_setParameter_hartDeviceStatus", ['RC'])
 
@@ -258,6 +263,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # 
     Tuple_dn_setParameter_hartDeviceInfo = collections.namedtuple("Tuple_dn_setParameter_hartDeviceInfo", ['RC'])
 
@@ -297,6 +303,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # 
     Tuple_dn_setParameter_eventMask = collections.namedtuple("Tuple_dn_setParameter_eventMask", ['RC'])
 
@@ -336,6 +343,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # 
     Tuple_dn_setParameter_writeProtect = collections.namedtuple("Tuple_dn_setParameter_writeProtect", ['RC'])
 
@@ -375,6 +383,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # 
     Tuple_dn_setParameter_lock = collections.namedtuple("Tuple_dn_setParameter_lock", ['RC'])
 
@@ -414,6 +423,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # - <tt>joinDutyCycle</tt>: 1-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
     # 
@@ -452,6 +462,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # - <tt>serviceId</tt>: 1-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
     # - <tt>serviceState</tt>: 1-byte field formatted as a int.<br/>
@@ -508,6 +519,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # - <tt>apiVersion</tt>: 1-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
     # - <tt>serialNum</tt>: 8-byte field formatted as a hex.<br/>
@@ -560,6 +572,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # - <tt>macAddress</tt>: 8-byte field formatted as a hex.<br/>
     #     There is no restriction on the value of this field.
     # - <tt>moteId</tt>: 2-byte field formatted as a int.<br/>
@@ -602,6 +615,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # - <tt>state</tt>: 1-byte field formatted as a int.<br/>
     #     This field can only take one of the following values:
     #      - 0: Init
@@ -660,6 +674,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # - <tt>utcTime</tt>: 8-byte field formatted as a hex.<br/>
     #     There is no restriction on the value of this field.
     # - <tt>asn</tt>: 5-byte field formatted as a hex.<br/>
@@ -702,6 +717,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # - <tt>charge</tt>: 4-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
     # - <tt>uptime</tt>: 4-byte field formatted as a int.<br/>
@@ -746,15 +762,20 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # - <tt>rxOk</tt>: 2-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
     # - <tt>rxFailed</tt>: 2-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
+    # - <tt>aveRSSI</tt>: 1-byte field formatted as a ints.<br/>
+    #     There is no restriction on the value of this field.
+    # - <tt>aveLQI</tt>: 1-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
     # 
-    Tuple_dn_getParameter_testRadioRxStats = collections.namedtuple("Tuple_dn_getParameter_testRadioRxStats", ['RC', 'rxOk', 'rxFailed'])
+    Tuple_dn_getParameter_testRadioRxStats = collections.namedtuple("Tuple_dn_getParameter_testRadioRxStats", ['RC', 'rxOk', 'rxFailed', 'aveRSSI', 'aveLQI'])
 
     ##
-    # The getParameter<testRadioRxStats> command retrieves statistics for the latest radio reception test performed using the testRadioRx command. The statistics show the number of good and bad packets (CRC failures) received during the test.
+    # The getParameter<testRadioRxStats> command retrieves statistics for the latest radio reception test performed using the testRadioRx command. The radio test statistics contain the number of good packets received, the number of bad packets (CRC failures) received, the average RSSI (in dBm) of successfully received packets, and the average link quality indicator (LQI) of successfully received packets during the test.
     # 
     # 
     # 
@@ -786,6 +807,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # - <tt>code</tt>: 1-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
     # - <tt>master</tt>: 2-byte field formatted as a int.<br/>
@@ -826,6 +848,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # 
     Tuple_dn_setNVParameter_macAddress = collections.namedtuple("Tuple_dn_setNVParameter_macAddress", ['RC'])
 
@@ -863,6 +886,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # 
     Tuple_dn_setNVParameter_joinKey = collections.namedtuple("Tuple_dn_setNVParameter_joinKey", ['RC'])
 
@@ -900,6 +924,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # 
     Tuple_dn_setNVParameter_networkId = collections.namedtuple("Tuple_dn_setNVParameter_networkId", ['RC'])
 
@@ -941,6 +966,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # 
     Tuple_dn_setNVParameter_txPower = collections.namedtuple("Tuple_dn_setNVParameter_txPower", ['RC'])
 
@@ -978,6 +1004,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # 
     Tuple_dn_setNVParameter_powerInfo = collections.namedtuple("Tuple_dn_setNVParameter_powerInfo", ['RC'])
 
@@ -1024,6 +1051,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # 
     Tuple_dn_setNVParameter_ttl = collections.namedtuple("Tuple_dn_setNVParameter_ttl", ['RC'])
 
@@ -1063,6 +1091,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # 
     Tuple_dn_setNVParameter_hartAntennaGain = collections.namedtuple("Tuple_dn_setNVParameter_hartAntennaGain", ['RC'])
 
@@ -1100,6 +1129,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # 
     Tuple_dn_setNVParameter_OTAPlockout = collections.namedtuple("Tuple_dn_setNVParameter_OTAPlockout", ['RC'])
 
@@ -1141,6 +1171,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # 
     Tuple_dn_setNVParameter_hrCounterMode = collections.namedtuple("Tuple_dn_setNVParameter_hrCounterMode", ['RC'])
 
@@ -1182,6 +1213,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # - <tt>nvParamId</tt>: 1-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
     # 
@@ -1221,6 +1253,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # 
     Tuple_dn_setNVParameter_hartCompliantMode = collections.namedtuple("Tuple_dn_setNVParameter_hartCompliantMode", ['RC'])
 
@@ -1264,6 +1297,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # 
     Tuple_dn_setNVParameter_lock = collections.namedtuple("Tuple_dn_setNVParameter_lock", ['RC'])
 
@@ -1303,6 +1337,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # 
     Tuple_dn_setNVParameter_euCompliantMode = collections.namedtuple("Tuple_dn_setNVParameter_euCompliantMode", ['RC'])
 
@@ -1342,6 +1377,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # 
     Tuple_dn_setNVParameter_joinShedTime = collections.namedtuple("Tuple_dn_setNVParameter_joinShedTime", ['RC'])
 
@@ -1379,6 +1415,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # - <tt>macAddr</tt>: 8-byte field formatted as a hex.<br/>
     #     There is no restriction on the value of this field.
     # 
@@ -1419,6 +1456,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # - <tt>networkId</tt>: 2-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
     # 
@@ -1457,6 +1495,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # - <tt>txPower</tt>: 1-byte field formatted as a ints.<br/>
     #     There is no restriction on the value of this field.
     # 
@@ -1495,6 +1534,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # - <tt>powerSource</tt>: 1-byte field formatted as a int.<br/>
     #     This field can only take one of the following values:
     #      - 0: Line
@@ -1542,6 +1582,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # - <tt>timeToLive</tt>: 1-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
     # 
@@ -1580,6 +1621,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # - <tt>antennaGain</tt>: 1-byte field formatted as a ints.<br/>
     #     There is no restriction on the value of this field.
     # 
@@ -1618,6 +1660,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # - <tt>otapLockout</tt>: 1-byte field formatted as a int.<br/>
     #     This field can only take one of the following values:
     #      - 0: OTAP allowed (default)
@@ -1658,6 +1701,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # - <tt>hrCounterMode</tt>: 1-byte field formatted as a int.<br/>
     #     This field can only take one of the following values:
     #      - 0: Rollover
@@ -1700,6 +1744,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # - <tt>autojoin</tt>: 1-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
     # 
@@ -1738,6 +1783,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # - <tt>hartCompliantMode</tt>: 1-byte field formatted as a int.<br/>
     #     This field can only take one of the following values:
     #      - 0: Some timers and counters deviate from HART specification
@@ -1784,6 +1830,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # - <tt>code</tt>: 1-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
     # - <tt>master</tt>: 2-byte field formatted as a int.<br/>
@@ -1824,6 +1871,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # - <tt>euCompliantMode</tt>: 1-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
     # 
@@ -1864,6 +1912,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # - <tt>joinShedTime</tt>: 4-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
     # 
@@ -1902,6 +1951,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # 
     Tuple_dn_send = collections.namedtuple("Tuple_dn_send", ['RC'])
 
@@ -1972,6 +2022,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # 
     Tuple_dn_join = collections.namedtuple("Tuple_dn_join", ['RC'])
 
@@ -2008,6 +2059,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # 
     Tuple_dn_disconnect = collections.namedtuple("Tuple_dn_disconnect", ['RC'])
 
@@ -2048,6 +2100,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # 
     Tuple_dn_reset = collections.namedtuple("Tuple_dn_reset", ['RC'])
 
@@ -2084,6 +2137,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # 
     Tuple_dn_lowPowerSleep = collections.namedtuple("Tuple_dn_lowPowerSleep", ['RC'])
 
@@ -2122,6 +2176,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # - <tt>payloadLen</tt>: 1-byte field formatted as a int.<br/>
     #     There is no restriction on the value of this field.
     # - <tt>payload</tt>: None-byte field formatted as a hex.<br/>
@@ -2169,6 +2224,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # 
     Tuple_dn_testRadioTx = collections.namedtuple("Tuple_dn_testRadioTx", ['RC'])
 
@@ -2218,6 +2274,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # 
     Tuple_dn_testRadioRx = collections.namedtuple("Tuple_dn_testRadioRx", ['RC'])
 
@@ -2265,6 +2322,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # 
     Tuple_dn_clearNV = collections.namedtuple("Tuple_dn_clearNV", ['RC'])
 
@@ -2301,6 +2359,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # 
     Tuple_dn_search = collections.namedtuple("Tuple_dn_search", ['RC'])
 
@@ -2337,6 +2396,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # 
     Tuple_dn_testRadioTxExt = collections.namedtuple("Tuple_dn_testRadioTxExt", ['RC'])
 
@@ -2457,6 +2517,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # 
     Tuple_dn_testRadioRxExt = collections.namedtuple("Tuple_dn_testRadioRxExt", ['RC'])
 
@@ -2504,6 +2565,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # 
     Tuple_dn_zeroize = collections.namedtuple("Tuple_dn_zeroize", ['RC'])
 
@@ -2543,6 +2605,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # - <tt>length</tt>: 4-byte field formatted as a ints.<br/>
     #     There is no restriction on the value of this field.
     # 
@@ -2588,6 +2651,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # - <tt>descriptor</tt>: 4-byte field formatted as a ints.<br/>
     #     There is no restriction on the value of this field.
     # - <tt>offset</tt>: 2-byte field formatted as a int.<br/>
@@ -2637,6 +2701,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # - <tt>descriptor</tt>: 4-byte field formatted as a ints.<br/>
     #     There is no restriction on the value of this field.
     # 
@@ -2688,6 +2753,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # 
     Tuple_dn_testRadioRxPER = collections.namedtuple("Tuple_dn_testRadioRxPER", ['RC'])
 
@@ -2726,6 +2792,7 @@ class HartMoteConnector(HartMoteConnectorInternal):
     #      - 16: RC_ACCESS_DENIED
     #      - 18: RC_OPEN_FAIL
     #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
     # 
     Tuple_dn_testRadioTxPER = collections.namedtuple("Tuple_dn_testRadioTxPER", ['RC'])
 
@@ -2748,6 +2815,104 @@ class HartMoteConnector(HartMoteConnectorInternal):
     def dn_testRadioTxPER(self, txPower, numPackets, chanMask, numRepeat) :
         res = HartMoteConnectorInternal.send(self, ['testRadioTxPER'], {"txPower" : txPower, "numPackets" : numPackets, "chanMask" : chanMask, "numRepeat" : numRepeat})
         return HartMoteConnector.Tuple_dn_testRadioTxPER(**res)
+
+    ##
+    # The named tuple returned by the dn_testXtalComp() function.
+    # 
+    # - <tt>RC</tt>: 1-byte field formatted as a int.<br/>
+    #     This field can only take one of the following values:
+    #      - 0: RC_OK
+    #      - 3: RC_BUSY
+    #      - 4: RC_INVALID_LEN
+    #      - 5: RC_INVALID_STATE
+    #      - 6: RC_UNSUPPORTED
+    #      - 7: RC_UNKNOWN_PARAM
+    #      - 8: RC_UNKNOWN_CMD
+    #      - 9: RC_WRITE_FAIL
+    #      - 10: RC_READ_FAIL
+    #      - 11: RC_LOW_VOLTAGE
+    #      - 12: RC_NO_RESOURCES
+    #      - 13: RC_INCOMPLETE_JOIN_INFO
+    #      - 14: RC_NOT_FOUND
+    #      - 15: RC_INVALID_VALUE
+    #      - 16: RC_ACCESS_DENIED
+    #      - 18: RC_OPEN_FAIL
+    #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
+    # - <tt>avgFreqMeas</tt>: 4-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    # - <tt>ppFreqMeas</tt>: 2-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    # 
+    Tuple_dn_testXtalComp = collections.namedtuple("Tuple_dn_testXtalComp", ['RC', 'avgFreqMeas', 'ppFreqMeas'])
+
+    ##
+    # The testXtalComp command initiates 32kHz crystal test to check frequency accuracy. This command may be issues only when mote is in the Idle state.
+    # 
+    # This command is available in Hart Mote version 1.3.0 or later.
+    # 
+    # \param bias 1-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    # \param spinDownMs 2-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    # \param spinUpMs 2-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    # \param iterations 1-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    # 
+    # \returns The response to the command, formatted as a #Tuple_dn_testXtalComp named tuple.
+    # 
+    def dn_testXtalComp(self, bias, spinDownMs, spinUpMs, iterations) :
+        res = HartMoteConnectorInternal.send(self, ['testXtalComp'], {"bias" : bias, "spinDownMs" : spinDownMs, "spinUpMs" : spinUpMs, "iterations" : iterations})
+        return HartMoteConnector.Tuple_dn_testXtalComp(**res)
+
+    ##
+    # The named tuple returned by the dn_testXtal() function.
+    # 
+    # - <tt>RC</tt>: 1-byte field formatted as a int.<br/>
+    #     This field can only take one of the following values:
+    #      - 0: RC_OK
+    #      - 3: RC_BUSY
+    #      - 4: RC_INVALID_LEN
+    #      - 5: RC_INVALID_STATE
+    #      - 6: RC_UNSUPPORTED
+    #      - 7: RC_UNKNOWN_PARAM
+    #      - 8: RC_UNKNOWN_CMD
+    #      - 9: RC_WRITE_FAIL
+    #      - 10: RC_READ_FAIL
+    #      - 11: RC_LOW_VOLTAGE
+    #      - 12: RC_NO_RESOURCES
+    #      - 13: RC_INCOMPLETE_JOIN_INFO
+    #      - 14: RC_NOT_FOUND
+    #      - 15: RC_INVALID_VALUE
+    #      - 16: RC_ACCESS_DENIED
+    #      - 18: RC_OPEN_FAIL
+    #      - 19: RC_ERASE_FAIL
+    #      - 21: RC_ERROR
+    # - <tt>pullVal</tt>: 1-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    # - <tt>ppmErr</tt>: 4-byte field formatted as a ints.<br/>
+    #     There is no restriction on the value of this field.
+    # 
+    Tuple_dn_testXtal = collections.namedtuple("Tuple_dn_testXtal", ['RC', 'pullVal', 'ppmErr'])
+
+    ##
+    # The testXtal command is is used to determine the optimal trim value to center the 20MHz crystal oscillator frequency given a particular PCB layout and crystal combination. It is used to measure the 20MHz crystal, after which the user must enter trim values into the device's fuse table for access by software.
+    # 
+    # The command is available in HART Mote version 1.3.0 or later.
+    # 
+    # This command may only be used when the mote's radio is not active, i.e in the slave mode and prior to joining the network. This function requires the mote be connected to the DC9010 programming board. It could take up to 30 seconds for the command to execute. After using this command, reboot the mote to continue normal operation.
+    # 
+    # \param trimOpt 1-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    # \param tempGrade 1-byte field formatted as a int.<br/>
+    #     There is no restriction on the value of this field.
+    # 
+    # \returns The response to the command, formatted as a #Tuple_dn_testXtal named tuple.
+    # 
+    def dn_testXtal(self, trimOpt, tempGrade) :
+        res = HartMoteConnectorInternal.send(self, ['testXtal'], {"trimOpt" : trimOpt, "tempGrade" : tempGrade})
+        return HartMoteConnector.Tuple_dn_testXtal(**res)
 
     #======================== notifications ===================================
     

@@ -1,8 +1,8 @@
 '''API Definition for HART Manager XML API'''
 
-import ApiDefinition
+from . import ApiDefinition
 
-import xmlutils
+from . import xmlutils
 import re
 
 # Add a log handler for the HART Manager
@@ -667,7 +667,7 @@ class HartMgrDefinition(ApiDefinition.ApiDefinition):
         
         event_name = ['event']
         event_dict = {}
-        for event_attr, val in obj_dict.items():
+        for event_attr, val in list(obj_dict.items()):
             if type(val) is dict:
                 event_name += [self.subcommandIdToName(self.NOTIFICATION, event_name, event_attr)]
                 subevent_fields = self.getResponseFields(self.NOTIFICATION, event_name)
@@ -681,7 +681,7 @@ class HartMgrDefinition(ApiDefinition.ApiDefinition):
     def parse_notif(self, notif_name, notif_str):
         notif_metadata = self.getDefinition(self.NOTIFICATION, notif_name)
         notif_fields = self.getResponseFields(self.NOTIFICATION, notif_name)
-        if notif_metadata.has_key('deserializer'):
+        if 'deserializer' in notif_metadata:
             deserialize_func = getattr(self, notif_metadata['deserializer'])
             notif_name, notif_dict = deserialize_func(notif_str, notif_fields)
         else:
@@ -757,7 +757,7 @@ class HartMgrDefinition(ApiDefinition.ApiDefinition):
         resp = {}
         #resp = {'_raw_': xmlrpc_resp}
         resp_fields = self.getResponseFields(self.COMMAND, [cmd_metadata['name']])
-        if cmd_metadata['response'].has_key(self.FIELDS):
+        if self.FIELDS in cmd_metadata['response']:
             # unnamed fields are processed in order
             # note: special case the single return value
             if len(resp_fields) is 1:
@@ -769,7 +769,7 @@ class HartMgrDefinition(ApiDefinition.ApiDefinition):
         elif cmd_metadata['id'] in ['getConfig', 'setConfig'] :
             # default getConfig parser
             # TODO: need an ApiDefinition method to get the response object name
-            resp_obj = cmd_metadata['response'].keys()[0]
+            resp_obj = list(cmd_metadata['response'].keys())[0]
             isArray = False
             if ('isResponseArray' in cmd_metadata) :
                 isArray = cmd_metadata['isResponseArray']
@@ -784,7 +784,7 @@ class HartMgrDefinition(ApiDefinition.ApiDefinition):
                  which contains each of the fields of the response. 
         '''
         cmd_metadata = self.getDefinition(self.COMMAND, cmd_name)
-        if cmd_metadata.has_key('deserializer'):
+        if 'deserializer' in cmd_metadata:
             deserializer = getattr(self, cmd_metadata['deserializer'])
         else:
             deserializer = self.default_deserializer
@@ -923,7 +923,7 @@ class HartMgrDefinition(ApiDefinition.ApiDefinition):
         field_names = [f.name for f in alarm_fields]
         # ensure all expected fields are initialized
         result = {f: '' for f in field_names} 
-        for f, v in alarm_dict.items():
+        for f, v in list(alarm_dict.items()):
             # detect the element identifying the alarm type
             if f in alarm_types:
                 result['alarmType'] = f
@@ -931,7 +931,7 @@ class HartMgrDefinition(ApiDefinition.ApiDefinition):
                 if type(v) is dict:
                     # for any matching fields in the alarm-specific data,
                     # flatten them into the result
-                    for f2, v2 in v.items():
+                    for f2, v2 in list(v.items()):
                         if f2 in field_names:
                             result[f2] = v[f2]
             elif f in field_names:
@@ -964,7 +964,7 @@ class HartMgrDefinition(ApiDefinition.ApiDefinition):
     def deserialize_blacklist(self, cmd_metadata, xmlrpc_resp):
         # the same deserializer is used for getConfig and setConfig operations
         resp_fields = self.getResponseFields(self.COMMAND, [cmd_metadata['name']])
-        resp_obj = cmd_metadata['response'].keys()[0]
+        resp_obj = list(cmd_metadata['response'].keys())[0]
         # cmd_metadata['isResponseArray'] should be True
         resp_dict = xmlutils.parse_xml_obj(xmlrpc_resp, resp_obj, resp_fields)[0]
         # resp_dict['frequency'] contains either a single string or a list of string values

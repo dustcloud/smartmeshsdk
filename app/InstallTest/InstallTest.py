@@ -4,6 +4,7 @@
 
 import sys
 import os
+from builtins import input
 if __name__ == "__main__":
     here = sys.path[0]
     sys.path.insert(0, os.path.join(here, '..', '..','libs'))
@@ -17,21 +18,21 @@ from SmartMeshSDK.utils import SmsdkInstallVerifier
 #============================ main ============================================
 
 def verifyOneComponent(name):
-    print "\nTesting installation of "+name+"..."
+    print ("\nTesting installation of "+name+"...")
     (goodToGo,reason) = SmsdkInstallVerifier.verifyComponents([name])
     if goodToGo:
-        print 'PASS!'
-        print reason
+        print ('PASS!')
+        print (reason)
     else:
-        print 'FAIL!'
+        print ('FAIL!')
         if name==SmsdkInstallVerifier.PYWIN32:
-            print "Note: {0} is only required to run the MuxConfig application.".format(SmsdkInstallVerifier.PYWIN32)
-        print reason
+            print ("Note: {0} is only required to run the MuxConfig application.".format(SmsdkInstallVerifier.PYWIN32))
+        print (reason)
     return goodToGo
 
 def main():
     version_str = '.'.join([str(v) for v in sdk_version.VERSION])
-    print "Installation test script - Dust Networks SmartMeshSDK v{0}".format(version_str)
+    print ("Installation test script - Dust Networks SmartMeshSDK v{0}".format(version_str))
 
     wait_for_user = True
     components = [SmsdkInstallVerifier.PYTHON,
@@ -51,7 +52,7 @@ def main():
         exit_code = 1
 
     if wait_for_user:
-        raw_input("\nPress Enter to exit.")
+        input("\nPress Enter to exit.")
         
     sys.exit(exit_code)
 

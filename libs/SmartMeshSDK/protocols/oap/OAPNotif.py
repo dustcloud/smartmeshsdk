@@ -1,5 +1,5 @@
-import OAPMessage
-import OAPDefines
+from . import OAPMessage
+from . import OAPDefines
 import struct
 import datetime
 from   array import array
@@ -212,7 +212,7 @@ class OAPNotif(object):
     
     def channel_str(self):
         returnVal = 'UNKNOWN'
-        for (k,v) in OAPDefines.ADDRESS.items():
+        for (k,v) in list(OAPDefines.ADDRESS.items()):
             if list(v)==self.channel.tolist():
                 returnVal = k
                 break

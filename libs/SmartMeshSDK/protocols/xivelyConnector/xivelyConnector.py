@@ -16,7 +16,7 @@ import re
 import time
 import copy
 
-import httplib
+import http.client
 
 from   SmartMeshSDK.utils    import FormatUtils
 
@@ -271,7 +271,7 @@ class xivelySubscriber(threading.Thread):
             output += ['\ncall stack:\n']
             output += [traceback.format_exc()]
             output  = '\n'.join(output)
-            print output # critical error
+            print (output) # critical error
             log.critical(output)
             raise
     
@@ -528,7 +528,7 @@ class xivelyClient(object):
     def _request(self,method,url,body):
         
         # create connection to Xively server
-        connection = httplib.HTTPSConnection(
+        connection = http.client.HTTPSConnection(
             host             = self.XIVELY_HOST,
             timeout          = self.XIVELY_HTTP_TIMEOUT_S,
         )
@@ -550,7 +550,7 @@ class xivelyClient(object):
             if log.isEnabledFor(logging.DEBUG):
                 output            = []
                 output           += ['_request() called with:']
-                for (k,v) in args.items():
+                for (k,v) in list(args.items()):
                     output       += ['- {0:<20}: {1}'.format(k,v)]
                 output            = '\n'.join(output)
                 log.debug(output)

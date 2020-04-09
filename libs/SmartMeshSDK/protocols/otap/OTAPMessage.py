@@ -7,8 +7,8 @@ import struct
 from muxclient.DynStructs import API
 from muxclient.DynNotifs import Data
 
-import OTAPStructs
-from GenStructs import parse_obj
+from . import OTAPStructs
+from .GenStructs import parse_obj
 #from GenStructs import factory
 
 
@@ -73,8 +73,8 @@ class OTAPMonitor:
             missing_blocks.append(lost_block)
             index = index + 2
 
-        print 'Err:', rc, 'OTAP:', otap_rc, 'MIC:', mic, 'Missing:'
-        print ' '.join([str(b) for b in missing_blocks])
+        print (('Err:', rc, 'OTAP:', otap_rc, 'MIC:', mic, 'Missing:'))
+        print ((' '.join([str(b) for b in missing_blocks])))
         # TODO: filter out multiple responses
 
     def data_callback(self, data):

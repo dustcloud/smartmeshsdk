@@ -23,7 +23,7 @@ class IpMgrConnectorSerialInternal(SerialConnector.SerialConnector):
                           'hello_response': self.api_def.nameToId(*self.HELLO_RESP_CMD),
                           'manager_hello':  self.api_def.nameToId(*self.MGR_HELLO_CMD),
                           }
-        self.helloCmdIds = self.HELLO_IDS.values()
+        self.helloCmdIds = list(self.HELLO_IDS.values())
         self.isConnect = False
         self.TxPacketId = 0
         

@@ -10,9 +10,9 @@ if __name__ == '__main__':
 
 #============================ imports =========================================
     
-import Tkinter
+import tkinter
 
-import dustFrameFields
+from . import dustFrameFields
 
 from   SmartMeshSDK.ApiDefinition import ApiDefinition
 
@@ -143,12 +143,12 @@ class exampleApp(object):
             )
     
     def _closeCb(self):
-        print " _closeCb called"
+        print (" _closeCb called")
 
 if __name__ == '__main__':
     import threading
     import random
     import time
     from SmartMeshSDK.ApiDefinition  import IpMgrDefinition
-    from dustWindow import dustWindow
+    from .dustWindow import dustWindow
     exampleApp()

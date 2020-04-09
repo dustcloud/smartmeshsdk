@@ -29,7 +29,7 @@ class Printer(object):
         self._init = True
         self.f = open('statistics.txt','w')
     def printline(self,line):
-        print line
+        print (line)
         self.f.write(line)
     def __def__(self):
         self.f.close()
@@ -69,13 +69,13 @@ class NumDataPoints(Stats):
     def formatstat(self):
         
         # identify missing
-        maxMumDataPoints = max([v for (k,v) in self.numDataPoints.items()])
+        maxMumDataPoints = max([v for (k,v) in list(self.numDataPoints.items())])
         
         # format output
         output  = []
         output += [self.formatheader()]
         output += ['({0} motes)'.format(len(self.numDataPoints))]
-        for (mac,num) in self.numDataPoints.items():
+        for (mac,num) in list(self.numDataPoints.items()):
             if num<maxMumDataPoints:
                 remark = ' ({0} missing)'.format(maxMumDataPoints-num)
             else:
@@ -116,7 +116,7 @@ class MaxTimeGap(Stats):
         output  = []
         output += [self.formatheader()]
         output += ['({0} motes)'.format(len(self.maxgap))]
-        for (mac,v) in self.maxgap.items():
+        for (mac,v) in list(self.maxgap.items()):
             if v['maxgap']:
                 output += [' - {0} : {1}s'.format(mac,int(v['maxgap']))]
             else:
@@ -161,7 +161,7 @@ class BurstSpread(Stats):
     def formatstat(self):
         
         # calculate spread
-        for (k,v) in self.bursts.items():
+        for (k,v) in list(self.bursts.items()):
             if v['mintimestamp']!=None and v['maxtimestamp']!=None:
                 v['spread'] = v['maxtimestamp']-v['mintimestamp']
             else:
@@ -198,7 +198,7 @@ def main():
     
     try:
     
-        print 'logAnalysis - Dust Networks (c) 2014'
+        print ('logAnalysis - Dust Networks (c) 2014')
         
         # initialize stats
         stats = [s() for s in Stats.__subclasses__()]
@@ -208,7 +208,7 @@ def main():
             for line in f:
                 m = re.search('([0-9\- :]*).([0-9]{3}),([a-zA_Z _]*),([0-9a-f\-]*),([0-9.]*)',line)
                 if not m:
-                    print 'WARNING: following line not parsed: {0}'.format(line)
+                    print ('WARNING: following line not parsed: {0}'.format(line))
                     assert(0)
                     continue
                 
@@ -227,7 +227,7 @@ def main():
                 output += ['']
                 output += ['{0:>20} : "{1}"'.format("line",line.strip())]
                 output += ['']
-                for (k,v) in rawline.items():
+                for (k,v) in list(rawline.items()):
                     output += ['{0:>20} : {1}'.format(k,v)]
                 output  = '\n'.join(output)
                 #Printer().printline(output)
@@ -269,12 +269,12 @@ def main():
             Printer().printline(stat.formatstat())
         
     except Exception as err:
-        print "FATAL: ({0}) {1}".format(type(err),err)
-        print traceback.print_exc()
+        print ("FATAL: ({0}) {1}".format(type(err),err))
+        print (traceback.print_exc())
     else:
-        print "\n\nScript ended normally"
+        print ("\n\nScript ended normally")
     
-    raw_input("\nPress enter to close.")
+    input("\nPress enter to close.")
 
 if __name__=="__main__":
     main()

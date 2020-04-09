@@ -10,11 +10,11 @@ if __name__ == '__main__':
 
 #============================ imports =========================================
 
-import Tkinter
+import tkinter
 
-import dustGuiLib
-import dustFrame
-from   dustStyle import dustStyle
+from . import dustGuiLib
+from . import dustFrame
+from  .dustStyle import dustStyle
 
 #============================ body ============================================
 
@@ -32,12 +32,12 @@ class dustFrameForm(dustFrame.dustFrame):
         dustFrame.dustFrame.__init__(self,parentElem,guiLock,frameName,row,column)
         
         # row 0: form
-        self.formFrame = Tkinter.Frame(
+        self.formFrame = tkinter.Frame(
             self.container,
             borderwidth=0,
             bg=dustStyle.COLOR_BG,
         )
-        self.formFrame.grid(row=0,column=0,sticky=Tkinter.W)
+        self.formFrame.grid(row=0,column=0,sticky=tkinter.W)
         
         self.formText = dustGuiLib.Text(
             self.formFrame,
@@ -59,20 +59,20 @@ class dustFrameForm(dustFrame.dustFrame):
     #======================== public ==========================================
     
     def setVal(self,value):
-        self.formText.delete(1.0, Tkinter.END)
+        self.formText.delete(1.0, tkinter.END)
         self.formText.insert(1.0, str(value))
     
     def setColor(self,color):
         self.formText.configure(bg=color)
     
     def disable(self):
-        self.formText.configure(state=Tkinter.DISABLED)
-        self.formButton.configure(state=Tkinter.DISABLED)
+        self.formText.configure(state=tkinter.DISABLED)
+        self.formButton.configure(state=tkinter.DISABLED)
     
     #======================== private =========================================
     
     def _buttonCb(self):
-        enteredText = str(self.formText.get(1.0,Tkinter.END).strip())
+        enteredText = str(self.formText.get(1.0,tkinter.END).strip())
         self.setCb(enteredText)
     
     #======================== helpers =========================================
@@ -106,13 +106,13 @@ class exampleApp(object):
         self.window.mainloop()
     
     def _buttonCb(self,enteredText):
-        print 'button pressed. enteredText="{0}"'.format(enteredText)
+        print ('button pressed. enteredText="{0}"'.format(enteredText))
         self.frame.disable()
     
     def _closeCb(self):
-        print " _closeCb called"
+        print (" _closeCb called")
 
 if __name__ == '__main__':
     import threading
-    from dustWindow import dustWindow
+    from .dustWindow import dustWindow
     exampleApp()

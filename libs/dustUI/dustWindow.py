@@ -10,18 +10,19 @@ if __name__ == '__main__':
 
 #============================ imports =========================================
 
-import Tkinter
+import tkinter
+from builtins import chr
 try:
-    import ttk
+    import tkinter.ttk
 except ImportError:
-    ttk = Tkinter
-from dustStyle import dustStyle
+    ttk = tkinter
+from .dustStyle import dustStyle
 
 from SmartMeshSDK import sdk_version
 
 #============================ body ============================================
 
-class dustWindow(Tkinter.Tk):
+class dustWindow(tkinter.Tk):
     
     # possible locations of icon
     DUSTICON = [
@@ -36,7 +37,7 @@ class dustWindow(Tkinter.Tk):
         self.closeCb = closeCb
         
         # init parent
-        Tkinter.Tk.__init__(self)
+        tkinter.Tk.__init__(self)
         
         # icon displayed in the upper-left
         for icon in self.DUSTICON:
@@ -48,7 +49,7 @@ class dustWindow(Tkinter.Tk):
                 break
         
         # name of the window. unichr(169) is the copyright sign
-        self.title(appName+' '+unichr(169)+' Dust Networks')
+        self.title(appName+' '+chr(169)+' Dust Networks')
         
         # background color
         self.configure(bg=dustStyle.COLOR_BG)
@@ -61,11 +62,11 @@ class dustWindow(Tkinter.Tk):
         
         # status bar with version
         versionString = '.'.join([str(i) for i in sdk_version.VERSION])
-        self.version = ttk.Label(self,
+        self.version = tkinter.ttk.Label(self,
                                  font=dustStyle.FONT_BODY,
                                  text="SmartMeshSDK "+versionString,
-                                 anchor=Tkinter.E)
-        self.version.grid(row=100,column=0,sticky=Tkinter.W+Tkinter.E)
+                                 anchor=tkinter.E)
+        self.version.grid(row=100,column=0,sticky=tkinter.W+tkinter.E)
         self.version.columnconfigure(0, weight=1)        
         
     #======================== public ==========================================
@@ -101,14 +102,14 @@ class exampleApp(object):
     def __init__(self):
         self.window = dustWindow("dustWindow",
                                 self._closeCb)
-        temp = Tkinter.Frame(self.window,width=300,
+        temp = tkinter.Frame(self.window,width=300,
                                          height=300,
                                          bg=dustStyle.COLOR_BG)
         temp.grid(row=0,column=0)
         self.window.mainloop()
     
     def _closeCb(self):
-        print " _closeCb called"
+        print(" _closeCb called")
 
 if __name__ == '__main__':
     exampleApp()

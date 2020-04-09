@@ -3,8 +3,9 @@
 import struct
 import operator
 import types
+import sys
 
-import ApiDefinition
+from . import ApiDefinition
 from   SmartMeshSDK.ApiException  import CommandError
 from   SmartMeshSDK.utils         import FormatUtils
 
@@ -38,7 +39,7 @@ class ByteArraySerializer(object):
             log.debug(output)
         
         # validate input
-        if type(commandArray)!=types.ListType and type(commandArray)!=types.TupleType:
+        if type(commandArray)!=list and type(commandArray)!=tuple:
             raise TypeError("First parameter should be a list or tuple, not "+str(type(commandArray)))
         
         # initialize the output
@@ -75,7 +76,7 @@ class ByteArraySerializer(object):
                         thisFieldByteArray.append(val)
                     
                     elif field.format==ApiDefinition.FieldFormats.INT:
-                        thisFieldByteArray      += [operator.mod(int(val>>(8*i)), 0x100) for i in xrange(field.length-1, -1, -1)]
+                        thisFieldByteArray      += [operator.mod(int(val>>(8*i)), 0x100) for i in range(field.length-1, -1, -1)]
                     
                     elif field.format==ApiDefinition.FieldFormats.INTS:
                         if   field.length==1:
@@ -87,7 +88,10 @@ class ByteArraySerializer(object):
                         else:
                             raise SystemError('field with format='+field.format+' and length='+str(field.length)+' unsupported.')
                         for i in range(len(temp)):
+                            try:
                             thisFieldByteArray.append(ord(temp[i]))
+                            except TypeError:
+                                thisFieldByteArray.append(ord(chr(temp[i])))
                     
                     elif field.format==ApiDefinition.FieldFormats.HEXDATA:
                         thisFieldByteArray    += val
@@ -195,6 +199,8 @@ class ByteArraySerializer(object):
                     elif fieldDef.format==ApiDefinition.FieldFormats.INTS:
                         tempList = [chr(i) for i in thisFieldArray]
                         tempString = ''.join(tempList)
+                        if sys.version_info[0]!=2:
+                            tempString = bytes([ord(b) for b in tempString])
                         if   len(thisFieldArray)==1:
                             (thisFieldValue,) = struct.unpack_from('>b',tempString)
                         elif len(thisFieldArray)==2:

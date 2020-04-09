@@ -11,7 +11,10 @@ import pywintypes
 import win32service
 import win32serviceutil
 import win32com.client
-import _winreg
+try:
+    import winreg
+except:
+    import _winreg as winreg
 
 import ProcessManager
 
@@ -138,10 +141,10 @@ def get_virtual_serial_ports():
     serial_ports = []
     if os.name in ['nt']:
         REGISTRY_SERIAL_PORTS = 'HARDWARE\\DEVICEMAP\\SERIALCOMM'
-        key = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, REGISTRY_SERIAL_PORTS)
-        for i in range(_winreg.QueryInfoKey(key)[1]):
+        key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, REGISTRY_SERIAL_PORTS)
+        for i in range(winreg.QueryInfoKey(key)[1]):
             try:
-                val = _winreg.EnumValue(key, i)
+                val = winreg.EnumValue(key, i)
             except:
                 pass
             else:

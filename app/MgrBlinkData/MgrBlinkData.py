@@ -6,6 +6,7 @@
 
 import sys
 import os
+from builtins import input
 if __name__ == "__main__":
     here = sys.path[0]
     sys.path.insert(0, os.path.join(here, '..', '..','libs'))
@@ -28,12 +29,12 @@ def handle_data(notifName, notifParams):
     try: 
         data, neighbors = blink.decode_blink(payload)
         if data:
-            print 'Blink packet received from {0}'.format(mac_address)
+            print ('Blink packet received from {0}'.format(mac_address))
             for neighbor_id, rssi in neighbors:
-                print '    --> Neighbor ID = {0},  RSSI = {1}'.format(neighbor_id, rssi)
+                print ('    --> Neighbor ID = {0},  RSSI = {1}'.format(neighbor_id, rssi))
             if not neighbors:
-                print '    --> Neighbors = n/a'            
-            print '    --> Data Sent = {0}\n\n'.format(data.encode("hex"))
+                print ('    --> Neighbors = n/a')            
+            print ('    --> Data Sent = {0}\n\n'.format(data.encode("hex")))
     except:
         # handle non-blink data
         pass
@@ -42,23 +43,23 @@ def handle_data(notifName, notifParams):
 #============================ main ============================================
 
 try:
-    print 'MgrBlinkData (c) Dust Networks'
-    print 'SmartMesh SDK {0}\n'.format('.'.join([str(b) for b in sdk_version.VERSION]))
-    print 'Note: Use with BlinkPacketSend.py \n'
+    print ('MgrBlinkData (c) Dust Networks')
+    print ('SmartMesh SDK {0}\n'.format('.'.join([str(b) for b in sdk_version.VERSION])))
+    print ('Note: Use with BlinkPacketSend.py \n')
     
     #=====
-    print "- create the variable 'mgrconnector'"
+    print ("- create the variable 'mgrconnector'")
     
     mgrconnector  = IpMgrConnectorSerial.IpMgrConnectorSerial()
     
     #===== 
-    print "- connect to the manager's serial port"
+    print ("- connect to the manager's serial port")
     
-    serialport     = raw_input("Enter the serial API port of SmartMesh IP Manager (e.g. COM7): ")
+    serialport     = input("Enter the serial API port of SmartMesh IP Manager (e.g. COM7): ")
     mgrconnector.connect({'port': serialport})
     
     #=====
-    print "- subscribe to data notifications "
+    print ("- subscribe to data notifications ")
     
     subscriber = IpMgrSubscribe.IpMgrSubscribe(mgrconnector)
     subscriber.start()
@@ -71,15 +72,15 @@ try:
     )
 
     #===
-    raw_input("Press any key to stop.\n\n")
+    input("Press any key to stop.\n\n")
     
     mgrconnector.disconnect()
     
-    print 'Script ended normally.'
+    print ('Script ended normally.')
 
 except:
     traceback.print_exc()
-    print 'Script ended with an error.'
+    print ('Script ended with an error.')
     
-raw_input('Press Enter to close.')
+input('Press Enter to close.')
 

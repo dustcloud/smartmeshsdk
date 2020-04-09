@@ -10,27 +10,27 @@ if __name__ == '__main__':
 
 #============================ imports =========================================
 
-import Tkinter
+import tkinter
 
-import dustGuiLib
-from   dustStyle import dustStyle
+from . import dustGuiLib
+from   .dustStyle import dustStyle
 
 #============================ body ============================================
 
-class AutoHideScrollbar(Tkinter.Scrollbar):
+class AutoHideScrollbar(tkinter.Scrollbar):
     def set(self, lo, hi):
         try:
             if float(lo) <= 0.0 and float(hi) >= 1.0:
                 self.tk.call("grid", "remove", self)
             else:
                 self.grid()
-            Tkinter.Scrollbar.set(self, lo, hi)
+            tkinter.Scrollbar.set(self, lo, hi)
         except ValueError as err:
             # can happen when closing the application
-            print err
+            print(err)
             pass
 
-class dustFrame(Tkinter.Frame):
+class dustFrame(tkinter.Frame):
     
     MAX_HEIGHT      = 400
     MAX_WIDTH       = 900
@@ -45,10 +45,10 @@ class dustFrame(Tkinter.Frame):
         self.scrollable = scrollable
         
         # init parent
-        Tkinter.Frame.__init__(
+        tkinter.Frame.__init__(
             self,
             parentElem,
-            relief      = Tkinter.SUNKEN,
+            relief      = tkinter.SUNKEN,
             borderwidth = 1,
             bg          = dustStyle.COLOR_BG,
         )
@@ -66,16 +66,16 @@ class dustFrame(Tkinter.Frame):
             row         = 0,
             column      = 0,
             columnspan  = 2,
-            sticky      = Tkinter.W,
+            sticky      = tkinter.W,
         )
         
         #===
         
         # pad frame
-        temp = Tkinter.Frame(
+        temp = tkinter.Frame(
             self,
             bg          = dustStyle.COLOR_BG,
-            relief      = Tkinter.FLAT,
+            relief      = tkinter.FLAT,
         )
         temp.grid(
             row         = 1,
@@ -90,10 +90,10 @@ class dustFrame(Tkinter.Frame):
             # the container is a frame with scrollbars which appear when 
             # it gets higher/wider than MAX_HEIGHT/MAX_WIDTH. 
             
-            self.containerFrame = Tkinter.Frame(
+            self.containerFrame = tkinter.Frame(
                 self,
                 bg      = dustStyle.COLOR_BG,
-                relief  = Tkinter.FLAT,
+                relief  = tkinter.FLAT,
             )
             self.containerFrame.grid(
                 row     = 1,
@@ -102,12 +102,12 @@ class dustFrame(Tkinter.Frame):
                 pady    = 5,
             )
             
-            vscrollbar = AutoHideScrollbar(self.containerFrame, orient=Tkinter.VERTICAL)
-            vscrollbar.grid(row=0, column=1, sticky=Tkinter.N+Tkinter.S)
-            hscrollbar = AutoHideScrollbar(self.containerFrame, orient=Tkinter.HORIZONTAL)
-            hscrollbar.grid(row=1, column=0, sticky=Tkinter.E+Tkinter.W)
+            vscrollbar = AutoHideScrollbar(self.containerFrame, orient=tkinter.VERTICAL)
+            vscrollbar.grid(row=0, column=1, sticky=tkinter.N+tkinter.S)
+            hscrollbar = AutoHideScrollbar(self.containerFrame, orient=tkinter.HORIZONTAL)
+            hscrollbar.grid(row=1, column=0, sticky=tkinter.E+tkinter.W)
 
-            self.containerCanvas = Tkinter.Canvas(
+            self.containerCanvas = tkinter.Canvas(
                 self.containerFrame,
                 width                  = 100,
                 height                 = 100,
@@ -119,7 +119,7 @@ class dustFrame(Tkinter.Frame):
             self.containerCanvas.grid(
                 row     = 0,
                 column  = 0,
-                sticky  = Tkinter.N+Tkinter.S+Tkinter.E+Tkinter.W,
+                sticky  = tkinter.N+tkinter.S+tkinter.E+tkinter.W,
             )
 
             vscrollbar.config(command=self.containerCanvas.yview)
@@ -130,19 +130,19 @@ class dustFrame(Tkinter.Frame):
             self.containerFrame.grid_columnconfigure(0, weight=1)
             
             # create canvas contents
-            self.container = Tkinter.Frame(
+            self.container = tkinter.Frame(
                 self.containerCanvas,
                 bg      = dustStyle.COLOR_BG,
                 padx    = 0,
                 pady    = 0,
                 border  = 0,
-                relief  = Tkinter.FLAT,
+                relief  = tkinter.FLAT,
             )
             
             self.containerCanvas.create_window(
                 0,
                 0,
-                anchor  = Tkinter.NW,
+                anchor  = tkinter.NW,
                 window  = self.container,
             )
            
@@ -153,10 +153,10 @@ class dustFrame(Tkinter.Frame):
         
         else:
             
-            self.container = Tkinter.Frame(
+            self.container = tkinter.Frame(
                 self,
                 bg      = dustStyle.COLOR_BG,
-                relief  = Tkinter.FLAT,
+                relief  = tkinter.FLAT,
             )
             self.container.grid(
                 row     = 1,
@@ -179,7 +179,7 @@ class dustFrame(Tkinter.Frame):
         self.grid(
             row    = self.row,
             column = self.column,
-            sticky = Tkinter.N+Tkinter.E+Tkinter.S+Tkinter.W,
+            sticky = tkinter.N+tkinter.E+tkinter.S+tkinter.W,
         )
     
     def hide(self):
@@ -193,14 +193,14 @@ class dustFrame(Tkinter.Frame):
     
     #======================== private =========================================
     
-    def _add(self,elem,row,column,columnspan=1,sticky=Tkinter.W+Tkinter.E):
+    def _add(self,elem,row,column,columnspan=1,sticky=tkinter.W+tkinter.E):
         try:
             elem.configure(font=dustStyle.FONT_BODY)
-        except Tkinter.TclError:
+        except tkinter.TclError:
             pass
         try:
             elem.configure(bg=dustStyle.COLOR_BG)
-        except Tkinter.TclError:
+        except tkinter.TclError:
             pass
         elem.grid(
             row         = row,
@@ -338,9 +338,9 @@ class exampleApp(object):
         self.window.mainloop()
     
     def _closeCb(self):
-        print " _closeCb called"
+        print(" _closeCb called")
 
 if __name__ == '__main__':
     import threading
-    from dustWindow import dustWindow
+    from .dustWindow import dustWindow
     exampleApp()

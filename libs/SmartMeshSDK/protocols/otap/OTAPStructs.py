@@ -1,7 +1,7 @@
 'OTAP command and file structures'
 
 import struct
-from GenStructs import ApiStructField, GenObjectFactory, parse_obj
+from .GenStructs import ApiStructField, GenObjectFactory, parse_obj
 
 OTAP_PORT = 0xF0B1
 

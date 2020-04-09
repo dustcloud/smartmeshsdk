@@ -4,6 +4,7 @@
 
 import sys
 import os
+from builtins import input
 if __name__ == "__main__":
     here = sys.path[0]
     sys.path.insert(0, os.path.join(here, '..', '..','libs'))
@@ -26,27 +27,27 @@ PUBLISH_RATE_SEC        = 5
 #============================ main ============================================
 
 try:
-    print 'SimpleIPUpstreamMote (c) Dust Networks'
-    print 'SmartMesh SDK {0}\n'.format('.'.join([str(b) for b in sdk_version.VERSION]))
-    print 'Note: Use with SimpleIPUpstreamMgr\n'
+    print ('SimpleIPUpstreamMote (c) Dust Networks')
+    print ('SmartMesh SDK {0}\n'.format('.'.join([str(b) for b in sdk_version.VERSION])))
+    print ('Note: Use with SimpleIPUpstreamMgr\n')
     
     #=====
-    print "- create the variable 'moteconnector'"
+    print ("- create the variable 'moteconnector'")
     
     moteconnector  = IpMoteConnector.IpMoteConnector()
     
     #===== 
-    print "- connect to the mote's serial port"
+    print ("- connect to the mote's serial port")
     
-    serialport     = raw_input("Enter the serial API port of SmartMesh IP Mote (e.g. COM15): ")
+    serialport     = input("Enter the serial API port of SmartMesh IP Mote (e.g. COM15): ")
     moteconnector.connect({'port': serialport})
 
     #=====
-    print "- have the mote join and wait until it reaches operational state"
+    print ("- have the mote join and wait until it reaches operational state")
     
     while True:
         res = moteconnector.dn_getParameter_moteStatus()
-        print "   current mote state: {0}".format(res.state)
+        print ("   current mote state: {0}".format(res.state))
         if   res.state==1:
             res    = moteconnector.dn_join()
         elif res.state==5:
@@ -54,7 +55,7 @@ try:
         time.sleep(1)
 
     #=====
-    print "- setup a socket"
+    print ("- setup a socket")
         
     # open a socket
     res = moteconnector.dn_openSocket(0)
@@ -64,7 +65,7 @@ try:
     moteconnector.dn_bindSocket(socketId,UDP_PORT_NUMBER)
     
     #=====
-    print "- request a service"
+    print ("- request a service")
     
     res = moteconnector.dn_requestService(
         destAddr             = 0xfffe,                # destination mote (0xfffe=manager)
@@ -73,7 +74,7 @@ try:
     )
     
     #===== 
-    print "- publish {0} every {1}s".format(STRING_TO_PUBLISH,PUBLISH_RATE_SEC)
+    print ("- publish {0} every {1}s".format(STRING_TO_PUBLISH,PUBLISH_RATE_SEC))
     
     try:
         while True:
@@ -93,7 +94,7 @@ try:
             )
             
             # print
-            print '   Just sent "{0}", next transmission in {1}s'.format(STRING_TO_PUBLISH,PUBLISH_RATE_SEC)
+            print ('   Just sent "{0}", next transmission in {1}s'.format(STRING_TO_PUBLISH,PUBLISH_RATE_SEC))
             
             # wait a bit before sending again
             time.sleep(PUBLISH_RATE_SEC)
@@ -102,15 +103,15 @@ try:
         pass
      
     #=====
-    print '-  close everything'
+    print ('-  close everything')
     res = moteconnector.dn_closeSocket(socketId)
     
     moteconnector.disconnect()
     
-    print 'Script ended normally.'
+    print ('Script ended normally.')
 
 except:
     traceback.print_exc()
-    print 'Script ended with an error.'
+    print ('Script ended with an error.')
 
-raw_input('Press Enter to close.')
+input('Press Enter to close.')

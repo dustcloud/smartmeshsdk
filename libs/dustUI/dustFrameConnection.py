@@ -10,12 +10,12 @@ if __name__ == '__main__':
 
 #============================ imports =========================================
 
-import Tkinter
+import tkinter
 import traceback
 
-import dustGuiLib
-import dustFrame
-from   dustStyle                            import dustStyle
+from . import dustGuiLib
+from . import dustFrame
+from   .dustStyle                            import dustStyle
 
 from SmartMeshSDK.ApiDefinition             import IpMgrDefinition,       \
                                                    IpMoteDefinition,      \
@@ -44,7 +44,7 @@ class dustFrameConnection(dustFrame.dustFrame):
         dustFrame.dustFrame.__init__(self,parentElem,guiLock,frameName,row,column)
         
         # row 0: serial port
-        self.serialFrame = Tkinter.Frame(self.container,
+        self.serialFrame = tkinter.Frame(self.container,
                                 borderwidth=0,
                                 bg=dustStyle.COLOR_BG)
         
@@ -74,7 +74,7 @@ class dustFrameConnection(dustFrame.dustFrame):
         self._add(self.serialButton,1,2)
 
         # row 2: serialMux
-        self.serialMuxFrame = Tkinter.Frame(self.container,
+        self.serialMuxFrame = tkinter.Frame(self.container,
                                 borderwidth=0,
                                 bg=dustStyle.COLOR_BG)
         
@@ -118,7 +118,7 @@ class dustFrameConnection(dustFrame.dustFrame):
         self._add(self.serialMuxButton,1,4)
 
         # row 3: xml
-        self.xmlFrame = Tkinter.Frame(self.container,borderwidth=0,bg=dustStyle.COLOR_BG)
+        self.xmlFrame = tkinter.Frame(self.container,borderwidth=0,bg=dustStyle.COLOR_BG)
         temp = dustGuiLib.Label(self.xmlFrame,
                              font=dustStyle.FONT_BODY,
                              bg=dustStyle.COLOR_BG,
@@ -161,7 +161,7 @@ class dustFrameConnection(dustFrame.dustFrame):
         # row 4: text
         self.tipLabel = dustGuiLib.Label(self.container,borderwidth=0,bg=dustStyle.COLOR_BG)
         self.guiLock.acquire()
-        self.tipLabel.grid(row=4,column=0,sticky=Tkinter.W)
+        self.tipLabel.grid(row=4,column=0,sticky=tkinter.W)
         self.guiLock.release()
                   
     #======================== public ==========================================
@@ -204,15 +204,15 @@ class dustFrameConnection(dustFrame.dustFrame):
              isinstance(self.apiDef,IpMgrDefinition.IpMgrDefinition)   or
              isinstance(self.apiDef,HartMoteDefinition.HartMoteDefinition)
            ):
-            self.serialFrame.grid(row=2,column=0,sticky=Tkinter.W)
+            self.serialFrame.grid(row=2,column=0,sticky=tkinter.W)
         if (
              isinstance(self.apiDef,IpMgrDefinition.IpMgrDefinition)
            ):
-            self.serialMuxFrame.grid(row=1,column=0,sticky=Tkinter.W)
+            self.serialMuxFrame.grid(row=1,column=0,sticky=tkinter.W)
         if (
              isinstance(self.apiDef,HartMgrDefinition.HartMgrDefinition)
            ):
-            self.xmlFrame.grid(row=3,column=0,sticky=Tkinter.W)
+            self.xmlFrame.grid(row=3,column=0,sticky=tkinter.W)
         self.guiLock.release()
     
     def _connectSerial(self):
@@ -239,7 +239,7 @@ class dustFrameConnection(dustFrame.dustFrame):
         # read connection params from GUI
         self.guiLock.acquire()
         connectParams = {
-            'port': self.serialPortText.get(1.0,Tkinter.END).strip(),
+            'port': self.serialPortText.get(1.0,tkinter.END).strip(),
         }
         self.guiLock.release()
         
@@ -345,8 +345,8 @@ class dustFrameConnection(dustFrame.dustFrame):
         # read connection params from GUI
         self.guiLock.acquire()
         connectParams = {
-            'host':     self.serialMuxHostText.get(1.0,Tkinter.END).strip(),
-            'port': int(self.serialMuxPortText.get(1.0,Tkinter.END).strip()),
+            'host':     self.serialMuxHostText.get(1.0,tkinter.END).strip(),
+            'port': int(self.serialMuxPortText.get(1.0,tkinter.END).strip()),
         }
         self.guiLock.release()
         
@@ -401,8 +401,8 @@ class dustFrameConnection(dustFrame.dustFrame):
         # read connection params from GUI
         self.guiLock.acquire()
         connectParams = {
-            'host':     self.xmlHostText.get(1.0,Tkinter.END).strip(),
-            'port': int(self.xmlPortText.get(1.0,Tkinter.END).strip()),
+            'host':     self.xmlHostText.get(1.0,tkinter.END).strip(),
+            'port': int(self.xmlPortText.get(1.0,tkinter.END).strip()),
         }
         self.guiLock.release()
 
@@ -477,11 +477,11 @@ class exampleApp(object):
         self.window.mainloop()
     
     def _closeCb(self):
-        print " _closeCb called"
+        print (" _closeCb called")
     def _connectCb(self,param):
-        print " _connectCb called with param="+str(param)
+        print (" _connectCb called with param="+str(param))
 
 if __name__ == '__main__':
     import threading
-    from dustWindow import dustWindow
+    from .dustWindow import dustWindow
     exampleApp()

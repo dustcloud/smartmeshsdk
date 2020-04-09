@@ -1,6 +1,6 @@
 try:
-   import HartMoteConnectorClib
+   from . import HartMoteConnectorClib
    HartMoteConnector = HartMoteConnectorClib
-   print 'Note: using the C implementation of the HartMoteConnector connector'
+   print ('Note: using the C implementation of the HartMoteConnector connector')
 except ImportError:
-   import HartMoteConnector
+   from . import HartMoteConnectorInternal

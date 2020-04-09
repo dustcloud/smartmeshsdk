@@ -72,7 +72,7 @@ class NotifSeparator(object):
             # LATER: it might be nice to parse the notification XML here,
             # but that requires a reference to the HartMgrApiDefinition
             self.notif_handler(notif_type, notif_str)
-        except Exception, ex:
+        except Exception as ex:
             log.error('Exception handling notif: ' + str(ex))
             log.debug(traceback.format_exc())
 
@@ -125,7 +125,7 @@ class NotifReader(threading.Thread):
                 log.debug(msg)
                 try:
                     self.notif_parser.parse(input_data)
-                except Exception, e:
+                except Exception as e:
                     log.error('Exception parsing notification: ' + str(e))
                     log.debug(traceback.format_exc())
         except socket.error as e:
@@ -153,7 +153,7 @@ if __name__ == '__main__':
     mgr.connect({'host': DEFAULT_HOST, 'port': DEFAULT_PORT})
     
     notif_token, notif_port = mgr.subscribe('data events')
-    print 'Subscribe'
+    print ('Subscribe')
 
     while True:
         notif = mgr.getNotification(1)

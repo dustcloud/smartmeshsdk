@@ -9,7 +9,7 @@ log.setLevel(logging.ERROR)
 log.addHandler(NullHandler())
 
 from SmartMeshSDK.IpMgrConnectorSerial import IpMgrConnectorSerial
-import   OAPDispatcher, \
+from . import   OAPDispatcher, \
          OAPClient,     \
          OAPMessage,    \
          OAPNotif
@@ -30,9 +30,9 @@ class Oap(object):
     def indicateNotifData(self,notifName,notifParams):
         assert notifName==IpMgrConnectorSerial.IpMgrConnectorSerial.NOTIFDATA
         
-        print notifName
-        print notifParams
-        print "TODO indicateNotifData"
+        print (notifName)
+        print (notifParams)
+        print ("TODO indicateNotifData")
         
         mac = tuple(notifParams.macAddress)
         
@@ -47,8 +47,8 @@ class Oap(object):
     
     def _handle_oap_notif(self,mac,notif):
         
-        print mac
-        print notif
-        print "TODO _handle_oap_notif"
+        print (mac)
+        print (notif)
+        print ("TODO _handle_oap_notif")
     
     #======================== helpers =========================================

@@ -10,11 +10,11 @@ if __name__ == '__main__':
 
 #============================ imports =========================================
 
-import Tkinter
+import tkinter
 
-import dustGuiLib
-import dustFrame
-from   dustStyle import dustStyle
+from . import dustGuiLib
+from . import dustFrame
+from   .dustStyle import dustStyle
 
 #============================ body ============================================
 
@@ -48,9 +48,9 @@ class dustFrameConversion(dustFrame.dustFrame):
         
         #===== row 1: topField
         
-        topscrollbar  = Tkinter.Scrollbar(self.container)
-        topscrollbar.grid(row=1, column=2, sticky=Tkinter.N+Tkinter.S)
-        self.topField = Tkinter.Text(
+        topscrollbar  = tkinter.Scrollbar(self.container)
+        topscrollbar.grid(row=1, column=2, sticky=tkinter.N+tkinter.S)
+        self.topField = tkinter.Text(
             self.container,
             bg               = dustStyle.COLOR_BG,
             width            = 100,
@@ -87,9 +87,9 @@ class dustFrameConversion(dustFrame.dustFrame):
         
         #===== row 4: bottomField
         
-        bottomscrollbar  = Tkinter.Scrollbar(self.container)
-        bottomscrollbar.grid(row=4, column=2, sticky=Tkinter.N+Tkinter.S)
-        self.bottomField = Tkinter.Text(
+        bottomscrollbar  = tkinter.Scrollbar(self.container)
+        bottomscrollbar.grid(row=4, column=2, sticky=tkinter.N+tkinter.S)
+        self.bottomField = tkinter.Text(
             self.container,
             bg               = dustStyle.COLOR_BG,
             width            = 100,
@@ -103,19 +103,19 @@ class dustFrameConversion(dustFrame.dustFrame):
     #======================== public ==========================================
     
     def writeTop(self,textToWrite):
-        self.topField.delete(1.0,Tkinter.END)
-        self.topField.insert(Tkinter.END,textToWrite)
+        self.topField.delete(1.0,tkinter.END)
+        self.topField.insert(tkinter.END,textToWrite)
     
     def writeBottom(self,textToWrite):
-        self.bottomField.delete(1.0,Tkinter.END)
-        self.bottomField.insert(Tkinter.END,textToWrite)
+        self.bottomField.delete(1.0,tkinter.END)
+        self.bottomField.insert(tkinter.END,textToWrite)
     
     #======================== private =========================================
     
     def _toBottomButtonPressed(self):
         if self.toBottomCb:
             # get value
-            val = self.topField.get(1.0,Tkinter.END).strip()
+            val = self.topField.get(1.0,tkinter.END).strip()
             
             # call the callback
             self.toBottomCb(val)
@@ -123,7 +123,7 @@ class dustFrameConversion(dustFrame.dustFrame):
     def _toTopButtonPressed(self):
         if self.toTopCb:
             # get value
-            val = self.bottomField.get(1.0,Tkinter.END).strip()
+            val = self.bottomField.get(1.0,tkinter.END).strip()
             
             # call the callback
             self.toTopCb(val)
@@ -156,19 +156,19 @@ class exampleApp(object):
         output += ['entered on top:']
         output += [textEntered]
         output  = '\n'.join(output)
-        print output
+        print (output)
     
     def _bottomEnteredCb(self,textEntered):
         output  = []
         output += ['entered on bottom:']
         output += [textEntered]
         output  = '\n'.join(output)
-        print output
+        print (output)
     
     def _closeCb(self):
-        print " _closeCb called"
+        print (" _closeCb called")
 
 if __name__ == '__main__':
     import threading
-    from dustWindow import dustWindow
+    from .dustWindow import dustWindow
     exampleApp()

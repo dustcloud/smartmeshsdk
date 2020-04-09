@@ -64,7 +64,7 @@ def configureLoggingNoFile(logfilename=None,debugmodules=[]):
     
     #=== associated handlers with loggers
     
-    loggerNames = logging.Logger.manager.loggerDict.keys()
+    loggerNames = list(logging.Logger.manager.loggerDict.keys())
     
     for n in loggerNames:
         temp = logging.getLogger(n)
@@ -104,7 +104,7 @@ def configureLogging():
             }
         )
     else:
-        print "WARNING: no log configuration file could be found."
+        print("WARNING: no log configuration file could be found.")
 
 #============================ formatting ======================================
 

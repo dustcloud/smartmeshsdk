@@ -10,12 +10,12 @@ if __name__ == '__main__':
 
 #============================ imports =========================================
 
-import Tkinter
+import tkinter
 
-import dustGuiLib
-import dustFrame
-from   dustStyle import dustStyle
-
+from . import dustGuiLib
+from . import dustFrame
+from  .dustStyle import dustStyle
+from builtins import input
 from SmartMeshSDK.ApiDefinition import ApiDefinition
 from SmartMeshSDK.ApiException  import CommandError
 
@@ -47,7 +47,7 @@ class dustFrameFields(dustFrame.dustFrame):
         self._add(self.headerLabel,0,0)
         
         # row 1: fieldsFrame
-        self.fieldsFrame = Tkinter.Frame(self.container)
+        self.fieldsFrame = tkinter.Frame(self.container)
         self._add(self.fieldsFrame,1,0)
     
     #======================== public ==========================================
@@ -171,7 +171,7 @@ class dustFrameFields(dustFrame.dustFrame):
                 c['fieldOptions']     += temp_fieldOptions
             
             except CommandError as err:
-                print str(err)
+                print (str(err))
                 return
         
         # add values
@@ -215,7 +215,7 @@ class dustFrameFields(dustFrame.dustFrame):
                             self.fieldsFrame,
                             text            = c['fieldNames'][i],
                             bg              = dustStyle.COLOR_BG,
-                            relief          = Tkinter.RIDGE,
+                            relief          = tkinter.RIDGE,
                             borderwidth     = 1,
                             background      = headercolor,
                             padx            = 3,
@@ -225,7 +225,7 @@ class dustFrameFields(dustFrame.dustFrame):
                     c['fieldNamesGui'][-1].grid(
                         row                 = 0,
                         column              = i,
-                        sticky              = Tkinter.W+Tkinter.E,
+                        sticky              = tkinter.W+tkinter.E,
                     )
                 
                 # row: value
@@ -235,7 +235,7 @@ class dustFrameFields(dustFrame.dustFrame):
                         self.fieldsFrame,
                         text                = c['fieldValues'][i],
                         bg                  = dustStyle.COLOR_BG,
-                        relief              = Tkinter.RIDGE,
+                        relief              = tkinter.RIDGE,
                         borderwidth         = 1,
                         padx                = 3,
                         pady                = 3,
@@ -244,7 +244,7 @@ class dustFrameFields(dustFrame.dustFrame):
                 c['fieldValuesGui'][-1].grid(
                     row                     = rowNumber+1,
                     column                  = i,
-                    sticky                  = Tkinter.W+Tkinter.E
+                    sticky                  = tkinter.W+tkinter.E
                 )
                 
                 # row: add format and length (iff last row)
@@ -258,7 +258,7 @@ class dustFrameFields(dustFrame.dustFrame):
                             self.fieldsFrame,
                             text            = fieldFormatsString,
                             bg              = dustStyle.COLOR_BG,
-                            relief          = Tkinter.RIDGE,
+                            relief          = tkinter.RIDGE,
                             borderwidth     = 1,
                             padx            = 3,
                             pady            = 3,
@@ -267,7 +267,7 @@ class dustFrameFields(dustFrame.dustFrame):
                     c['fieldFormatsGui'][-1].grid(
                         row                 = rowNumber+2,
                         column              = i,
-                        sticky              = Tkinter.W+Tkinter.E,
+                        sticky              = tkinter.W+tkinter.E,
                     )
         
         # add to the guiElems
@@ -283,7 +283,7 @@ class dustFrameFields(dustFrame.dustFrame):
 class exampleApp(object):
     
     def __init__(self):
-        raw_input("No sample app. Press enter to close.")
+        input("No sample app. Press enter to close.")
 
 if __name__ == '__main__':
     exampleApp()

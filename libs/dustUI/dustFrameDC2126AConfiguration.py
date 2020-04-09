@@ -10,12 +10,12 @@ if __name__ == "__main__":
 
 #============================ imports =========================================
 
-import Tkinter
+import tkinter
 
 from   SmartMeshSDK.utils    import  FormatUtils
-from   dustStyle             import dustStyle
-import dustGuiLib
-import dustFrame
+from   .dustStyle             import dustStyle
+from . import dustGuiLib
+from . import dustFrame
 
 #============================ body ============================================
 
@@ -35,7 +35,7 @@ class dustFrameDC2126AConfiguration(dustFrame.dustFrame):
         self.setConfigurationCB        = setConfigurationCB
         
         # local variables
-        self.selectedMote         = Tkinter.StringVar()
+        self.selectedMote         = tkinter.StringVar()
         self.selectedMote.trace("w",self._selectedMoteChangedCB_internal)
         
         # initialize parent
@@ -48,8 +48,8 @@ class dustFrameDC2126AConfiguration(dustFrame.dustFrame):
         
         # report period
         temp                      = dustGuiLib.Label(self.container,
-            anchor                = Tkinter.NW,
-            justify               = Tkinter.LEFT,
+            anchor                = tkinter.NW,
+            justify               = tkinter.LEFT,
             text                  = 'Report Period (ms):',
         )
         self._add(temp,0,0)
@@ -62,8 +62,8 @@ class dustFrameDC2126AConfiguration(dustFrame.dustFrame):
         
         # bridge settling time
         temp                      = dustGuiLib.Label(self.container,
-            anchor                = Tkinter.NW,
-            justify               = Tkinter.LEFT,
+            anchor                = tkinter.NW,
+            justify               = tkinter.LEFT,
             text                  = 'Bridge Settling Time (ms):',
         )
         self._add(temp,1,0)
@@ -76,8 +76,8 @@ class dustFrameDC2126AConfiguration(dustFrame.dustFrame):
         
         # LDO on time
         temp                      = dustGuiLib.Label(self.container,
-            anchor                = Tkinter.NW,
-            justify               = Tkinter.LEFT,
+            anchor                = tkinter.NW,
+            justify               = tkinter.LEFT,
             text                  = 'LDO on time (ms):',
         )
         self._add(temp,2,0)
@@ -91,8 +91,8 @@ class dustFrameDC2126AConfiguration(dustFrame.dustFrame):
         
         # motes
         temp                      = dustGuiLib.Label(self.container,
-            anchor                = Tkinter.NW,
-            justify               = Tkinter.LEFT,
+            anchor                = tkinter.NW,
+            justify               = tkinter.LEFT,
             text                  = 'Select mote:')
         self._add(temp,3,0)
         self.motes                = dustGuiLib.OptionMenu(
@@ -111,8 +111,8 @@ class dustFrameDC2126AConfiguration(dustFrame.dustFrame):
         
         # action label
         self.actionLabel          = dustGuiLib.Label(self.container,
-            anchor                = Tkinter.CENTER,
-            justify               = Tkinter.LEFT,
+            anchor                = tkinter.CENTER,
+            justify               = tkinter.LEFT,
             text                  = '',
         )
         self._add(self.actionLabel,4,1)
@@ -137,9 +137,9 @@ class dustFrameDC2126AConfiguration(dustFrame.dustFrame):
         
         with self.guiLock:
             # delete previous content
-            self.reportPeriod.delete(1.0,Tkinter.END)
-            self.bridgeSettlingTime.delete(1.0,Tkinter.END)
-            self.ldoOnTime.delete(1.0,Tkinter.END)
+            self.reportPeriod.delete(1.0,tkinter.END)
+            self.bridgeSettlingTime.delete(1.0,tkinter.END)
+            self.ldoOnTime.delete(1.0,tkinter.END)
             
             # clear color
             self.reportPeriod.configure(bg=dustStyle.COLOR_BG)
@@ -154,18 +154,18 @@ class dustFrameDC2126AConfiguration(dustFrame.dustFrame):
     def disableButtons(self):
         
         with self.guiLock:
-            self.refreshButton.configure(state=Tkinter.DISABLED)
-            self.setConfigurationButton.configure(state=Tkinter.DISABLED)
-            self.getConfigurationButton.configure(state=Tkinter.DISABLED)
-            self.motes.configure(state=Tkinter.DISABLED)
+            self.refreshButton.configure(state=tkinter.DISABLED)
+            self.setConfigurationButton.configure(state=tkinter.DISABLED)
+            self.getConfigurationButton.configure(state=tkinter.DISABLED)
+            self.motes.configure(state=tkinter.DISABLED)
     
     def enableButtons(self):
         
         with self.guiLock:
-            self.refreshButton.configure(state=Tkinter.NORMAL)
-            self.setConfigurationButton.configure(state=Tkinter.NORMAL)
-            self.getConfigurationButton.configure(state=Tkinter.NORMAL)
-            self.motes.configure(state=Tkinter.NORMAL)
+            self.refreshButton.configure(state=tkinter.NORMAL)
+            self.setConfigurationButton.configure(state=tkinter.NORMAL)
+            self.getConfigurationButton.configure(state=tkinter.NORMAL)
+            self.motes.configure(state=tkinter.NORMAL)
     
     def refresh(self,macs):
         
@@ -179,7 +179,7 @@ class dustFrameDC2126AConfiguration(dustFrame.dustFrame):
             for mac in formattedMacs:
                 self.motes['menu'].add_command(
                     label   = mac,
-                    command = Tkinter._setit(self.selectedMote,mac)
+                    command = tkinter._setit(self.selectedMote,mac)
                 )
             
             # update the selected mote, if pre
@@ -219,7 +219,7 @@ class dustFrameDC2126AConfiguration(dustFrame.dustFrame):
             ('ldoOnTime',         self.ldoOnTime),
         ]:
             try:
-                configuration[var]          = int(guiElem.get(1.0,Tkinter.END).strip())
+                configuration[var]          = int(guiElem.get(1.0,tkinter.END).strip())
             except ValueError:
                 guiElem.configure(bg=dustStyle.COLOR_ERROR)
                 validConfiguration = False
@@ -260,10 +260,10 @@ class exampleApp(object):
     #===== GUI action callbacks
     
     def _selectedMoteChangedCB(self,mote):
-        print "selected mote changed to {0}".format(mote)
+        print ("selected mote changed to {0}".format(mote))
     
     def _refreshButtonCB(self):
-        print "refresh button pressed, scheduling action in {0}s".format(self.ACTION_DELAY)
+        print ("refresh button pressed, scheduling action in {0}s".format(self.ACTION_DELAY))
         t = threading.Timer(self.ACTION_DELAY,self._refresh)
         t.start()
     
@@ -275,20 +275,20 @@ class exampleApp(object):
         output += ["- ldoOnTime:          {0}".format(ldoOnTime)]
         output  = '\n'.join(output)
         
-        print output
+        print (output)
     
     def _getConfigurationCB(self):
-        print "get configuration button pressed, scheduling action in {0}s".format(self.ACTION_DELAY)
+        print ("get configuration button pressed, scheduling action in {0}s".format(self.ACTION_DELAY))
         t = threading.Timer(self.ACTION_DELAY,self._displayConfiguration)
         t.start()
     
     def _closeCb(self):
-        print " _closeCb called"
+        print (" _closeCb called")
     
     #===== private
     
     def _refresh(self):
-        print "Refreshing"
+        print ("Refreshing")
         self.frame.refresh(
             macs = [
                 [0x11]*8,
@@ -298,7 +298,7 @@ class exampleApp(object):
         )
     
     def _displayConfiguration(self):
-        print "Setting new configuration"
+        print ("Setting new configuration")
         self.frame.displayConfiguration(
             reportPeriod        = 10000,
             bridgeSettlingTime  = 20,
@@ -307,5 +307,5 @@ class exampleApp(object):
     
 if __name__ == '__main__':
     import threading
-    import dustWindow
+    from . import dustWindow
     exampleApp()

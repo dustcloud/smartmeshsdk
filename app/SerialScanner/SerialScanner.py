@@ -23,15 +23,15 @@ from dustCli            import DustCli
 #============================ CLI handlers ====================================
 
 def quit_clicb():
-    print "bye, bye!"
+    print ("bye, bye!")
     sys.exit(0)
 
 def listmanagers_clicb(params):
     serialScanner = SerialScanner.SerialScanner()
-    print serialScanner.listIpManagerApi()
+    print (serialScanner.listIpManagerApi())
 
 def availablemanagers_clicb_cb(serialport):
-    print "manager available on port {0}".format(serialport)
+    print ("manager available on port {0}".format(serialport))
 
 def availablemanagers_clicb(params):
     serialScanner = SerialScanner.SerialScanner()
@@ -42,12 +42,12 @@ def availablemanagers_clicb(params):
 def full_clicb(params):
     serialScanner = SerialScanner.SerialScanner()
     allSerialPorts = serialScanner.listAllSerialPorts()
-    print 'all serial ports: {0}'.format(allSerialPorts)
+    print ('all serial ports: {0}'.format(allSerialPorts))
     for sp in allSerialPorts:
-        print 'testing serial port {0}'.format(sp)
-        print '- canOpen?        {0}'.format(serialScanner.canOpen(sp))
-        print '- isIpMoteApi?    {0}'.format(serialScanner.isIpMoteApi(sp))
-        print '- isIpManagerApi? {0}'.format(serialScanner.isIpManagerApi(sp))
+        print ('testing serial port {0}'.format(sp))
+        print ('- canOpen?        {0}'.format(serialScanner.canOpen(sp)))
+        print ('- isIpMoteApi?    {0}'.format(serialScanner.isIpMoteApi(sp)))
+        print ('- isIpManagerApi? {0}'.format(serialScanner.isIpManagerApi(sp)))
 
 #============================ main ============================================
 

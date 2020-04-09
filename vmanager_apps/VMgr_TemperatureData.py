@@ -9,6 +9,7 @@ is from this app, the temperature will be printed out.
 
 import sys
 import os
+from builtins import input
 if __name__ == "__main__":
     here = sys.path[0]
     sys.path.insert(0, os.path.join(here, '..', 'libs'))
@@ -52,19 +53,19 @@ def process_data(mydata):
         oap_notif = OAPNotif.parse_oap_notif(payload, 3) # start at byte 3
         if oap_notif and oap_notif.channel==OAPNotif.TEMP_ADDRESS:
             temp = oap_notif.samples[0] / 100.0
-            print '{0}: Temperature from mote {1}: {2} Deg Celsius'.format(time, mydata.mac_address, temp)
+            print ('{0}: Temperature from mote {1}: {2} Deg Celsius'.format(time, mydata.mac_address, temp))
 
 def show_disconnect():
-    print 'Notification connection closed'
+    print ('Notification connection closed')
 
 #============================ main ============================================
 
 try:
     # print banner
-    print '\nVMgr_TemperatureData (c) Dust Networks'
-    print 'SmartMesh SDK {0}\n'.format('.'.join([str(i) for i in sdk_version.VERSION]))
+    print ('\nVMgr_TemperatureData (c) Dust Networks')
+    print ('SmartMesh SDK {0}\n'.format('.'.join([str(i) for i in sdk_version.VERSION])))
 
-    mgrhost = raw_input('Enter the IP address of the manager (e.g. {0}): '.format(DFLT_MGR_HOST))
+    mgrhost = input('Enter the IP address of the manager (e.g. {0}): '.format(DFLT_MGR_HOST))
     if mgrhost == "":
         mgrhost = DFLT_MGR_HOST
 
@@ -89,11 +90,11 @@ try:
         disconnect_callback  = show_disconnect,
     )
 
-    print '\n==== Subscribing to data notifications'
-    reply = raw_input ('Waiting for notifications. Press any key to stop\n\n')
+    print ('\n==== Subscribing to data notifications')
+    reply = input ('Waiting for notifications. Press any key to stop\n\n')
 
     voyager.stop_notifications()
-    print 'Script ended normally'
+    print ('Script ended normally')
 
 except:
     traceback.print_exc()

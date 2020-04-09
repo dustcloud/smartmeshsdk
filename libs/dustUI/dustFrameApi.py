@@ -10,10 +10,10 @@ if __name__ == '__main__':
 
 #============================ imports =========================================
 
-import Tkinter
+import tkinter
 
-import dustGuiLib
-import dustFrame
+from . import dustGuiLib
+from . import dustFrame
 
 from SmartMeshSDK.ApiDefinition   import IpMgrDefinition,       \
                                          IpMoteDefinition,      \
@@ -45,7 +45,7 @@ class dustFrameApi(dustFrame.dustFrame):
                              text="network type:")
         self._add(temp,0,0)
 
-        self.networkTypeString = Tkinter.StringVar(self.container)
+        self.networkTypeString = tkinter.StringVar(self.container)
         self.networkTypeString.set(self.IP)
         self.networkTypeMenu   = dustGuiLib.OptionMenu(self.container,
                                                        self.networkTypeString,
@@ -57,7 +57,7 @@ class dustFrameApi(dustFrame.dustFrame):
                              text="device type:")
         self._add(temp,0,2)
 
-        self.deviceTypeString = Tkinter.StringVar(self)
+        self.deviceTypeString = tkinter.StringVar(self)
         if deviceType:
             self.deviceTypeString.set(deviceType)
         else:
@@ -68,7 +68,7 @@ class dustFrameApi(dustFrame.dustFrame):
                                                       self.MOTE)
         self._add(self.deviceTypeMenu,0,3)
         if self.deviceType:
-            self.deviceTypeMenu.config (state=Tkinter.DISABLED)
+            self.deviceTypeMenu.config (state=tkinter.DISABLED)
 
         self.loadButton = dustGuiLib.Button(self.container,
                                             text="load",
@@ -106,14 +106,14 @@ class dustFrameApi(dustFrame.dustFrame):
                                   " temp_networkType="+str(temp_networkType)+\
                                   " self.deviceType="+str(self.deviceType))
         except NotImplementedError as err:
-           print str(err)
+           print(str(err))
            return
         
         # freeze the form frame
         self.guiLock.acquire()
-        self.networkTypeMenu.config(state=Tkinter.DISABLED)
-        self.deviceTypeMenu.config (state=Tkinter.DISABLED)
-        self.loadButton.config     (state=Tkinter.DISABLED)
+        self.networkTypeMenu.config(state=tkinter.DISABLED)
+        self.deviceTypeMenu.config (state=tkinter.DISABLED)
+        self.loadButton.config     (state=tkinter.DISABLED)
         self.guiLock.release()
         
         # call the callback
@@ -139,11 +139,11 @@ class exampleApp(object):
         self.window.mainloop()
     
     def _closeCb(self):
-        print " _closeCb called"
+        print(" _closeCb called")
     def _apiFrameCb_apiLoaded(self,param):
-        print " _apiFrameCb_apiLoaded called with param="+str(param)
+        print(" _apiFrameCb_apiLoaded called with param="+str(param))
 
 if __name__ == '__main__':
     import threading
-    from dustWindow import dustWindow
+    from .dustWindow import dustWindow
     exampleApp()

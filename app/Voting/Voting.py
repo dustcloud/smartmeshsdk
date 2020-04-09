@@ -4,6 +4,7 @@
 
 import sys
 import os
+from builtins import input
 if __name__ == "__main__":
     here = sys.path[0]
     sys.path.insert(0, os.path.join(here, '..', '..','libs'))
@@ -24,9 +25,9 @@ from SmartMeshSDK.utils import SmsdkInstallVerifier
     ]
 )
 if not goodToGo:
-    print "Your installation does not allow this application to run:\n"
-    print reason
-    raw_input("Press any button to exit")
+    print ("Your installation does not allow this application to run:\n")
+    print (reason)
+    input("Press any button to exit")
     sys.exit(1)
 
 #============================ imports =========================================
@@ -296,7 +297,7 @@ class notifClient(object):
                 elif notifParams.data[0]==self.VAL_D:
                     vote     = self.BUTTON_D
                 elif notifParams.data[0]==self.VAL_TESTMOTE:
-                    print 'WARNING: received test mote data'
+                    print ('WARNING: received test mote data')
                     vote     = self.BUTTON_D
                 
                 # indicate vote
@@ -307,8 +308,8 @@ class notifClient(object):
                         self._indicateVote(mac,ts_us,vote)
             
         except Exception as err:
-            print type(err)
-            print err
+            print (type(err))
+            print (err)
             raise
     
     def _getInitQuestionNum(self):

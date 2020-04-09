@@ -19,7 +19,7 @@ $ python -i bin/OTAPCommunicator/OTAPCommunicator.py --nostart
 '''
 
 #============================ adjust path =====================================
-
+from __future__ import print_function
 import sys
 import os
 import json
@@ -244,10 +244,10 @@ def main(opts, files):
     log.info("--- OTAP Communicator v%s", version_string())
     log.info("Started with command line arguments: %s", sys.argv)
     
-    print "Welcome to the OTAP communicator console"
+    print ("Welcome to the OTAP communicator console")
     if len(files):
         for f in files:
-            print 'Loading', f
+            print ('Loading', f)
             comm.load_file(f, os.path.splitext(f)[1] in OTAP_EXTENSIONS)
 
     # Handle user-specified list of motes
@@ -265,7 +265,7 @@ def main(opts, files):
 
     if opts.autorun and len(comm.all_motes):
         for f in files:
-            print 'Starting OTAP for', f
+            print ('Starting OTAP for', f)
             comm.start_handshake(f)
             comm.wait_for_commit_complete()
 
@@ -276,11 +276,11 @@ def main(opts, files):
         import time
         import struct
         # Welcome!
-        print "You can use the 'mgr' variable to call Manager API functions."
-        print ">>> help(mgr)"
-        print "You can use the 'comm' variable to interact with the OTAP Communicator."
-        print ">>> help(comm)"
-        print "Run mgr.disconnect() before exiting the interactive shell."
+        print ("You can use the 'mgr' variable to call Manager API functions.")
+        print (">>> help(mgr)")
+        print ("You can use the 'comm' variable to interact with the OTAP Communicator.")
+        print (">>> help(comm)")
+        print ("Run mgr.disconnect() before exiting the interactive shell.")
 
 
 if __name__=='__main__':

@@ -19,8 +19,8 @@ A response callback has the form:
   of the transport flags.
 '''
 
-import OAPMessage
-import OAPNotif
+from . import OAPMessage
+from . import OAPNotif
 #from muxclient.FilterExpr import FilterExpr
 
 # TODO: OAP parsing assumes payload data as array

@@ -6,12 +6,12 @@ from collections import namedtuple
 import time
 from threading import Condition, Event
 
-from FileParser import FileParser
-from GenStructs import parse_obj
-from OTAPStructs import *
+from .FileParser import FileParser
+from .GenStructs import parse_obj
+from .OTAPStructs import *
 
-from NotifWorker import NotifWorker
-import ReliableCommander
+from .NotifWorker import NotifWorker
+from . import ReliableCommander
 
 from SmartMeshSDK.IpMgrConnectorMux import IpMgrConnectorMux
 from SmartMeshSDK.IpMgrConnectorMux import IpMgrSubscribe
@@ -73,7 +73,7 @@ class BlockMetadata(object):
 
     def add_all_dependents(self, max_block_num, all_motes):
         self.clear()
-        for n in xrange(max_block_num):
+        for n in range(max_block_num):
             self.blocks[n] = (len(all_motes), all_motes)
     
     def add_dependent(self, block_num, mac):
@@ -92,7 +92,7 @@ class BlockMetadata(object):
         self.blocks.clear()
         
     def blocklist(self):
-        blocks = self.blocks.keys()
+        blocks = list(self.blocks.keys())
         blocks.sort()
         return blocks
 
@@ -227,7 +227,7 @@ class OTAPCommunicator(object):
         else:
             otap_err = otap_error_string(oh_resp.otapResult)
             msg = "Handshake rejected (%s) by %s" % (otap_err, print_mac(mac))
-            print msg
+            print (msg)
             log.warning(msg)
         # TODO: handle the delay field
         # remove this mote from the list of expected handshakers
@@ -298,11 +298,11 @@ class OTAPCommunicator(object):
                 msg = '%s committed %s [FCS=0x%04x]' % (print_mac(mac),
                                                         self.current_file,
                                                         fcs)
-                print msg
+                print (msg)
                 log.info(msg)
             else:
                 msg = 'Commit error (%s) on %s' % (otap_error_string(oc_resp.otapResult), print_mac(mac))
-                print msg
+                print (msg)
                 log.error(msg)
                 self.complete_motes.remove(mac)
                 self.failure_motes.append(mac)
@@ -343,7 +343,10 @@ class OTAPCommunicator(object):
         hs_data = otap_file.get_handshake_data()
         self.current_file = filename  # TODO: use FileParser object?
         self.current_mic = otap_file.mic
+        try:
         hs_dump = ' '.join(['%02X' % ord(c) for c in hs_data])
+        except TypeError:
+            hs_dump = ' '.join(['%02X' % c for c in hs_data])
         log.debug('Handshake data [%d]: %s' % (len(hs_data), hs_dump))
         return hs_data
 
@@ -354,7 +357,7 @@ class OTAPCommunicator(object):
     def handshake_task(self, filename):        
         self.state = 'Handshake'
         msg = 'Starting handshake with %d motes' % len(self.all_motes)
-        print msg
+        print (msg)
         log.info(msg)
         cmd_data = self.build_handshake(filename)
         # clear the various mote lists
@@ -368,7 +371,7 @@ class OTAPCommunicator(object):
     def handshake_complete(self):
         # build the list of blocks to send
         msg = 'Handshake completed, %d motes accepted' % len(self.incomplete_motes)
-        print msg
+        print (msg)
         log.info(msg)
         if len(self.incomplete_motes):
             # initially, the list of blocks to send is all blocks to all
@@ -391,7 +394,7 @@ class OTAPCommunicator(object):
         self.state = 'Data'
         blist = self.transmit_list.blocklist()
         msg = 'Starting data transmission of %d blocks, %d motes left' % (len(blist), len(self.incomplete_motes))
-        print msg
+        print (msg)
         log.info(msg)
         file_info = self.files[self.current_file]
         try:
@@ -425,7 +428,7 @@ class OTAPCommunicator(object):
     def status_task(self):
         self.state = 'Status'
         msg = 'Starting status query to %d motes' % len(self.incomplete_motes)
-        print msg
+        print (msg)
         log.info(msg)
         self.transmit_list.clear()
         self.status_motes = self.incomplete_motes[:]
@@ -439,11 +442,11 @@ class OTAPCommunicator(object):
             
     def data_complete(self):
         log.info('Data complete')
-        print 'Data complete. No motes left on incomplete list'
+        print ('Data complete. No motes left on incomplete list')
         if self.auto_commit:
             self.start_commit(self.current_file)
         else:
-            print "Call start_commit('%s') to send OTAP commit" % self.current_file
+            print (("Call start_commit('%s') to send OTAP commit" % self.current_file))
         # the completion signal is always the last step in the callback
         self.notify_data_complete()
 
@@ -463,7 +466,7 @@ class OTAPCommunicator(object):
         commit_mic = self.files[commit_file].mic
         self.state = 'Commit'
         msg = "Starting commit for '%s' to %d motes" % (commit_file, len(self.complete_motes))
-        print msg
+        print (msg)
         log.info(msg)
         self.commit_motes = self.complete_motes[:]
         for m in self.commit_motes:
@@ -479,12 +482,12 @@ class OTAPCommunicator(object):
         if len(self.complete_motes):
             msg = 'Successful OTAP to:\n'
             msg += '\n'.join(print_mac(m) for m in self.complete_motes)
-            print msg
+            print (msg)
             log.info(msg)
         if len(self.failure_motes):
             msg = 'Failures:\n'
             msg += '\n'.join(print_mac(m) for m in self.failure_motes)
-            print msg
+            print (msg)
             log.error(msg)
         # the completion signal is always the last step in the callback
         self.notify_commit_complete()

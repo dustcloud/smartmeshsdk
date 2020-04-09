@@ -10,11 +10,11 @@ if __name__ == '__main__':
 
 #============================ imports =========================================
 
-import Tkinter
+import tkinter
 
-import dustGuiLib
-import dustFrame
-from   dustStyle import dustStyle
+from. import dustGuiLib
+from . import dustFrame
+from  .dustStyle import dustStyle
 
 from   SmartMeshSDK import ApiException
 
@@ -43,10 +43,10 @@ class dustFrameSensorTx(dustFrame.dustFrame):
         dustFrame.dustFrame.__init__(self,parentElem,guiLock,frameName,row,column)
         
         #row 0: slide
-        self.slide = Tkinter.Scale(self.container,
+        self.slide = tkinter.Scale(self.container,
                                    from_=0,
                                    to=0xffff,
-                                   orient=Tkinter.HORIZONTAL)
+                                   orient=tkinter.HORIZONTAL)
         self._add(self.slide,0,0,columnspan=3)
         
         #row 1: label
@@ -73,7 +73,7 @@ class dustFrameSensorTx(dustFrame.dustFrame):
         
         self.mgrButton = dustGuiLib.Button(self.container,
                                         text='send to manager',
-                                        state=Tkinter.DISABLED,
+                                        state=tkinter.DISABLED,
                                         command=self._sendMgr)
         self._add(self.mgrButton,2,2)
         
@@ -92,7 +92,7 @@ class dustFrameSensorTx(dustFrame.dustFrame):
         
         self.hostButton = dustGuiLib.Button(self.container,
                                             text='send to host',
-                                            state=Tkinter.DISABLED,
+                                            state=tkinter.DISABLED,
                                             command=self._sendHost)
         self._add(self.hostButton,3,2)
         
@@ -108,29 +108,29 @@ class dustFrameSensorTx(dustFrame.dustFrame):
         self.socketId  = socketId
         
         # enable send buttons
-        self.mgrButton.config(state=Tkinter.NORMAL)
-        self.hostButton.config(state=Tkinter.NORMAL)
+        self.mgrButton.config(state=tkinter.NORMAL)
+        self.hostButton.config(state=tkinter.NORMAL)
     
     def disactivate(self):
         # forget about the connector
         self.connector = None
         
         # disable send buttons
-        self.mgrButton.config(state=Tkinter.DISABLED)
-        self.hostButton.config(state=Tkinter.DISABLED)
+        self.mgrButton.config(state=tkinter.DISABLED)
+        self.hostButton.config(state=tkinter.DISABLED)
     
     #======================== private =========================================
     
     def _sendMgr(self):
         destAddr = WELL_KNOWN_ADDR_MANAGER
-        destPort = int(self.mgrPortText.get(1.0,Tkinter.END).strip())
+        destPort = int(self.mgrPortText.get(1.0,tkinter.END).strip())
         
         self._sendInternal(destAddr,destPort)
     
     def _sendHost(self):
-        destAddr =     self.hostAddrText.get(1.0,Tkinter.END).strip()
+        destAddr =     self.hostAddrText.get(1.0,tkinter.END).strip()
         try:
-            destPort = int(self.hostPortText.get(1.0,Tkinter.END).strip())
+            destPort = int(self.hostPortText.get(1.0,tkinter.END).strip())
         except ValueError:
             self._printStatus(self.ERROR,"invalid port number")
         
@@ -202,9 +202,9 @@ class exampleApp(object):
         self.window.mainloop()
     
     def _closeCb(self):
-        print " _closeCb called"
+        print (" _closeCb called")
 
 if __name__ == '__main__':
     import threading
-    from dustWindow import dustWindow
+    from .dustWindow import dustWindow
     exampleApp()

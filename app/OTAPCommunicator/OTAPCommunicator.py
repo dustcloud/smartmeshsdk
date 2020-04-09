@@ -18,7 +18,7 @@ $ python -i bin/OTAPCommunicator/OTAPCommunicator.py --nostart
 '''
 
 #============================ adjust path =====================================
-
+from __future__ import print_function
 import sys
 import os
 if __name__ == "__main__":
@@ -41,6 +41,7 @@ from SmartMeshSDK                      import sdk_version
 
 # Manager-specific imports
 from SmartMeshSDK                      import ApiException
+from SmartMeshSDK.IpMgrConnectorSerial import IpMgrConnectorSerial
 from SmartMeshSDK.IpMgrConnectorMux    import IpMgrConnectorMux
 from SmartMeshSDK.IpMgrConnectorMux    import IpMgrSubscribe
 
@@ -100,6 +101,9 @@ parser.add_option("--host", dest="host",
 parser.add_option("-p", "--port", dest="port", 
                   default=DEFAULT_PORT,
                   help="TCP port of Serial Mux")
+parser.add_option("--serial-port", dest="serial_port", 
+                  default='',
+                  help="Serial port of IP Manager")
 parser.add_option("-m", "--mote", dest="motes", default=[],
                   action="append",
                   help="List of mote(s) to send files")
@@ -122,14 +126,21 @@ otap_options = otap_options._replace(inter_command_delay=int(options.delay))
 #============================ body ============================================
 
 # create the client
-mgr = IpMgrConnectorMux.IpMgrConnectorMux()
-mgr.connect({'host': options.host, 'port': int(options.port)})
+if options.serial_port:
+    mgr = IpMgrConnectorSerial.IpMgrConnectorSerial()
+    mgr.connect({'port': options.serial_port})
+else:
+    mgr = IpMgrConnectorMux.IpMgrConnectorMux()
+    mgr.connect({'host': options.host, 'port': int(options.port)})
 
 # Wrap a simple adapter around the manager's sendData method
 
 def send_data(mac, msg, port):
     'Returns: the sendData response'
     global mgr
+    if not isinstance(msg,str):
+        msg_hex = [int(b) for b in msg]
+    else:
     msg_hex = [int(ord(b)) for b in msg]
     # TODO: priority as enum
     rc = -1
@@ -156,8 +167,7 @@ class NotifListener(IpMgrSubscribe.IpMgrSubscribe):
 
     def register(self, cb):
         self.otap_callback = cb
-        self.subscribe(IpMgrConnectorMux.IpMgrConnectorMux.NOTIFDATA,
-                       self.handle_data, False)
+        self.subscribe(mgr.NOTIFDATA, self.handle_data, False)
 
     def handle_data(self, notif_type, data_tuple):
         try:
@@ -188,8 +198,9 @@ def get_motes(mgr):
     return motes
 
 def match_mote(motes, mote_abbrev):
-    macs = [m.macAddress for m in motes]
-    input_mac = tuple([int(c, 16) for c in mote_abbrev.split('-')])
+    # turn MAC addresses into lists for comparison
+    macs = [list(m.macAddress) for m in motes]
+    input_mac = list([int(c, 16) for c in mote_abbrev.split('-')])
     if input_mac in macs:
         return input_mac
     else:
@@ -202,10 +213,10 @@ def main(opts, files):
     log.info("--- OTAP Communicator v%s", version_string())
     log.info("Started with command line arguments: %s", sys.argv)
     
-    print "Welcome to the OTAP communicator console"
+    print ("Welcome to the OTAP communicator console")
     if len(files):
         for f in files:
-            print 'Loading', f
+            print ('Loading', f)
             comm.load_file(f, os.path.splitext(f)[1] in OTAP_EXTENSIONS)
 
     # Handle user-specified list of motes
@@ -221,7 +232,7 @@ def main(opts, files):
 
     if opts.autorun and len(comm.all_motes):
         for f in files:
-            print 'Starting OTAP for', f
+            print ('Starting OTAP for', f)
             comm.start_handshake(f)
             comm.wait_for_commit_complete()
 
@@ -232,11 +243,11 @@ def main(opts, files):
         import time
         import struct
         # Welcome!
-        print "You can use the 'mgr' variable to call Manager API functions."
-        print ">>> help(mgr)"
-        print "You can use the 'comm' variable to interact with the OTAP Communicator."
-        print ">>> help(comm)"
-        print "Run mgr.disconnect() before exiting the interactive shell."
+        print ("You can use the 'mgr' variable to call Manager API functions.")
+        print (">>> help(mgr)")
+        print ("You can use the 'comm' variable to interact with the OTAP Communicator.")
+        print (">>> help(comm)")
+        print ("Run mgr.disconnect() before exiting the interactive shell.")
 
 
 if __name__=='__main__':

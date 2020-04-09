@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-import ApiDefinition
-import ByteArraySerializer
+from . import ApiDefinition
+from . import ByteArraySerializer
 
 class HartMoteDefinition(ApiDefinition.ApiDefinition):
     '''
@@ -140,6 +140,7 @@ class HartMoteDefinition(ApiDefinition.ApiDefinition):
             [16,   'RC_ACCESS_DENIED',           'Access to this command/variable denied'],
             [18,   'RC_OPEN_FAIL',               'Open operation failed'],
             [19,   'RC_ERASE_FAIL',              'Erase operation failed'],
+            [21,   'RC_ERROR',                   'Generic error'], 			
         ],
         'ApplicationDomain' : [
             [0x00, 'Publish',               ''],
@@ -557,13 +558,15 @@ class HartMoteDefinition(ApiDefinition.ApiDefinition):
         {
             'id'         : 0x11,
             'name'       : 'testRadioRxStats',
-            'description': 'The getParameter<testRadioRxStats> command retrieves statistics for the latest radio reception test performed using the testRadioRx command. The statistics show the number of good and bad packets (CRC failures) received during the test.',
+            'description': 'The getParameter<testRadioRxStats> command retrieves statistics for the latest radio reception test performed using the testRadioRx command. The radio test statistics contain the number of good packets received, the number of bad packets (CRC failures) received, the average RSSI (in dBm) of successfully received packets, and the average link quality indicator (LQI) of successfully received packets during the test.',
             'request'    : [
             ],
             'response'   : {
                 'FIELDS':  [
                     ['rxOk',                INT,      2,   None],
                     ['rxFailed',            INT,      2,   None],
+                    ['aveRSSI',             INTS,     1,   None],
+                    ['aveLQI',              INT,      1,   None],
                 ],
             },
             'responseCodes': {
@@ -1576,6 +1579,48 @@ class HartMoteDefinition(ApiDefinition.ApiDefinition):
             'responseCodes': {
                'RC_OK'                      : 'Command was accepted',
                'RC_INVALID_STATE'           : 'The mote is in invalid state to start PER test',
+            },
+        },
+        {
+            'id'         : 0x1d,
+            'name'       : 'testXtalComp',
+            'description': 'The testXtalComp command initiates 32kHz crystal test to check frequency accuracy. This command may be issues only when mote is in the Idle state.\n\nThis command is available in Hart Mote version 1.3.0 or later.',
+            'request'    : [
+                ['bias',            INT,      1,   None],
+                ['spinDownMs',      INT,      2,   None],
+                ['spinUpMs',        INT,      2,   None],
+                ['iterations',      INT,      1,   None],
+            ],
+            'response'   : {
+                'FIELDS':  [
+                    [RC,            INT,      1,   True],
+                    ['avgFreqMeas', INT,      4,   None],	
+                    ['ppFreqMeas',  INT,      2,   None],					
+                ],
+            },
+            'responseCodes': {
+               'RC_OK'                      : 'Command was accepted',
+               'RC_ERROR'                   : 'The device is marginal',
+            },
+        },
+        {
+            'id'         : 0x1f,
+            'name'       : 'testXtal',
+            'description': "The testXtal command is is used to determine the optimal trim value to center the 20MHz crystal oscillator frequency given a particular PCB layout and crystal combination. It is used to measure the 20MHz crystal, after which the user must enter trim values into the device's fuse table for access by software.\n\nThe command is available in HART Mote version 1.3.0 or later.\n\nThis command may only be used when the mote's radio is not active, i.e in the slave mode and prior to joining the network. This function requires the mote be connected to the DC9010 programming board. It could take up to 30 seconds for the command to execute. After using this command, reboot the mote to continue normal operation.",
+            'request'    : [
+                ['trimOpt',        INT,     1,   None],
+                ['tempGrade',      INT,     1,   None],
+            ],
+            'response'   : {
+                'FIELDS':  [
+                    [RC,           INT,     1,   True],
+                    ['pullVal',    INT,     1,   None],	
+                    ['ppmErr',     INTS,    4,   None],					
+                ],
+            },
+            'responseCodes': {
+               'RC_OK'                      : 'Command was accepted',
+               'RC_INVALID_STATE'           : 'The mote is in invalid state to start Xtal test',
             },
         },
     ]

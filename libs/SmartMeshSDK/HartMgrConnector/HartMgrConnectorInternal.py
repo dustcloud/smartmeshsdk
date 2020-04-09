@@ -1,7 +1,7 @@
 import copy
-import xmlrpclib
+import xmlrpc.client
 
-from NotifReader                  import NotifReader
+from .NotifReader                  import NotifReader
 
 from SmartMeshSDK                 import ApiException
 from SmartMeshSDK.ApiConnector    import ApiConnector
@@ -52,7 +52,7 @@ class HartMgrConnectorInternal(ApiConnector):
     def _init_xmlrpc(self, host, port, use_ssl = False):
         scheme = 'http' if not use_ssl else 'https'
         xmlrpc_url = "%s://%s:%d" % (scheme, host, port)
-        rpc_client = xmlrpclib.ServerProxy(xmlrpc_url)        
+        rpc_client = xmlrpc.client.ServerProxy(xmlrpc_url)        
         # xmlrpclib.Fault exceptions are passed up to the caller
         return rpc_client
         
@@ -68,7 +68,7 @@ class HartMgrConnectorInternal(ApiConnector):
 
             self.login(self.connect_params['user'], self.connect_params['password'])
 
-        except xmlrpclib.Fault as ex:
+        except xmlrpc.client.Fault as ex:
             log.error(str(ex))
             raise ApiException.ConnectionError(str(ex))
         log.info('Connected to %s' % self.connect_params['host'])
@@ -103,7 +103,7 @@ class HartMgrConnectorInternal(ApiConnector):
         cmd_id = self.apidef.nameToId(self.apidef.COMMAND, cmd_name)
         try: 
             xmlrpc_resp = getattr(self.manager, cmd_id)(*params)
-        except xmlrpclib.Fault as ex:
+        except xmlrpc.client.Fault as ex:
             log.error(str(ex))
             raise ApiException.APIError(cmd_name[0], str(ex))
 
@@ -131,7 +131,7 @@ class HartMgrConnectorInternal(ApiConnector):
         if self.login_token:
             try:
                 result = self.manager.logout(self.login_token)
-            except xmlrpclib.Fault:
+            except xmlrpc.client.Fault:
                 pass
             self.login_token = None
 
@@ -155,7 +155,7 @@ class HartMgrConnectorInternal(ApiConnector):
             (self.notif_token, self.notif_port) = self.manager.subscribe(token, notif_filter)
             log.info('Received response %s: %s %s' % (cmd_name, self.notif_token, self.notif_port))
 
-        except xmlrpclib.Fault as ex:
+        except xmlrpc.client.Fault as ex:
             log.error(str(ex))
             raise ApiException.APIError(cmd_name[0], str(ex))
 
@@ -183,7 +183,7 @@ class HartMgrConnectorInternal(ApiConnector):
                 self.notif_thread = None
                 self.notif_token = None
             return {'result': "OK"}
-        except xmlrpclib.Fault as ex:
+        except xmlrpc.client.Fault as ex:
             log.error(str(ex))
             raise ApiException.APIError(cmd_name[0], str(ex))
 

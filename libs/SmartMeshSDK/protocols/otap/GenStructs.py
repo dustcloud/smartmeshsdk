@@ -24,11 +24,24 @@ def parse_field(field, data, index = 0):
         desc = '{0}B'.format(field.len)
         val = list(struct.unpack(desc, data[s:e]))
     elif field.type is 'int' and field.len is 1:
+        try:
         val = struct.unpack('B', data[s])[0]
+        except TypeError:
+            aByte = data[s]
+            if not isinstance(aByte,int):
+                aByte = ord(aByte)
+            val = struct.unpack('B', bytes([aByte]))[0]
     elif field.type is 'int' and field.len is 2:
         val = struct.unpack('!H', data[s:e])[0]
     elif field.type is 'int' and field.len is 4:
+        try:
         val = struct.unpack('!L', data[s:e])[0]
+        except TypeError:
+            aByte = data[s]
+            anInt = data[s:e]
+            if not isinstance(aByte,int):
+                anInt = [ord(b) for b in data[s:e]]
+            val = struct.unpack('!L', bytes(anInt))[0]
     elif field.type is 'boolean':
         val = ord(data[s]) == 1
         pass
@@ -57,7 +70,7 @@ def to_string(self):
 
 def serialize(self):
     'Serialize the structure in its binary API format'
-    resp = ''
+    resp = b''
     for f in self.fields:
         val = self.__getattribute__(f.name)
         if f.type is 'array':

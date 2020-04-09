@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 #============================ adjust path =====================================
-
+from __future__ import print_function
 import sys
 import os
 if __name__ == "__main__":
@@ -23,6 +23,7 @@ import argparse
 import json
 import pprint
 import socket
+
 
 # requirements
 import requests
@@ -61,7 +62,7 @@ def logError(err):
     output += ["=== traceback ==="]
     output += [traceback.format_exc()]
     output  = '\n'.join(output)
-    print output
+    print (output)
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -495,7 +496,7 @@ class DataGatherer(threading.Thread):
         
         #=== motes
         # getMoteConfig from snapshot
-        motes = [v for (k,v) in snapshot['snapshot']['getMoteConfig'].items()]
+        motes = [v for (k,v) in list(snapshot['snapshot']['getMoteConfig'].items())]
         # metadata
         for m in motes:
             m['manager'] = snapshot['manager']
@@ -503,8 +504,8 @@ class DataGatherer(threading.Thread):
         #=== paths
         paths = []
         # getPathInfo from snapshot
-        for (mac,pi) in snapshot['snapshot']['getPathInfo'].items():
-            paths += pi.values()
+        for (mac,pi) in list(snapshot['snapshot']['getPathInfo'].items()):
+            paths += list(pi.values())
         # metadata
         for p in paths:
             p['manager'] = snapshot['manager']
@@ -544,7 +545,7 @@ class DataGatherer(threading.Thread):
         # update stats
         AppData().incrStats("num{0}".format(event['name']))
         
-        print '{0} {1}'.format(event['manager'],event['name'])
+        print ('{0} {1}'.format(event['manager'],event['name']))
         
         if event['name'] in [
                 "eventMoteCreate",
@@ -656,7 +657,7 @@ class DataGatherer(threading.Thread):
                 paths += [newPath]
             else:
                 # already in there! replace
-                print 'WARNING: eventPathCreate for a path that already exists!'
+                print ('WARNING: eventPathCreate for a path that already exists!')
                 paths[idx] = newPath
             AppData().set('paths',paths)
         
@@ -801,7 +802,7 @@ class DataGatherer_JsonServer(DataGatherer):
             r = requests.get(
                 'http://127.0.0.1:8080/api/v1/status',
             )
-            managers = [k for (k,v) in r.json()['managers'].items() if v=='connected']
+            managers = [k for (k,v) in list(r.json()['managers'].items()) if v=='connected']
             # step 2. trigger snapshots for each
             for m in managers:
                 r = requests.post(
@@ -837,7 +838,7 @@ class DataGatherer_serial(DataGatherer):
     def _triggerSnapshots(self):
         # step 1. get list of managers
         r = self.jsonManager.status_GET()
-        managers = [k for (k,v) in r['managers'].items() if v=='connected']
+        managers = [k for (k,v) in list(r['managers'].items()) if v=='connected']
         # step 2. trigger snapshots for each
         for m in managers:
             self.jsonManager.snapshot_POST(
@@ -919,17 +920,17 @@ class WebServer(object):
                 args[0](**kwargs) # blocking
             except socket.error as err:
                 if err[0]==10013:
-                    print 'FATAL: cannot open TCP port {0}.'.format(kwargs['port'])
-                    print '    Is another application running on that port?'
+                    print ('FATAL: cannot open TCP port {0}.'.format(kwargs['port']))
+                    print ('    Is another application running on that port?')
                 else:
-                    print logError(err)
+                    print (logError(err))
             except Exception as err:
-                print logError(err)
-            print '    Trying again in {0} seconds'.format(RETRY_PERIOD),
+                print (logError(err))
+            print ('    Trying again in {0} seconds'.format(RETRY_PERIOD), end=' ')
             for _ in range(RETRY_PERIOD):
                 time.sleep(1)
-                print '.',
-            print ''
+                print ('.', end=' ')
+            print ('')
     
     #======================== webhandlers =====================================
     
@@ -1209,7 +1210,7 @@ class SeeTheMesh(object):
                 found = True
                 break
         if not found:
-            print 'ERROR: unexpected "managerconnection" parameter'
+            print ('ERROR: unexpected "managerconnection" parameter')
             return
 
         # interfaces
@@ -1242,7 +1243,7 @@ class SeeTheMesh(object):
             callback              = self._clihandle_status,
         )
         
-        print 'Web interface started at http://127.0.0.1:{0}'.format(self.tcpport)
+        print ('Web interface started at http://127.0.0.1:{0}'.format(self.tcpport))
     
     #========================  CLI handlers ===================================
     
@@ -1252,16 +1253,16 @@ class SeeTheMesh(object):
         self.webServer.close()
         
         time.sleep(.3)
-        print "bye bye."
+        print ("bye bye.")
     
     def _clihandle_stats(self,params):
         
         stats = AppData().getStats()
         if stats:
-            maxlen = max([len(k) for k in stats.keys()])
+            maxlen = max([len(k) for k in list(stats.keys())])
             formatstring = ' - {0:<'+str(maxlen+1)+'}: {1}'
             for k in sorted(stats.keys()):
-                print formatstring.format(k,stats[k])
+                print (formatstring.format(k,stats[k]))
     
     def _clihandle_status(self,params):
         pp.pprint(self.dataGatherer.getStatus())

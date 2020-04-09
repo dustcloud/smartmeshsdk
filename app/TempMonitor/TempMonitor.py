@@ -4,6 +4,7 @@
 
 import sys
 import os
+from builtins import input
 if __name__ == "__main__":
     here = sys.path[0]
     sys.path.insert(0, os.path.join(here, '..', '..','libs'))
@@ -19,9 +20,9 @@ from SmartMeshSDK.utils import SmsdkInstallVerifier
     ]
 )
 if not goodToGo:
-    print "Your installation does not allow this application to run:\n"
-    print reason
-    raw_input("Press any button to exit")
+    print ("Your installation does not allow this application to run:\n")
+    print (reason)
+    input("Press any button to exit")
     sys.exit(1)
 
 #============================ imports =========================================
@@ -194,7 +195,7 @@ class notifClient(object):
         else:
             output = "apiDef of type {0} unexpected".format(type(self.apiDef))
             log.critical(output)
-            print output
+            print (output)
             raise SystemError(output)
         
         # OAP dispatcher
@@ -220,7 +221,7 @@ class notifClient(object):
         self.updates = {}
         if mac in self.data:
             self.updates[mac] = []
-            for k,v in self.data[mac].items():
+            for k,v in list(self.data[mac].items()):
                 if   k in [COL_NOTIF_DATA,
                            COL_NOTIF_IPDATA,
                            COL_NOTIF_HR]:
@@ -238,7 +239,7 @@ class notifClient(object):
         self.updates = {}
         if mac in self.data:
             self.updates[mac] = []
-            for k,v in self.data[mac].items():
+            for k,v in list(self.data[mac].items()):
                 if   k in [COL_TEMP_NUM,]:
                     self.updates[mac].append(k)
                     self.data[mac][k] = 0
@@ -274,7 +275,7 @@ class notifClient(object):
         else:
             output = "apiDef of type {0} unexpected".format(type(self.apiDef))
             log.critical(output)
-            print output
+            print (output)
             raise SystemError(output)
         
         # record current time
@@ -381,7 +382,7 @@ class notifClient(object):
                     # can happen if latency calculator hasn't acquired lock yet
                     pass
         except Exception as err:
-            print err
+            print (err)
         
         # unlock the data structure
         self.dataLock.release()
@@ -423,12 +424,12 @@ class notifClient(object):
             else:
                 output = "apiDef of type {0} unexpected".format(type(self.apiDef))
                 log.critical(output)
-                print output
+                print (output)
                 raise SystemError(output)
         
         except Exception as err:
             output = traceback.format_exc()
-            print output
+            print (output)
             log.critical(output)
         
         finally:
@@ -808,7 +809,7 @@ class TempMonitorGui(object):
         else:
             output = "apiDef of type {0} unexpected".format(type(self.apiDef))
             log.critical(output)
-            print output
+            print (output)
             raise SystemError(output)
         
         # order by increasing MAC address
@@ -889,14 +890,14 @@ class TempMonitorGui(object):
         (isMoteActive,data,updates) = self.notifClientHandler.getData()
         
         # update the frame
-        for mac,data in data.items():
+        for mac,data in list(data.items()):
             
             # detect new motes
             if mac not in self.oap_clients:
                 self._addNewMote(mac)
             
             # update
-            for columnname,columnval in data.items():
+            for columnname,columnval in list(data.items()):
                 if columnname in updatable_columns:
                     if ((mac in updates) and (columnname in updates[mac])):
                         self.moteListFrame.update(mac,columnname,columnval)
@@ -937,7 +938,7 @@ class TempMonitorGui(object):
         else:
             output = "apiDef of type {0} unexpected".format(type(self.apiDef))
             log.critical(output)
-            print output
+            print (output)
             raise SystemError(output)
 
 #============================ main ============================================

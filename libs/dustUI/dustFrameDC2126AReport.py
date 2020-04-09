@@ -12,12 +12,12 @@ if __name__ == "__main__":
 
 import time
 import threading
-import Tkinter
+import tkinter
 
-import dustGuiLib
-import dustFrame
-import dustFrameText
-from   dustStyle import dustStyle
+from . import dustGuiLib
+from . import dustFrame
+from . import dustFrameText
+from .dustStyle import dustStyle
 
 #============================ defines =========================================
 
@@ -106,7 +106,7 @@ class dustFrameDC2126AReport(dustFrame.dustFrame):
         self.temperature = dustGuiLib.Label(
             self.container,
             fg               = 'green',
-            relief           = Tkinter.GROOVE, 
+            relief           = tkinter.GROOVE, 
             borderwidth      = 2,
             text             = '--.--'+SYMBOL_DEGREE
         )
@@ -125,7 +125,7 @@ class dustFrameDC2126AReport(dustFrame.dustFrame):
         self._add(temp,1,0)
         temp.configure(
             font             = ("Helvetica",12,"bold"),
-            anchor           = Tkinter.CENTER
+            anchor           = tkinter.CENTER
         )
         self.energysource     = dustGuiLib.Label(
             self.container,
@@ -134,7 +134,7 @@ class dustFrameDC2126AReport(dustFrame.dustFrame):
         self._add(self.energysource,2,0)
         self.energysource.configure(
             font             = ("Helvetica",16,"bold"),
-            anchor           = Tkinter.CENTER,
+            anchor           = tkinter.CENTER,
         )
         
         # adcValue
@@ -144,7 +144,7 @@ class dustFrameDC2126AReport(dustFrame.dustFrame):
         )
         self._add(self.adcValue,3,0)
         self.adcValue.configure(
-            anchor           = Tkinter.CENTER,
+            anchor           = tkinter.CENTER,
         )
         
         # schedule first GUI update
@@ -230,7 +230,7 @@ class exampleApp(object):
             returnVal = random.uniform(-40,85)
             self.lastUpdateTemperature = now
         
-        print "_getTemperatureCb() returns  {0}".format(returnVal)
+        print ("_getTemperatureCb() returns  {0}".format(returnVal))
         
         return returnVal
     
@@ -244,7 +244,7 @@ class exampleApp(object):
             returnVal =  random.choice(['solar','battery'])
             self.lastUpdateEnergySource = now
         
-        print "_getEnergySourceCb() returns  {0}".format(returnVal)
+        print ("_getEnergySourceCb() returns  {0}".format(returnVal))
         
         return returnVal
     
@@ -258,15 +258,15 @@ class exampleApp(object):
             returnVal =  random.uniform(0,1800)
             self.lastUpdateAdcValue = now
         
-        print "_getAdcValueCb() returns     {0}".format(returnVal)
+        print ("_getAdcValueCb() returns     {0}".format(returnVal))
         
         return returnVal
         
     def _closeCb(self):
-        print ' _closeCb called'
+        print (' _closeCb called')
         self.frame.close()
 
 if __name__ == '__main__':
     import random
-    from dustWindow import dustWindow
+    from .dustWindow import dustWindow
     exampleApp()

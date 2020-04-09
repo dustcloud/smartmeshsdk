@@ -4,6 +4,7 @@
 
 import sys
 import os
+from builtins import input
 if __name__ == "__main__":
     here = sys.path[0]
     sys.path.insert(0, os.path.join(here, '..', '..','libs'))
@@ -20,18 +21,18 @@ from SmartMeshSDK.utils import SmsdkInstallVerifier
                             ]
                         )
 if not goodToGo:
-    print "Your installation does not allow this application to run:\n"
-    print reason
-    raw_input("Press any button to exit")
+    print ("Your installation does not allow this application to run:\n")
+    print (reason)
+    input("Press any button to exit")
     sys.exit(1)
 
 #============================ imports =========================================
 
-import Tkinter
+import tkinter
 try:
-    import ttk
+    import tkinter.ttk
 except ImportError:
-    ttk = Tkinter
+    ttk = tkinter
 import re
 import threading
 
@@ -43,8 +44,8 @@ from dustUI       import dustWindow
 
 #============================ defines =========================================
 
-EXPAND_ALL    = Tkinter.N + Tkinter.E + Tkinter.S + Tkinter.W
-EXPAND_HORIZ  = Tkinter.E + Tkinter.W
+EXPAND_ALL    = tkinter.N + tkinter.E + tkinter.S + tkinter.W
+EXPAND_HORIZ  = tkinter.E + tkinter.W
 
 DESCRIPTION   = '''The Serial Mux Configurator provides a simple editor for Serial Mux configurations.'''
 
@@ -62,12 +63,12 @@ class dustStatusWindow(dustWindow.dustWindow):
     def __init__(self, appname, closeCallback):
         dustWindow.dustWindow.__init__(self, appname, closeCallback)
 
-        self.status_var = Tkinter.StringVar()
-        self.status = ttk.Label(self, textvariable=self.status_var)
+        self.status_var = tkinter.StringVar()
+        self.status = tkinter.ttk.Label(self, textvariable=self.status_var)
         self.status.grid(row=100, column=0, padx=2, sticky=EXPAND_HORIZ)
 
-        sep = ttk.Separator(self, orient='vertical')
-        sep.grid(row=100, column=1, sticky=Tkinter.N+Tkinter.S)
+        sep = tkinter.ttk.Separator(self, orient='vertical')
+        sep.grid(row=100, column=1, sticky=tkinter.N+tkinter.S)
 
         #re-grid the version
         self.version.grid(row=100, column=2, padx=2)
@@ -80,9 +81,9 @@ class ValidatingEntry(ttk.Entry):
     # base class for validating entry widgets
 
     def __init__(self, master, value="", **kw):
-        apply(ttk.Entry.__init__, (self, master), kw)
+        tkinter.ttk.Entry.__init__(*(self, master), **kw)
         self.__value = value
-        self.__variable = Tkinter.StringVar()
+        self.__variable = tkinter.StringVar()
         self.__variable.set(value)
         self.__variable.trace("w", self.__callback)
         self.config(textvariable=self.__variable)
@@ -90,13 +91,13 @@ class ValidatingEntry(ttk.Entry):
     def __callback(self, *dummy):
         value = self.__variable.get()
         newvalue = self.validate(value)
-        print 'Validating:', value
+        print ('Validating:', value)
         if newvalue is None:
             #self.__variable.set(self.__value)
-            print 'Bad'
+            print ('Bad')
             self.configure(background='red')
         elif newvalue != value:
-            print 'Updating'
+            print ('Updating')
             self.__value = newvalue
             self.__variable.set(self.newvalue)
         else:
@@ -119,7 +120,7 @@ class IntegerEntry(ValidatingEntry):
             return None
 
 def setupStyle():
-    style = ttk.Style()
+    style = tkinter.ttk.Style()
 
     BACKGROUND_COLOR = '#f2f2f2'
 
@@ -154,46 +155,46 @@ class SMConfigUI(object):
 
         setupStyle()
         
-        style = ttk.Style()
+        style = tkinter.ttk.Style()
         self.root.configure(background=style.lookup('TFrame', 'background'))
 
         self.uiElements = {}
         self.uiValues = {}
-        self.frame = ttk.Frame(self.root, width=300, height=200)
+        self.frame = tkinter.ttk.Frame(self.root, width=300, height=200)
         self.frame.grid(row=0, column=0, columnspan=3, sticky=EXPAND_ALL)
         self.frame.columnconfigure(0, weight=1)
         self.frame.rowconfigure(0, weight=1)        
 
-        self.description = ttk.Label(self.frame, text=DESCRIPTION)
+        self.description = tkinter.ttk.Label(self.frame, text=DESCRIPTION)
         self.description.grid(row=0, column=0, columnspan=2,
                               padx=4, pady=4, sticky=EXPAND_HORIZ)
         
-        self.table = ttk.Frame(self.frame)
+        self.table = tkinter.ttk.Frame(self.frame)
         self.table.grid(row=1, column=0, columnspan=2,
                         padx=4, pady=4, sticky=EXPAND_ALL)
         self.table.columnconfigure(3, weight=1)
         self.table.rowconfigure(0, weight=1)
 
-        h1 = ttk.Label(self.table, text='Serial port', style='TableHeader.TLabel')
-        h1.grid(row=0, column=0, padx=3, sticky=Tkinter.W)
-        h2 = ttk.Label(self.table, text='Device', style='TableHeader.TLabel')
-        h2.grid(row=0, column=1, padx=3, sticky=Tkinter.W)
-        h2 = ttk.Label(self.table, text='TCP port', style='TableHeader.TLabel')
-        h2.grid(row=0, column=2, padx=3, sticky=Tkinter.W)
-        h3 = ttk.Label(self.table, text='Status', style='TableHeader.TLabel')
-        h3.grid(row=0, column=3, padx=3, sticky=Tkinter.W)
+        h1 = tkinter.ttk.Label(self.table, text='Serial port', style='TableHeader.TLabel')
+        h1.grid(row=0, column=0, padx=3, sticky=tkinter.W)
+        h2 = tkinter.ttk.Label(self.table, text='Device', style='TableHeader.TLabel')
+        h2.grid(row=0, column=1, padx=3, sticky=tkinter.W)
+        h2 = tkinter.ttk.Label(self.table, text='TCP port', style='TableHeader.TLabel')
+        h2.grid(row=0, column=2, padx=3, sticky=tkinter.W)
+        h3 = tkinter.ttk.Label(self.table, text='Status', style='TableHeader.TLabel')
+        h3.grid(row=0, column=3, padx=3, sticky=tkinter.W)
 
-        sep = ttk.Separator(self.table, orient='horizontal')
+        sep = tkinter.ttk.Separator(self.table, orient='horizontal')
         sep.grid(row=1, column=0, columnspan=4, sticky=EXPAND_HORIZ)
 
-        self.add_button = ttk.Button(self.frame, text='Add configuration',
+        self.add_button = tkinter.ttk.Button(self.frame, text='Add configuration',
                                          command=self.create_service)
-        self.add_button.grid(row=2, column=0, padx=2, sticky=Tkinter.E)
+        self.add_button.grid(row=2, column=0, padx=2, sticky=tkinter.E)
         self.add_button.columnconfigure(0, weight=1)
 
-        self.refresh_button = ttk.Button(self.frame, text='Refresh',
+        self.refresh_button = tkinter.ttk.Button(self.frame, text='Refresh',
                                          command=self.refresh)
-        self.refresh_button.grid(row=2, column=1, padx=2, sticky=Tkinter.E)
+        self.refresh_button.grid(row=2, column=1, padx=2, sticky=tkinter.E)
 
 
     def register_controller(self, controller):
@@ -219,9 +220,9 @@ class SMConfigUI(object):
         grid_row = 2 * (row + 1)
 
         # Serial port
-        port_var = Tkinter.StringVar()
+        port_var = tkinter.StringVar()
         port_var.set(sm_config.com_port)
-        cp_label = ttk.Combobox(self.table, width=6, textvariable=port_var,
+        cp_label = tkinter.ttk.Combobox(self.table, width=6, textvariable=port_var,
                                 values=port_list)
         cp_label.grid(row=grid_row, column=0, pady=3)
 
@@ -229,45 +230,45 @@ class SMConfigUI(object):
         #cp_label.configure(validate='focusout', validatecommand=vcmd)
 
         # Device info
-        device_var = Tkinter.StringVar()
+        device_var = tkinter.StringVar()
         device_var.set(sm_config.device_info())
-        dev_label = ttk.Label(self.table, width=16, textvariable=device_var)
-        dev_label.grid(row=grid_row, column=1, padx=3, sticky=Tkinter.W)
+        dev_label = tkinter.ttk.Label(self.table, width=16, textvariable=device_var)
+        dev_label.grid(row=grid_row, column=1, padx=3, sticky=tkinter.W)
         dev_label.columnconfigure(1, weight=1)
 
         # Listener port
-        listener_var = Tkinter.StringVar()
+        listener_var = tkinter.StringVar()
         listener_var.set(sm_config.listener_port)
-        lp_label = ttk.Entry(self.table, width=6, textvariable=listener_var)
+        lp_label = tkinter.ttk.Entry(self.table, width=6, textvariable=listener_var)
         lp_label.grid(row=grid_row, column=2, padx=3)
         
         vcmd = (self.root.register(self.validate_listener_port), '%W', '%P')
         lp_label.configure(validate='focus', validatecommand=vcmd)
 
         # Status
-        status_var = Tkinter.StringVar()
+        status_var = tkinter.StringVar()
         status_var.set(sm_config.status)
-        st_label = ttk.Label(self.table, width=16, textvariable=status_var)
-        st_label.grid(row=grid_row, column=3, padx=3, sticky=Tkinter.W)
+        st_label = tkinter.ttk.Label(self.table, width=16, textvariable=status_var)
+        st_label.grid(row=grid_row, column=3, padx=3, sticky=tkinter.W)
         st_label.columnconfigure(3, weight=1)
 
         # Command buttons
-        save_button = ttk.Button(self.table, text='Save',
+        save_button = tkinter.ttk.Button(self.table, text='Save',
                                  width=6,
                                  command=lambda: self.update_service(sm_config))
         save_button.grid(row=grid_row, column=4, padx=2)
 
-        start_button = ttk.Button(self.table, text='Start',
+        start_button = tkinter.ttk.Button(self.table, text='Start',
                                   width=6,
                                   command=lambda: self.controller.start_service(sm_config))
         start_button.grid(row=grid_row, column=5, padx=2)
 
-        stop_button = ttk.Button(self.table, text='Stop',
+        stop_button = tkinter.ttk.Button(self.table, text='Stop',
                                  width=6,
                                  command=lambda: self.controller.stop_service(sm_config))
         stop_button.grid(row=grid_row, column=6, padx=2)
 
-        remove_button = ttk.Button(self.table, text='Remove',
+        remove_button = tkinter.ttk.Button(self.table, text='Remove',
                                    width=7,
                                    command=lambda: self.controller.remove_service(sm_config))
         remove_button.grid(row=grid_row, column=7, padx=2)
@@ -297,8 +298,8 @@ class SMConfigUI(object):
 
     def update(self, sm_data):
         # forget existing UI elements
-        for row in self.uiElements.values():
-            for name, ui_element in row.items():
+        for row in list(self.uiElements.values()):
+            for name, ui_element in list(row.items()):
                 if not name.startswith('menu'):
                     ui_element.grid_forget()
         self.uiElements = {}
@@ -410,7 +411,7 @@ class SerialMuxController(object):
         self.ui.update(self.model)
 
     def remove_service(self, sm_config):
-        print 'Removing', sm_config.config_name
+        print ('Removing', sm_config.config_name)
         config_dir = self.processmgr.SERIAL_MUX_CONFIG_DIR
         # remove daemon/service
         self.processmgr.remove(sm_config.config_name)
@@ -421,7 +422,7 @@ class SerialMuxController(object):
         self.ui.update(self.model)
 
     def start_service(self, sm_config):
-        print 'Starting', sm_config.config_name
+        print ('Starting', sm_config.config_name)
         self.processmgr.start(sm_config.config_name)
         # TODO: handle errors
         sm_config.status = SerialMuxConfigs.SerialMuxConfig.STATUS_RUNNING
@@ -430,7 +431,7 @@ class SerialMuxController(object):
         self.ui.update_row_values(sm_config)
 
     def stop_service(self, sm_config):
-        print 'Stopping', sm_config.config_name
+        print ('Stopping', sm_config.config_name)
         self.processmgr.stop(sm_config.config_name)
         sm_config.status = SerialMuxConfigs.SerialMuxConfig.STATUS_STOPPED
         # update UI

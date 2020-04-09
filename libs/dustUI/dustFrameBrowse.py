@@ -20,12 +20,12 @@ log.addHandler(NullHandler())
 
 #============================ imports =========================================
 
-import Tkinter
-import tkFileDialog
+import tkinter
+import tkinter.filedialog
 
-import dustGuiLib
-import dustFrame
-from dustStyle     import dustStyle
+from . import dustGuiLib
+from . import dustFrame
+from .dustStyle     import dustStyle
 
 #============================ body ============================================
 
@@ -63,7 +63,7 @@ class dustFrameBrowse(dustFrame.dustFrame):
             title = 'Select a single file'
         
         # open authentication file
-        selectedFiles = tkFileDialog.askopenfilenames(
+        selectedFiles = tkinter.filedialog.askopenfilenames(
                             title       = 'Select a file',
                             multiple    = self.allowMultipleFiles,
                             filetypes = [
@@ -72,7 +72,7 @@ class dustFrameBrowse(dustFrame.dustFrame):
                         )
         
         # workaround for http://bugs.python.org/issue5712
-        if isinstance(selectedFiles, (str, unicode)):
+        if isinstance(selectedFiles,str):
             selectedFiles = self.tk.splitlist(selectedFiles)
         
         # log
@@ -101,12 +101,12 @@ class exampleApp(object):
         self.window.mainloop()
     
     def _closeCb(self):
-        print " _closeCb called"
+        print (" _closeCb called")
         
     def _dustFrameBrowse_selected_cb(self,filenames):
-        print "user selected the following files: {0}".format(filenames)
+        print ("user selected the following files: {0}".format(filenames))
     
 if __name__ == '__main__':
     import threading
-    from dustWindow import dustWindow
+    from .dustWindow import dustWindow
     exampleApp()

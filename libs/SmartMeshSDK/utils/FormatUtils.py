@@ -54,15 +54,21 @@ def formatNamedTuple(tup):
 
 def formatDictionnary(dict):
     output         = []
-    for (k,v) in dict.items():
+    for (k,v) in list(dict.items()):
         output    += ['{0:>20}: {1}'.format(k,v)]
     output         = '\n'.join(output)
     return output
 
 def quote(string):
+    try:
+        return urllib.parse.quote(string, '')
+    except:
     return urllib.quote(string, '')
 
 def unquote(string):
+    try:
+        return urllib.parse.unquote(string)
+    except:
     return urllib.unquote(string)
 
 def formatConnectionParams(connectionParams):

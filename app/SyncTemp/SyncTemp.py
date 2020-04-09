@@ -1,9 +1,11 @@
 #!/usr/bin/python
 
 #============================ adjust path =====================================
-
+from __future__ import print_function
 import sys
 import os
+from builtins import input
+
 if __name__ == "__main__":
     here = sys.path[0]
     sys.path.insert(0, os.path.join(here, '..', '..','libs'))
@@ -201,7 +203,7 @@ class CsvLogger(object):
             TEMPERATURE = temperature,
         )
         
-        print logline,
+        print (logline, end=' ')
         self.datalogfile.write(logline)
         self.datalogfile.flush()
 
@@ -353,7 +355,7 @@ class ReceiverTask(threading.Thread):
     
     def _subs_finishOrError(self,notifName=None,notifParams=None):
         
-        print notifName
+        print (notifName)
         
         with self.dataLock:
             
@@ -431,14 +433,14 @@ class ConfigurationTask(threading.Thread):
             except Exception as err:
                 msg = 'error sending configuration: {0}'.format(err)
                 log.error(msg)
-                print msg
+                print (msg)
                 
                 # cause app to reconnect
                 self.receiverTask._subs_finishOrError(notifName='INTERNAL')
             else:
                 msg = '   configuration broadcast'
                 log.info(msg)
-                print msg
+                print (msg)
             
             #===== wait
             
@@ -449,16 +451,16 @@ class ConfigurationTask(threading.Thread):
 def main():
     
     # print banner
-    print 'SyncTemp application - SmartMeshSDK {VERSION}\n'.format(
+    print ('SyncTemp application - SmartMeshSDK {VERSION}\n'.format(
         VERSION = '.'.join([str(i) for i in sdk_version.VERSION]),
-    )
+    ))
     
     # retrieve configuration
     try:
         config = getConfiguration()
     except Exception as err:
-        print 'FATAL: {0}\n'.format(err)
-        raw_input('Aborted. Press enter to close')
+        print ('FATAL: {0}\n'.format(err))
+        input('Aborted. Press enter to close')
         return
     
     # print configuration
@@ -468,7 +470,7 @@ def main():
     output        += [' - reporting_period:      {0}'.format(config['reporting_period'])]
     output        += ['']
     output         = '\n'.join(output)
-    print output
+    print (output)
     
     # create CSV logger
     csvLogger                = CsvLogger()

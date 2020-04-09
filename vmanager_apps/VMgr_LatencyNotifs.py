@@ -8,6 +8,7 @@ every packet that is received by the manager.
 
 import sys
 import os
+from builtins import input
 if __name__ == "__main__":
     here = sys.path[0]
     sys.path.insert(0, os.path.join(here, '..', 'libs'))
@@ -45,10 +46,10 @@ def process_data(mydata):
 
 try:
     # print banner
-    print '\nVMgr_LatencyNotifs (c) Dust Networks'
-    print 'SmartMesh SDK {0}\n'.format('.'.join([str(i) for i in sdk_version.VERSION]))
+    print ('\nVMgr_LatencyNotifs (c) Dust Networks')
+    print ('SmartMesh SDK {0}\n'.format('.'.join([str(i) for i in sdk_version.VERSION])))
 
-    mgrhost = raw_input('Enter the IP address of the manager (e.g. {0}): '.format(DFLT_MGR_HOST))
+    mgrhost = input('Enter the IP address of the manager (e.g. {0}): '.format(DFLT_MGR_HOST))
     if mgrhost == "":
         mgrhost = DFLT_MGR_HOST
 
@@ -73,11 +74,11 @@ try:
     # start listening for data notifications
     voyager.get_notifications('data', notif_callback=process_data)
 
-    print '\n==== Subscribing to data notifications'
-    reply = raw_input ('\n Waiting for notifications , Press any key to stop\n')
+    print ('\n==== Subscribing to data notifications')
+    reply = input ('\n Waiting for notifications , Press any key to stop\n')
 
     voyager.stop_notifications()
-    print 'Script ended normally'
+    print ('Script ended normally')
 
 except:
     traceback.print_exc()

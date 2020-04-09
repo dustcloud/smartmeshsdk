@@ -4,6 +4,7 @@
 
 import sys
 import os
+from builtins import input
 if __name__ == "__main__":
     here = sys.path[0]
     sys.path.insert(0, os.path.join(here, '..', '..','libs'))
@@ -19,15 +20,15 @@ from SmartMeshSDK.utils import SmsdkInstallVerifier
     ]
 )
 if not goodToGo:
-    print "Your installation does not allow this application to run:\n"
-    print reason
-    raw_input("Press any button to exit")
+    print ("Your installation does not allow this application to run:\n")
+    print (reason)
+    input("Press any button to exit")
     sys.exit(1)
 
 #============================ imports =========================================
 
 import threading
-import Queue
+from queue import Queue
 import datetime
 import copy
 import webbrowser
@@ -126,7 +127,7 @@ class xivelyConnectorThread(threading.Thread):
         try:
             self.queue.put_nowait((mac,datastream,value))
         except Queue.Full:
-            print "Queue is full"
+            print ("Queue is full")
     
     def getProductId(self):
         returnVal = None
@@ -198,7 +199,7 @@ class xivelyConnectorThread(threading.Thread):
                 output      += ['']
                 output       = '\n'.join(output)
                 log.error(output)
-                print output
+                print (output)
                 
             else:
                 AppData().incrementMoteCounter(mac,COL_NUMDATAPUBOK)
@@ -442,7 +443,7 @@ class notifClient(object):
                         output   += ['']
                         output    = '\n'.join(output)
                         log.error(output)
-                        print output
+                        print (output)
     
     #===== notifications from Xively
     
@@ -643,7 +644,7 @@ class xivelyGui(object):
         newData = AppData().getMoteData()
         
         # update GUI
-        for (mac,moteData) in newData.items():
+        for (mac,moteData) in list(newData.items()):
             
             if mac not in self.macs:
                 # add the mote
@@ -665,7 +666,7 @@ class xivelyGui(object):
             
             else:
                 # update the mote
-                for columnname,columnval in moteData.items():
+                for columnname,columnval in list(moteData.items()):
                     if columnname in [COL_NUMDATARX,
                                       COL_NUMDATAPUB,
                                       COL_NUMDATAPUBOK]:

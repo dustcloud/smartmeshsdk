@@ -1,7 +1,8 @@
 import sys
-import Tkinter
+import tkinter
 import threading
-from dustStyle import dustStyle
+from .dustStyle import dustStyle
+from builtins import input
 
 class GuiFactory(object):
     
@@ -46,23 +47,23 @@ class FactoryElem(object):
         self.grid_forget()
         GuiFactory().recycle(self)
 
-class Button(FactoryElem,Tkinter.Button):
+class Button(FactoryElem,tkinter.Button):
     
     def __init__(self,*args,**kwargs):
         
         # initialize the parent classes
         FactoryElem.__init__(self)
-        Tkinter.Button.__init__(self,*args,**kwargs)
+        tkinter.Button.__init__(self,*args,**kwargs)
     
-class OptionMenu(FactoryElem,Tkinter.OptionMenu):
+class OptionMenu(FactoryElem,tkinter.OptionMenu):
     
     def __init__(self,*args,**kwargs):
         
         # initialize the parent classes
         FactoryElem.__init__(self)
-        Tkinter.OptionMenu.__init__(self,*args,**kwargs)
+        tkinter.OptionMenu.__init__(self,*args,**kwargs)
 
-class Text(FactoryElem,Tkinter.Text):
+class Text(FactoryElem,tkinter.Text):
     
     BLINK_ITERATIONS = 2
     BLINK_PERIOD_MS  = 50
@@ -86,7 +87,7 @@ class Text(FactoryElem,Tkinter.Text):
         
         # initialize the parent classes
         FactoryElem.__init__(self)
-        Tkinter.Text.__init__(self,*args,**kwargs)
+        tkinter.Text.__init__(self,*args,**kwargs)
         
         # local variables
         self.blinkIterationsRemaining = 0
@@ -126,16 +127,16 @@ class Text(FactoryElem,Tkinter.Text):
     
     def _pasteClipboard(self,event):
         try:
-            self.insert(Tkinter.CURRENT,self.clipboard_get().replace('-',''))
+            self.insert(tkinter.CURRENT,self.clipboard_get().replace('-',''))
             self._blink()
-        except Tkinter.TclError:
+        except tkinter.TclError:
             # can happen if not pasting a text
             pass
     
     def _autoResize(self):
     
         # determine the new width
-        newwidth = len(self.get(1.0,Tkinter.END))+2
+        newwidth = len(self.get(1.0,tkinter.END))+2
         if   newwidth>dustStyle.TEXTFIELD_ENTRY_LENGTH_MAX:
             newwidth=dustStyle.TEXTFIELD_ENTRY_LENGTH_MAX
         elif newwidth<dustStyle.TEXTFIELD_ENTRY_LENGTH_DEFAULT:
@@ -170,7 +171,7 @@ class Text(FactoryElem,Tkinter.Text):
         if self.blinkIterationsRemaining:
             self.after(self.BLINK_PERIOD_MS,self._blinkIteration)
     
-class Label(FactoryElem,Tkinter.Label):
+class Label(FactoryElem,tkinter.Label):
     
     BLINK_ITERATIONS    = 2
     BLINK_PERIOD_MS     = 50
@@ -178,14 +179,14 @@ class Label(FactoryElem,Tkinter.Label):
     def __new__(cls, *args, **kwargs):
         returnVal = GuiFactory().getRecycled(cls)
         if not returnVal:
-            returnVal = super(Label,cls).__new__(cls, *args, **kwargs)
+            returnVal = super(Label,cls).__new__(cls)
         return returnVal
     
     def __init__(self,*args,**kwargs):
         
         # initialize the parent classes
         FactoryElem.__init__(self)
-        Tkinter.Label.__init__(self,*args,**kwargs)
+        tkinter.Label.__init__(self,*args,**kwargs)
         
         # have right-clicking copy the contents to the clipboard
         self.unbind('<Button-3>')
@@ -235,7 +236,7 @@ class Label(FactoryElem,Tkinter.Label):
 class exampleApp(object):
     
     def __init__(self):
-        raw_input("No sample app. Press enter to close.")
+        input("No sample app. Press enter to close.")
 
 if __name__ == '__main__':
     exampleApp()

@@ -4,6 +4,7 @@
 
 import sys
 import os
+from builtins import input
 if __name__ == "__main__":
     here = sys.path[0]
     sys.path.insert(0, os.path.join(here, '..', '..','libs'))
@@ -18,9 +19,9 @@ from SmartMeshSDK.utils import SmsdkInstallVerifier
     ]
 )
 if not goodToGo:
-    print "Your installation does not allow this application to run:\n"
-    print reason
-    raw_input("Press any button to exit")
+    print ("Your installation does not allow this application to run:\n")
+    print (reason)
+    input("Press any button to exit")
     sys.exit(1)
 
 #============================ imports =========================================
@@ -85,7 +86,7 @@ class TimelapseAnalyzer(object):
                         }
                     ]
                 else:
-                    print 'WARNING: could not match "{0}"'.format(line)
+                    print ('WARNING: could not match "{0}"'.format(line))
     
     def _get_motes(self):
         '''
@@ -140,7 +141,7 @@ class TimelapseAnalyzer(object):
     def _print_allMoteInfo(self):
         
         columnNames = []
-        for (mac,v) in self.allMoteInfo.items():
+        for (mac,v) in list(self.allMoteInfo.items()):
             for n in v:
                 if n in ['macAddress','RC','reserved']:
                     continue
@@ -149,7 +150,7 @@ class TimelapseAnalyzer(object):
         
         data_matrix     = []
         data_matrix    += [['mac']+columnNames]
-        for (mac,v) in self.allMoteInfo.items():
+        for (mac,v) in list(self.allMoteInfo.items()):
             thisline    = []
             thisline   += [FormatUtils.formatMacString(mac)]
             for n in columnNames:
@@ -179,7 +180,7 @@ class TimelapseAnalyzer(object):
                    y    = int(m.group(3))
                    self.pos[mac] = (x,y)
                 else:
-                   print 'WARNING: could not match "{0}"'.format(line)
+                   print ('WARNING: could not match "{0}"'.format(line))
         
         # links
         self.links = []
@@ -232,14 +233,14 @@ class TimelapseAnalyzer(object):
             ]
         
         # motes
-        motes_x         = [pos[0] for (mac,pos) in self.pos.items()]
-        motes_y         = [pos[1] for (mac,pos) in self.pos.items()]
+        motes_x         = [pos[0] for (mac,pos) in list(self.pos.items())]
+        motes_y         = [pos[1] for (mac,pos) in list(self.pos.items())]
         motes_text      = []
         mote_weight     = []
-        for (mac,pos) in self.pos.items():
+        for (mac,pos) in list(self.pos.items()):
             output      = []
             output     += ['{0}:'.format(FormatUtils.formatMacString(mac))]
-            for (k,v) in self.allMoteInfo[mac].items():
+            for (k,v) in list(self.allMoteInfo[mac].items()):
                 if k in ['macAddress','RC','reserved']:
                     continue
                 output += ['{0}: {1}'.format(k,v)]
@@ -318,10 +319,10 @@ def main():
         output += ["=== traceback ==="]
         output += [traceback.format_exc()]
         output  = '\n'.join(output)
-        print output
-        raw_input('Press Enter to close.')
+        print (output)
+        input('Press Enter to close.')
     else:
-        raw_input('Script ended normally.\nPress Enter to close.')
+        input('Script ended normally.\nPress Enter to close.')
 
 if __name__ == '__main__':
     main()

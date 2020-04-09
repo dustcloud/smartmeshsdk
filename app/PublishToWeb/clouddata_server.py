@@ -12,7 +12,7 @@ INFLUX_DBNAME  = 'grafana'
 from bottle import post,request,run
 import influxdb
 
-print 'CloudData Server'
+print ('CloudData Server')
 
 influxClient   = influxdb.client.InfluxDBClient(
    host        = INFLUX_HOST,
@@ -37,7 +37,7 @@ def root_post():
             },
         ]
     )
-    print 'received mac={0} temperature={1}'.format(mac,temperature)
+    print ('received mac={0} temperature={1}'.format(mac,temperature))
 
-print 'Server started on port {0}'.format(DFLT_PORT)
+print ('Server started on port {0}'.format(DFLT_PORT))
 run(host='0.0.0.0', port=DFLT_PORT, quiet=True)

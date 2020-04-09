@@ -5,10 +5,10 @@ The base ApiConnector class contains common methods for managing the notificatio
 '''
 
 import logging
-from Queue import Empty  
-from Queue import Queue
+from queue import Empty  
+from queue import Queue
 
-import ApiException
+from . import ApiException
 DEFAULT_Q_SIZE = 1000
 
 # Log initialization 
@@ -31,7 +31,7 @@ def logDump(buf, msg = None, level=logging.DEBUG):
     addr = 0
     step = 20
     dump = " ".join(["{0:02x}".format(ord(c)) for c in buf])
-    for i in xrange(0, len(dump), 3 * step) :
+    for i in range(0, len(dump), 3 * step) :
         log.log(level, "    {0:3} : {1}".format(addr, dump[i : i + 3 * step]))
         addr += step
         

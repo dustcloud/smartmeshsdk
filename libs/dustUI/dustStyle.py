@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import platform
-
+from builtins import input
 class dustStyle(object):
     
     # colors
@@ -30,6 +30,7 @@ class dustStyle(object):
     if platform.system() in ['Windows']:
         FONT_HEADER     = ('Helvetica','8','bold')
         FONT_BODY       = ('Helvetica','8')
+        FONT_STATION    = ('Helvetica','16','bold') 
     else:
         FONT_HEADER     = 'TkDefaultFont'
         FONT_BODY       = 'TkDefaultFont'
@@ -42,7 +43,7 @@ class dustStyle(object):
 class exampleApp(object):
     
     def __init__(self):
-        raw_input("No sample app. Press enter to close.")
+        input("No sample app. Press enter to close.")
 
 if __name__ == '__main__':
     exampleApp()

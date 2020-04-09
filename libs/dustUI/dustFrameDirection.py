@@ -10,13 +10,13 @@ if __name__ == '__main__':
 
 #============================ imports =========================================
 
-import Tkinter
-import tkFont
+import tkinter
+import tkinter.font
 import threading
 
-import dustGuiLib
-import dustFrame
-from   dustStyle             import dustStyle
+from . import dustGuiLib
+from . import dustFrame
+from   .dustStyle             import dustStyle
 from   SmartMeshSDK.utils    import FormatUtils
 
 #============================ defines =========================================
@@ -37,7 +37,7 @@ class dustFrameDirection(dustFrame.dustFrame):
         dustFrame.dustFrame.__init__(self,parentElem,guiLock,frameName,row,column)
         
         
-        self.canvas = Tkinter.Canvas(
+        self.canvas = tkinter.Canvas(
             self.container,
             width            = self.WIDTH,
             height           = self.HEIGHT,
@@ -123,12 +123,12 @@ class exampleApp(object):
         self.window.mainloop()
     
     def _directionCb(self,forward):
-        print '_directionCb clicked, forward={0}'.format(forward)
+        print ('_directionCb clicked, forward={0}'.format(forward))
     
     def _closeCb(self):
         pass
 
 if __name__ == '__main__':
     import random
-    from dustWindow import dustWindow
+    from .dustWindow import dustWindow
     exampleApp()

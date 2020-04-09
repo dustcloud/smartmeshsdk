@@ -10,11 +10,11 @@ if __name__ == '__main__':
 
 #============================ imports =========================================
 
-import Tkinter
+import tkinter
 
-import dustGuiLib
-import dustFrame
-from   dustStyle                  import dustStyle
+from . import dustGuiLib
+from . import dustFrame
+from   .dustStyle                  import dustStyle
 
 from   SmartMeshSDK.ApiDefinition import ApiDefinition
 
@@ -50,7 +50,7 @@ class dustFrameLEDPing(dustFrame.dustFrame):
         self._add(self.startStopButton,0,1)
         
         # row 1: canvas
-        self.ledCanvas = Tkinter.Canvas(
+        self.ledCanvas = tkinter.Canvas(
             self.container,
             width=200,
             height=200
@@ -58,7 +58,7 @@ class dustFrameLEDPing(dustFrame.dustFrame):
         self._add(self.ledCanvas,1,0,columnspan=2)
         
         # row 2: rtt label
-        self.rttLabel = Tkinter.Label(self.container)
+        self.rttLabel = tkinter.Label(self.container)
         self._add(self.rttLabel,2,0,columnspan=2)
         
     #======================== public ==========================================
@@ -68,14 +68,14 @@ class dustFrameLEDPing(dustFrame.dustFrame):
         \brief Enable start button.
         '''
         with self.guiLock:
-            self.startStopButton.configure(state=Tkinter.NORMAL)
+            self.startStopButton.configure(state=tkinter.NORMAL)
     
     def disableButton(self):
         '''
         \brief Disable start button.
         '''
         with self.guiLock:
-            self.startStopButton.configure(state=Tkinter.DISABLED)
+            self.startStopButton.configure(state=tkinter.DISABLED)
             self.startStopButton.configure(text='start')
     
     def enableMacText(self):
@@ -83,14 +83,14 @@ class dustFrameLEDPing(dustFrame.dustFrame):
         \brief Enable MAC text field.
         '''
         with self.guiLock:
-            self.macText.configure(state=Tkinter.NORMAL)
+            self.macText.configure(state=tkinter.NORMAL)
     
     def disableMacText(self):
         '''
         \brief Disable MAC text field.
         '''
         with self.guiLock:
-            self.macText.configure(state=Tkinter.DISABLED)
+            self.macText.configure(state=tkinter.DISABLED)
     
     def updateLed(self,ledState):
         with self.guiLock:
@@ -116,7 +116,7 @@ class dustFrameLEDPing(dustFrame.dustFrame):
             
             # get the MAC address
             with self.guiLock:
-                macString = self.macText.get(1.0,Tkinter.END).strip()
+                macString = self.macText.get(1.0,tkinter.END).strip()
             
             # format MAC
             mac = []
@@ -170,15 +170,15 @@ class exampleApp(object):
         self.window.mainloop()
     
     def _startPressedCb(self,mac):
-        print " _startPressedCb called mac={0}".format(mac)
+        print (" _startPressedCb called mac={0}".format(mac))
     
     def _stopPressedCb(self):
-        print " _stopPressedCb called"
+        print (" _stopPressedCb called")
     
     def _closeCb(self):
-        print " _closeCb called"
+        print (" _closeCb called")
 
 if __name__ == '__main__':
     import threading
-    from dustWindow import dustWindow
+    from .dustWindow import dustWindow
     exampleApp()
