@@ -1,11 +1,11 @@
 pyserial>=3.4
 gdata>=2.0.18
-requests>=2.18.4
+requests>=2.19.1
 xively-python==0.1.0-rc1
 bottle>=0.12.13
 plotly>=2.2.2
 influxdb>=5.0.0
-urllib3>=1.22
+urllib3>=1.23
 six>=1.11.0
 certifi>=2017.11.5
 python-dateutil>=2.6.1
