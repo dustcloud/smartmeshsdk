@@ -344,7 +344,7 @@ class OTAPCommunicator(object):
         self.current_file = filename  # TODO: use FileParser object?
         self.current_mic = otap_file.mic
         try:
-        hs_dump = ' '.join(['%02X' % ord(c) for c in hs_data])
+            hs_dump = ' '.join(['%02X' % ord(c) for c in hs_data])
         except TypeError:
             hs_dump = ' '.join(['%02X' % c for c in hs_data])
         log.debug('Handshake data [%d]: %s' % (len(hs_data), hs_dump))

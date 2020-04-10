@@ -239,7 +239,7 @@ class Hdlc(threading.Thread):
         
         # reconstitute byteArray
         if sys.version_info[0] < 3:
-        byteArray            = ''.join([chr(byte) for byte in packetBytes])
+            byteArray            = ''.join([chr(byte) for byte in packetBytes])
         else:
             byteArray            = packetBytes
         # send over serial port

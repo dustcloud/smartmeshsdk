@@ -25,7 +25,7 @@ def parse_field(field, data, index = 0):
         val = list(struct.unpack(desc, data[s:e]))
     elif field.type is 'int' and field.len is 1:
         try:
-        val = struct.unpack('B', data[s])[0]
+            val = struct.unpack('B', data[s])[0]
         except TypeError:
             aByte = data[s]
             if not isinstance(aByte,int):

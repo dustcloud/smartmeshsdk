@@ -69,7 +69,7 @@ def parse_oap_notif(data, index = 0):
         elif len(channel)==2 and channel[0]==ANALOG_ADDRESS:
             result                          = OAPAnalogSample()
         else:
-            raise SystemError("unknown OAP sample with channel={0}").format(channel)
+            raise SystemError("unknown OAP sample with channel={0}".format(channel))
         
         #===== populate result structure
 		
@@ -206,21 +206,21 @@ class OAPNotif(object):
     '''
     
     def __init__(self):
-        self.channel                        = ''
+        self.channel                        = array('B')
         self.packet_timestamp               = None
         self.received_timestamp             = None
     
     def channel_str(self):
         returnVal = 'UNKNOWN'
         for (k,v) in list(OAPDefines.ADDRESS.items()):
-            if list(v)==self.channel.tolist():
+            if list(v)==list(self.channel):
                 returnVal = k
                 break
         return returnVal
     
     def _asdict(self):
         returnVal = {
-            'channel':                      self.channel.tolist(),
+            'channel':                      list(self.channel),
             'channel_str':                  self.channel_str(),
             'packet_timestamp':             self.packet_timestamp,
             'received_timestamp':           str(self.received_timestamp),
@@ -233,6 +233,9 @@ class OAPSample(OAPNotif):
     '''
     \brief representation of a (e.g. sensor) sample notification.
     '''
+    def __init__(self):
+        self.samples                        = []
+
     def __str__(self):
         return 'C=[{0}] samples: {1}'.format(
             self.channel_str(),

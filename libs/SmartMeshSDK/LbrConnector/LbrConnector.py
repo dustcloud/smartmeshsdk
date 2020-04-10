@@ -408,8 +408,8 @@ class LbrConnector(ApiConnector):
         keypem += firstLine+'\r\n'
         index = 0
         while index<len(keyString):
-           keypem += keyString[index:index+64]+'\r\n'
-           index += 64
+            keypem += keyString[index:index+64]+'\r\n'
+            index += 64
         keypem += lastLine
         return keypem
         

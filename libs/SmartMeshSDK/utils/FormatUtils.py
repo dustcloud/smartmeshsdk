@@ -63,13 +63,13 @@ def quote(string):
     try:
         return urllib.parse.quote(string, '')
     except:
-    return urllib.quote(string, '')
+        return urllib.quote(string, '')
 
 def unquote(string):
     try:
         return urllib.parse.unquote(string)
     except:
-    return urllib.unquote(string)
+        return urllib.unquote(string)
 
 def formatConnectionParams(connectionParams):
     if   isinstance(connectionParams,str):
@@ -92,4 +92,3 @@ def format_mac_string_to_bytes(mac_string):
     "00-11-22-33-44-55-66-77" -> [0x00,0x11,0x22,0x33,0x44,0x55,0x66,0x77]
     '''
     return [int(b,16) for b in mac_string.split('-')]
-    

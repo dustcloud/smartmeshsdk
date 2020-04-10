@@ -39,6 +39,9 @@ from dustCli                 import DustCli
 
 pp = pprint.PrettyPrinter(indent=4)
 
+def logError(err):
+    print('ERROR: caught {}: {}'.format(str(type(err)), str(err)))
+
 def str2bool(v):
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
         return True
@@ -224,9 +227,9 @@ class JsonServer(object):
                     print ('FATAL: cannot open TCP port {0}.'.format(kwargs['port']))
                     print ('    Is another application running on that port?')
                 else:
-                    print (logError(err))
+                    logError(err)
             except Exception as err:
-                print (logError(err))
+                logError(err)
             print ('    Trying again in {0} seconds'.format(RETRY_PERIOD), end=' ')
             for _ in range(RETRY_PERIOD):
                 time.sleep(1)
@@ -495,8 +498,8 @@ def main(args):
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--tcpport',                    default=8080)
-    parser.add_argument('--autoaddmgr',   type=str2bool,default=True)
-    parser.add_argument('--autodeletemgr',type=str2bool,default=True)
+    parser.add_argument('--autoaddmgr',   type=str2bool,default=False)
+    parser.add_argument('--autodeletemgr',type=str2bool,default=False)
     parser.add_argument('--serialport',                 default=None)
     parser.add_argument('--configfilename',             default='JsonServer.config')
     parser.add_argument('--allowremote',  type=str2bool,default=False)

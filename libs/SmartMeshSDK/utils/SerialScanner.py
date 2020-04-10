@@ -1,11 +1,11 @@
 import os
 if os.name=='nt':       # Windows
-   try:
-       import winreg
-   except:
-   import _winreg as winreg
+    try:
+        import winreg
+    except:
+        import _winreg as winreg
 elif os.name=='posix':  # Linux
-   import glob
+    import glob
 
 import serial
 import time

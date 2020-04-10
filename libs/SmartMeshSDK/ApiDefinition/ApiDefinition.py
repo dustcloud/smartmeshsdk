@@ -44,8 +44,8 @@ class FieldOptions(object):
                 self.optionName = optionsDef
             self.validOptions = []
             for i in fieldOptions[self.optionName]:
-               self.validOptions.append(i[0])
-               self.optionDescs.append(i[1])
+                self.validOptions.append(i[0])
+                self.optionDescs.append(i[1])
     
     def isValidValue(self,val):
         if (
@@ -168,7 +168,7 @@ class ApiDefinition(object):
         list = self._getList(type)
         for item in list:
             if item['id']==id:
-               return item['name']
+                return item['name']
         raise CommandError(CommandError.INVALID_COMMAND,
                            'id=%s' % str(id))
     
@@ -183,7 +183,7 @@ class ApiDefinition(object):
         list = self._getList(type)
         for item in list:
             if item['name']==nameArray[0]:
-               return item['id']
+                return item['id']
         raise CommandError(CommandError.INVALID_COMMAND,
                                         nameArray[0])
     
@@ -485,7 +485,7 @@ class ApiDefinition(object):
     def fieldOptionToShortDesc(self,name,value):
         for option in self.fieldOptions[name]:
             if option[0]==value:
-               return option[1]
+                return option[1]
     
     @classmethod
     def fieldFormatToString(self,fieldLength,fieldFormat):

@@ -15,12 +15,12 @@ import traceback
 from future.utils import iteritems
 from builtins import str as text
 if os.name=='nt':       # Windows
-   try:
-       import winreg
-   except:
-   import _winreg as winreg
+    try:
+        import winreg
+    except:
+        import _winreg as winreg
 elif os.name=='posix':  # Linux
-   import glob
+    import glob
 
 import json
 
@@ -723,7 +723,7 @@ class JsonManager(object):
     
     def config_GET(self):
         with self.dataLock:
-           return copy.deepcopy(self.config)
+            return copy.deepcopy(self.config)
     
     def config_POST(self,newconfig):
         with self.dataLock:
@@ -734,7 +734,7 @@ class JsonManager(object):
         self._saveConfig()
         self._syncManagers()
         with self.dataLock:
-           return copy.deepcopy(self.config)
+            return copy.deepcopy(self.config)
     
     #=== close
     
@@ -868,7 +868,7 @@ class JsonManager(object):
             }
         }
         '''
-        tags = {k:v.tolist() for (k,_,v) in response['tags']}
+        tags = {k: list(v) for (k,_,v) in response['tags']}
         returnVal = {}
         # status
         returnVal['status']       = reversedict(oapdefs.RC)[response['result']]
@@ -903,7 +903,7 @@ class JsonManager(object):
                 # get MACs per manager
                 for (manager,motes) in list(self.motes_GET().items()):
                     if macString in manager:
-                       break
+                        break
                 # create OAPClient
                 self.oapClients[macString] = OAPClient.OAPClient(
                     mac,
@@ -959,7 +959,7 @@ class JsonManager(object):
                 if self.configfilename:
                     self.config = pickle.load(open(self.configfilename,"rb"))
                 else:
-                   raise IOError
+                    raise IOError
             except IOError as err:
                 if self.serialport:
                     managers = [self.serialport]

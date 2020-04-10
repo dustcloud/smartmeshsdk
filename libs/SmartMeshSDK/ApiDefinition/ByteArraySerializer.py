@@ -89,7 +89,7 @@ class ByteArraySerializer(object):
                             raise SystemError('field with format='+field.format+' and length='+str(field.length)+' unsupported.')
                         for i in range(len(temp)):
                             try:
-                            thisFieldByteArray.append(ord(temp[i]))
+                                thisFieldByteArray.append(ord(temp[i]))
                             except TypeError:
                                 thisFieldByteArray.append(ord(chr(temp[i])))
                     

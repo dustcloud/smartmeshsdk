@@ -106,18 +106,6 @@ def configureLogging():
     else:
         print("WARNING: no log configuration file could be found.")
 
-#============================ formatting ======================================
-
-def handlerThreadCrash(name,err,log):
-    output  = []
-    output += ['===== crash in thread {0} ====='.format(name)]
-    output += ['\nerror:\n']
-    output += [str(err)]
-    output += ['\ncall stack:\n']
-    output += [traceback.format_exc()]
-    output  = '\n'.join(output)
-    log.critical(output)
-    raise
 
 #============================ configuration ===================================
 

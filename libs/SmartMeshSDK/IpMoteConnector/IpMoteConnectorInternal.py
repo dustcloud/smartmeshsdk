@@ -37,14 +37,14 @@ class IpMoteConnectorInternal(SerialConnector.SerialConnector):
         self.paramLock.acquire()
         flags      = 0
         if isResponse:
-           flags  |= 0x01
-           flags  |= self.RxPacketId<<1
+            flags  |= 0x01
+            flags  |= self.RxPacketId<<1
         else:
-           self._incrementTxPacketId()
-           flags  |= self.TxPacketId<<1
-           if self.syncNeeded :
-               self.syncNeeded = False
-               flags  |= 1 << 3
+            self._incrementTxPacketId()
+            flags  |= self.TxPacketId<<1
+            if self.syncNeeded :
+                self.syncNeeded = False
+                flags  |= 1 << 3
         self.paramLock.release()
         
         return flags

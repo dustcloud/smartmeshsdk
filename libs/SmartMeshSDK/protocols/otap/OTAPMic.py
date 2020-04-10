@@ -23,7 +23,7 @@ def generate_mic(data):
     outdata = alg.encrypt(data_str, iv=OTAP_NONCE)
     # the mote uses the first 4 bytes of the CBC-MAC result as the MIC
     try:
-    return struct.unpack('!L', outdata[-16:-12])[0]
+        return struct.unpack('!L', outdata[-16:-12])[0]
     except TypeError:
         return struct.unpack('!L', bytes([ord(b) for b in outdata[-16:-12]]))[0]
 
