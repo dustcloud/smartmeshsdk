@@ -260,7 +260,7 @@ class notifClient(object):
             log.debug(
                 "notifClient._dataCallback {0}:\n{1}".format(
                     notifName,
-                    FormatUtils.formatDictionnary(notifParams)
+                    FormatUtils.formatDictionary(notifParams)
                 )
             )
         else:
