@@ -689,7 +689,7 @@ When performing a "snapshot", the JsonServer application issues a number of API 
 
 Depending on the size of your SmartMesh network, this might take a number of seconds.
 Issuing this command just triggers the beginning of a snapshot, and returns the appropriate status code.
-When the snapshot if over, the JsonServer generates a snapshot notification, see below.
+When the snapshot is complete, the JsonServer generates a snapshot notification, see below.
 
 | Method  | URL                                               |
 |---------|---------------------------------------------------|
@@ -734,8 +734,8 @@ Optionally, you can also add a `correlationID` field, which contains any string 
 
 ### Get the latest snapshot
 
-The JsonServer keeps a copy of the latest snapshot for each of the manager's connected to it.
-You can use this resource to retrieve all latest snapshots
+The JsonServer keeps a copy of the latest snapshot for each of the managers connected to it.
+You can use this resource to retrieve the latest snapshots from all managers. 
 
 | Method  | URL                                               |
 |---------|---------------------------------------------------|
