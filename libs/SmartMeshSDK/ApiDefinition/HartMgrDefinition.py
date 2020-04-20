@@ -760,7 +760,7 @@ class HartMgrDefinition(ApiDefinition.ApiDefinition):
         if self.FIELDS in cmd_metadata['response']:
             # unnamed fields are processed in order
             # note: special case the single return value
-            if len(resp_fields) is 1:
+            if len(resp_fields) == 1:
                 resp[resp_fields[0].name] = self._xml_parse_field(xmlrpc_resp, resp_fields[0])
             else:
                 for i, field in enumerate(resp_fields):
