@@ -1,10 +1,10 @@
 Metadata-Version: 1.0
 Name: SmartMeshSDK
-Version: 1.3.0.1
+Version: 1.4.0.1
 Summary: UNKNOWN
-Home-page: UNKNOWN
-Author: Linear Technology
-Author-email: dustsupport@linear.com
+Home-page: https://dustcloud.atlassian.net/wiki/spaces/SMSDK/overview
+Author: Analog Devices
+Author-email: dustsupport@analog.com
 License: see DN_LICENSE.txt
 Description: UNKNOWN
 Platform: UNKNOWN

@@ -43,9 +43,9 @@ if platform.system() in ['Darwin']:
 
 elif platform.system() in ['Windows']:
     # imports for Windows
-    # use distutils because it's easier to specify what's included
-    from distutils.core import setup
-    import py2exe
+    from setuptools import setup, find_packages
+
+    #import py2exe
     import certifi
     
     ssl_ca_cert.append(certifi.where())
@@ -201,25 +201,25 @@ setup(
         'cryptopy.crypto.passwords',
         'cryptopy.fmath',
         # from libs/
-        'dustUI',
-        'dustCli',
-        'SmartMeshSDK',
-        'SmartMeshSDK.ApiDefinition',
-        'SmartMeshSDK.HartMgrConnector',
-        'SmartMeshSDK.HartMoteConnector',
-        'SmartMeshSDK.IpMgrConnectorMux',
-        'SmartMeshSDK.IpMgrConnectorSerial',
-        'SmartMeshSDK.IpMoteConnector',
-        'SmartMeshSDK.LbrConnector',
-        'SmartMeshSDK.utils',
-        'SmartMeshSDK.protocols',
-        'SmartMeshSDK.protocols.blink',
-        'SmartMeshSDK.protocols.Hr',
-        'SmartMeshSDK.protocols.NetworkHealthAnalyzer',
-        'SmartMeshSDK.protocols.oap',
-        'SmartMeshSDK.protocols.otap',
-        'SmartMeshSDK.protocols.xivelyConnector',
-        'SmartMeshSDK.SerialConnector',
+        # 'dustUI',
+        # 'dustCli',
+        # 'SmartMeshSDK',
+        # 'SmartMeshSDK.ApiDefinition',
+        # 'SmartMeshSDK.HartMgrConnector',
+        # 'SmartMeshSDK.HartMoteConnector',
+        # 'SmartMeshSDK.IpMgrConnectorMux',
+        # 'SmartMeshSDK.IpMgrConnectorSerial',
+        # 'SmartMeshSDK.IpMoteConnector',
+        # 'SmartMeshSDK.LbrConnector',
+        # 'SmartMeshSDK.utils',
+        # 'SmartMeshSDK.protocols',
+        # 'SmartMeshSDK.protocols.blink',
+        # 'SmartMeshSDK.protocols.Hr',
+        # 'SmartMeshSDK.protocols.NetworkHealthAnalyzer',
+        # 'SmartMeshSDK.protocols.oap',
+        # 'SmartMeshSDK.protocols.otap',
+        # 'SmartMeshSDK.protocols.xivelyConnector',
+        # 'SmartMeshSDK.SerialConnector',
         # packages for VManager
         'VManagerSDK',
         'VManagerSDK.vmanager',
@@ -227,13 +227,14 @@ setup(
         'VManagerSDK.vmanager.models',
         # application-specific packages
         'MuxConfig',
-    ],
+    ] + find_packages('libs'),
     package_dir    = {
         'cryptopy':     'external_libs/cryptopy',
-        'dustUI':       'libs/dustUI',
-        'dustCli':      'libs/dustCli',
-        'SmartMeshSDK': 'libs/SmartMeshSDK',
-        'VManagerSDK':  'libs/VManagerSDK',
+        '': 'libs',
+        #'dustUI':       'libs/dustUI',
+        #'dustCli':      'libs/dustCli',
+        #'SmartMeshSDK': 'libs/SmartMeshSDK',
+        #'VManagerSDK':  'libs/VManagerSDK',
         # application-specific packages
         'MuxConfig':    'app/MuxConfig',
     },
@@ -299,8 +300,8 @@ setup(
         #('external_libs/cryptopy',['external_libs/cryptopy/LICENSE.txt']),
     ],
     # url          =
-    author         = 'Linear Technology',
-    author_email   = "dustsupport@linear.com",
+    author         = 'Analog Devices',
+    author_email   = "dustsupport@analog.com",
     license        = 'see DN_LICENSE.txt',
 
     # TODO: install_requires
