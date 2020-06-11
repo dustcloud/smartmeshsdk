@@ -200,7 +200,7 @@ class dustFrameMoteList(dustFrame.dustFrame):
     
     def addMote(self,mac,columnvals):
         
-        assert(len(list(columnvals.keys())==len(self.columnNames)))
+        assert(len(list(columnvals.keys()))==len(self.columnNames))
         for k in list(columnvals.keys()):
             assert(k in self.columnNames)
         

@@ -450,7 +450,7 @@ class notifClient(object):
         else:
             output = "apiDef of type {0} unexpected".format(type(self.apiDef))
             log.critical(output)
-            print output
+            print (output)
             raise SystemError(output)
     
     def _handle_oap_notif(self,mac,notif):

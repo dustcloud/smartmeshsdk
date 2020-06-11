@@ -141,7 +141,7 @@ def send_data(mac, msg, port):
     if not isinstance(msg,str):
         msg_hex = [int(b) for b in msg]
     else:
-    msg_hex = [int(ord(b)) for b in msg]
+        msg_hex = [int(ord(b)) for b in msg]
     # TODO: priority as enum
     rc = -1
     cbid = -1

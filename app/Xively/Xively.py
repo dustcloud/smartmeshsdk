@@ -28,7 +28,7 @@ if not goodToGo:
 #============================ imports =========================================
 
 import threading
-from queue import Queue
+from queue import Queue, Full
 import datetime
 import copy
 import webbrowser
@@ -109,7 +109,7 @@ class xivelyConnectorThread(threading.Thread):
         self._init = True
         
         # variables
-        self.queue      = Queue.Queue(maxsize=MAX_QUEUE_SIZE)
+        self.queue      = Queue(maxsize=MAX_QUEUE_SIZE)
         self.publisher  = None
         
         # initialize parent class
@@ -126,7 +126,7 @@ class xivelyConnectorThread(threading.Thread):
     def publish(self,mac,datastream,value):
         try:
             self.queue.put_nowait((mac,datastream,value))
-        except Queue.Full:
+        except Full:
             print ("Queue is full")
     
     def getProductId(self):

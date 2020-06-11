@@ -297,7 +297,7 @@ class SnapshotThread(threading.Thread):
     def _logResults(self,results):
         try:
             with open(self.outputFile,'a') as f:
-            f.write(results)
+                f.write(results)
         except IOError as e:
             if e.errno == errno.ENOENT:
                 print('error: file path "{0}" could not be created.'.format(self.outputFile))
