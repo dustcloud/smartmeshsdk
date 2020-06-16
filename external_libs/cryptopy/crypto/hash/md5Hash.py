@@ -1,5 +1,11 @@
 """   md5Hash.py
       Wrapper for python md5 module to support crypo module standard interface
+
+
+Modified for SmartmeshSDK - Tue 10 May 2011
+Modification: Use python hashlib module to avoid deprecation warnings
+See MODIFICATIONS.txt for exact changes made to file.
+
 """
 import hashlib
 from crypto.hash.hash import Hash

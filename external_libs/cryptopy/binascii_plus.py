@@ -8,12 +8,12 @@
 from   binascii import a2b_hex, b2a_hex
 import string
 
-viewable = string.letters+string.digits+string.punctuation+' '
+viewable = string.ascii_letters+string.digits+string.punctuation+' '
 
 def a2b_p(s):
     """ Convert ascii string of hex bytes to a binary string
         this conversion allows any type of white space"""
-    s= ''.join(string.split(s))
+    s= ''.join(str.split(s))
     return a2b_hex(s)
 
 #---------------
@@ -30,7 +30,10 @@ def b2a_p(binary_string, frnt='        '):
 def b2a_pt(binary_string, frnt='        ', gap='   ', text_trailer=1):
     """ convert a binary string to pretty ascii hex output
         Optional display of ascii text provided at end of hex dump """
-    ascii_byte_list =['%.2x'%ord(c) for c in binary_string]
+    if not isinstance(binary_string,str):
+        ascii_byte_list =['%.2x'%c for c in binary_string]
+    else:
+        ascii_byte_list =['%.2x'%ord(c) for c in binary_string]
     pretty_list = []
     trailer = []
     for i in range(len(ascii_byte_list)):
@@ -45,7 +48,7 @@ def b2a_pt(binary_string, frnt='        ', gap='   ', text_trailer=1):
         else:
             pretty_list += '\n'+frnt
         pretty_list += ascii_byte_list[i]
-        if   string.find(viewable,chr(int(ascii_byte_list[i],16))) >= 0: # if printable and not white space
+        if   str.find(viewable,chr(int(ascii_byte_list[i],16))) >= 0: # if printable and not white space
             trailer += chr(int(ascii_byte_list[i],16))
         else:
             trailer += '.'

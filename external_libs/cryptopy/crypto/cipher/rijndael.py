@@ -23,11 +23,11 @@ class Rijndael(BlockCipher):
         self.blockSize  = blockSize  # blockSize is in bytes
         self.padding    = padding    # change default to noPadding() to get normal ECB behavior
 
-        assert( keySize%4==0 and NrTable[4].has_key(keySize/4)),'key size must be 16,20,24,29 or 32 bytes'
-        assert( blockSize%4==0 and NrTable.has_key(blockSize/4)), 'block size must be 16,20,24,29 or 32 bytes'
+        assert( keySize%4==0 and keySize//4 in NrTable[4]),'key size must be 16,20,24,29 or 32 bytes'
+        assert( blockSize%4==0 and blockSize//4 in NrTable), 'block size must be 16,20,24,29 or 32 bytes'
 
-        self.Nb = self.blockSize/4          # Nb is number of columns of 32 bit words
-        self.Nk = keySize/4                 # Nk is the key length in 32-bit words
+        self.Nb = self.blockSize//4          # Nb is number of columns of 32 bit words
+        self.Nk = keySize//4                 # Nk is the key length in 32-bit words
         self.Nr = NrTable[self.Nb][self.Nk] # The number of rounds (Nr) is a function of
                                             # the block (Nb) and key (Nk) sizes.
         if key != None:
@@ -94,14 +94,17 @@ NrTable =  {4: {4:10,  5:11,  6:12,  7:13,  8:14},
 def keyExpansion(algInstance, keyString):
     """ Expand a string of size keySize into a larger array """
     Nk, Nb, Nr = algInstance.Nk, algInstance.Nb, algInstance.Nr # for readability
-    key = [ord(byte) for byte in keyString]  # convert string to list
+    if not isinstance(keyString,str):
+        key = keyString
+    else:
+        key = [ord(byte) for byte in keyString]  # convert string to list
     w = [[key[4*i],key[4*i+1],key[4*i+2],key[4*i+3]] for i in range(Nk)]
     for i in range(Nk,Nb*(Nr+1)):
         temp = w[i-1]        # a four byte column
         if (i%Nk) == 0 :
             temp     = temp[1:]+[temp[0]]  # RotWord(temp)
             temp     = [ Sbox[byte] for byte in temp ]
-            temp[0] ^= Rcon[i/Nk]
+            temp[0] ^= Rcon[i//Nk]
         elif Nk > 6 and  i%Nk == 4 :
             temp     = [ Sbox[byte] for byte in temp ]  # SubWord(temp)
         w.append( [ w[i-Nk][byte]^temp[byte] for byte in range(4) ] )

@@ -10,6 +10,11 @@
     Read LICENSE.txt for license information.
 
     2002-04-25   changed block input
+
+Modified for SmartmeshSDK: Tue 05 Apr 2011
+Modification: Avoid zero-padding for data that ends on a block boundary
+See MODIFICATIONS.txt for exact changes made to file.
+
 """
 from crypto.errors import DecryptNotBlockAlignedError
 from crypto.keyedHash.pbkdf2 import pbkdf2
@@ -64,7 +69,7 @@ class BlockCipher:
         numBlocks, numExtraBytes = divmod(len(self.bytesToDecrypt), self.blockSize)
         if more == None:  # no more calls to decrypt, should have all the data
             if numExtraBytes  != 0:
-                raise DecryptNotBlockAlignedError, 'Data not block aligned on decrypt'
+                raise DecryptNotBlockAlignedError('Data not block aligned on decrypt')
 
         # hold back some bytes in case last decrypt has zero len
         if (more != None) and (numExtraBytes == 0) and (numBlocks >0) :
@@ -114,7 +119,7 @@ class padWithPadLen(Pad):
     def removePad(self, paddedBinaryString, blockSize):
         """ Remove padding from a binary string """
         if not(0<len(paddedBinaryString)):
-            raise DecryptNotBlockAlignedError, 'Expected More Data'
+            raise DecryptNotBlockAlignedError('Expected More Data')
         #blocks, numExtraBytes = divmod(len(paddedBinaryString), blockSize)
         #if numExtraBytes:
         return paddedBinaryString[:-ord(paddedBinaryString[-1])]

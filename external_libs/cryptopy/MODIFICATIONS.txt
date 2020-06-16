@@ -1,0 +1,785 @@
+MODIFICATIONS.txt
+
+The following lists all the changes made to the CryptoPy source, and the date 
+that CryptoPy was taken.
+
+------------------------------------------------------------------------
+r71616 | dsanchela | 2018-02-15 02:17:19 -0800 (Thu, 15 Feb 2018) | 1 line
+
+Fixed TLS-1254 - Support Python 3 in build scripts distributed with OCSDK
+
+Index: crypto/cipher/rijndael.py
+===================================================================
+--- crypto/cipher/rijndael.py   (revision 71615)
++++ crypto/cipher/rijndael.py   (revision 71616)
+@@ -23,11 +23,11 @@
+         self.blockSize  = blockSize  # blockSize is in bytes
+         self.padding    = padding    # change default to noPadding() to get normal ECB behavior
+ 
+-        assert( keySize%4==0 and NrTable[4].has_key(keySize/4)),'key size must be 16,20,24,29 or 32 bytes'
+-        assert( blockSize%4==0 and NrTable.has_key(blockSize/4)), 'block size must be 16,20,24,29 or 32 bytes'
++        assert( keySize%4==0 and keySize//4 in NrTable[4]),'key size must be 16,20,24,29 or 32 bytes'
++        assert( blockSize%4==0 and blockSize//4 in NrTable), 'block size must be 16,20,24,29 or 32 bytes'
+ 
+-        self.Nb = self.blockSize/4          # Nb is number of columns of 32 bit words
+-        self.Nk = keySize/4                 # Nk is the key length in 32-bit words
++        self.Nb = self.blockSize//4          # Nb is number of columns of 32 bit words
++        self.Nk = keySize//4                 # Nk is the key length in 32-bit words
+         self.Nr = NrTable[self.Nb][self.Nk] # The number of rounds (Nr) is a function of
+                                             # the block (Nb) and key (Nk) sizes.
+         if key != None:
+@@ -94,7 +94,10 @@
+ def keyExpansion(algInstance, keyString):
+     """ Expand a string of size keySize into a larger array """
+     Nk, Nb, Nr = algInstance.Nk, algInstance.Nb, algInstance.Nr # for readability
+-    key = [ord(byte) for byte in keyString]  # convert string to list
++    if not isinstance(keyString,str):
++        key = keyString
++    else:
++        key = [ord(byte) for byte in keyString]  # convert string to list
+     w = [[key[4*i],key[4*i+1],key[4*i+2],key[4*i+3]] for i in range(Nk)]
+     for i in range(Nk,Nb*(Nr+1)):
+         temp = w[i-1]        # a four byte column
+@@ -101,7 +104,7 @@
+         if (i%Nk) == 0 :
+             temp     = temp[1:]+[temp[0]]  # RotWord(temp)
+             temp     = [ Sbox[byte] for byte in temp ]
+-            temp[0] ^= Rcon[i/Nk]
++            temp[0] ^= Rcon[i//Nk]
+         elif Nk > 6 and  i%Nk == 4 :
+             temp     = [ Sbox[byte] for byte in temp ]  # SubWord(temp)
+         w.append( [ w[i-Nk][byte]^temp[byte] for byte in range(4) ] )
+Index: crypto/cipher/ccm_test.py
+===================================================================
+--- crypto/cipher/ccm_test.py   (revision 71615)
++++ crypto/cipher/ccm_test.py   (revision 71616)
+@@ -21,24 +21,28 @@
+         """ Test using vectors from..."""
+         def CCMtestVector(testCase,macSize,key,nonce,addAuth,pt,kct):
+             """ CCM test vectors using AES algorithm """
+-            print '%s %s %s'%('='*((54-len(testCase))/2),testCase,'='*((54-len(testCase))/2))
++            print ('%s %s %s'%('='*((54-len(testCase))//2),testCase,'='*((54-len(testCase))//2)))
+             key,nonce,pt,addAuth,kct = a2b_p(key),a2b_p(nonce),a2b_p(pt),a2b_p(addAuth),a2b_p(kct)
+ 
+             alg = CCM(AES(key,keySize=len(key)),macSize=macSize, nonceSize=len(nonce))
+ 
+-            print 'alg=%s%skeySize=%3d   blockSize=%3d   M=%2d    L=%2d'%(alg.baseCipher.name,
++            print ('alg=%s%skeySize=%3d   blockSize=%3d   M=%2d    L=%2d'%(alg.baseCipher.name,
+                               ' '*(10-len(alg.baseCipher.name)),
+-                              alg.keySize, alg.blockSize, alg.M, alg.L)
+-            print 'key:    %s'%b2a_p(key)[9:]
+-            print 'nonce:  %s'%b2a_p(nonce)[9:]
+-            print 'addAuth:%s'%b2a_p(addAuth)[9:]
+-            print 'pt:     %s'%b2a_p(pt)[9:]
++                              alg.keySize, alg.blockSize, alg.M, alg.L))
++            print ('key:    %s'%b2a_p(key)[9:])
++            print ('nonce:  %s'%b2a_p(nonce)[9:])
++            print ('addAuth:%s'%b2a_p(addAuth)[9:])
++            print ('pt:     %s'%b2a_p(pt)[9:])
+             ct  = alg.encrypt(pt,nonce=nonce,addAuthData=addAuth)
+-            print 'ct:     %s'%b2a_p(ct)[9:]
+-            print 'kct:    %s'%b2a_p(kct)[9:]
+-            print '========================================================'
++            print ('ct:     %s'%b2a_p(ct)[9:])
++            print ('kct:    %s'%b2a_p(kct)[9:])
++            print ('========================================================')
++            if not isinstance(kct,str):
++                kct = ''.join([chr(b) for b in kct])
+             self.assertEqual( ct, kct )
+             dct = alg.decrypt(ct,nonce=nonce,addAuthData=addAuth)
++            if not isinstance(pt,str):
++                pt = ''.join([chr(b) for b in pt])
+             self.assertEqual( dct, pt )
+ 
+         CCMtestVector(
+Index: crypto/cipher/ccm.py
+===================================================================
+--- crypto/cipher/ccm.py    (revision 71615)
++++ crypto/cipher/ccm.py    (revision 71616)
+@@ -13,11 +13,21 @@
+ """
+ from crypto.cipher.base import BlockCipherWithIntegrity, noPadding
+ from crypto.common      import xor
+-from struct             import unpack, pack
++import struct
+ from crypto.errors      import InitCryptoError, EncryptError, DecryptError, IntegrityCheckError
+ 
+ from binascii_plus import b2a_p
+ 
++def pack(fmt, *values):
++    result = struct.pack(fmt, *values)
++    if not isinstance(result,str):
++        result = ''.join([chr(b) for b in result])
++    return result
++  
++def unpack(fmt, buf):
++    result = struct.unpack(fmt, buf)
++    return result
++  
+ class CCM(BlockCipherWithIntegrity):
+     """ The CCM class wraps block ciphers to provide integrity and encryption.
+ 
+@@ -69,12 +79,12 @@
+ 
+         self.M = macSize        # Number of octets
+         if  not((3 < self.M < 17) and (macSize%2==0)) :
+-            raise InitCryptoError, 'CCM, M (size of auth field) is out of bounds'
++            raise InitCryptoError('CCM, M (size of auth field) is out of bounds')
+ 
+         self.nonceSize  = nonceSize
+         self.L = self.baseCipher.blockSize - self.nonceSize - 1
+         if not(1 < self.L < 9) :
+-            raise InitCryptoError, 'CCM, L (size of length field) is out of bounds'
++            raise InitCryptoError('CCM, L (size of length field) is out of bounds')
+         self.reset()
+ 
+     def setKey(self, key):
+@@ -98,30 +108,36 @@
+         # construct authentication block zero
+         #     flag byte fields
+         Adata      = ((len(addAuthData))>0) << 6  # bit 6 is 1 if auth
+-        Mfield     = ((self.M-2)/2) << 3          # bits 5,4,3 encode macSize
++        Mfield     = ((self.M-2)//2) << 3          # bits 5,4,3 encode macSize
+         Lfield     =  self.L-1                    # bits 2,1,0 encode L size = blockSize-nonceSize-1
+         flagsByte  =  chr(Adata^Mfield^Lfield)
+ 
+         if len(nonce) != self.nonceSize :
+-            raise EncryptError, 'wrong sized nonce'
++            raise EncryptError('wrong sized nonce')
+ 
+         lenMessage = len(plainText)
+-        if lenMessage >= 1L<<(8*self.L):
+-            raise EncryptError, 'CCM plainText too long for given L field size'
++        if lenMessage >= 1<<(8*self.L):
++            raise EncryptError('CCM plainText too long for given L field size')
+         packedLenMessage = pack('!Q', lenMessage)[-self.L:]  # pack and truncate to L bytes
+ 
++        if not isinstance(nonce,str):
++            nonce = ''.join([chr(b) for b in nonce])
+         blockZero = flagsByte+nonce+packedLenMessage
+         if len(blockZero) != self.baseCipher.blockSize:
+-            raise EncryptError, 'CCM bad size of first block'
++            raise EncryptError('CCM bad size of first block')
+ 
+         cbcInput  = blockZero
+         # DB: don't encode auth length if there is no adata
+         if len(addAuthData):
+             authLengthField = self._encodeAuthLength(len(addAuthData))
++            if isinstance(addAuthData[0],int):
++                addAuthData = ''.join([chr(b) for b in addAuthData])
+             cbcInput += authLengthField+addAuthData
+         
+         authPadSize  = self.baseCipher.blockSize-((len(cbcInput)-1)%self.baseCipher.blockSize)-1
+         cbcInput     = cbcInput + authPadSize*chr(0)    # pad to block size with zeros
++        if not isinstance(plainText,str):
++            plainText = ''.join([chr(b) for b in plainText])
+         cbcInput     = cbcInput + plainText
+         cbcEndPad    = chr(0x00)*((self.blockSize-((len(cbcInput))%self.blockSize))%self.blockSize)
+         cbcInput     = cbcInput + cbcEndPad
+@@ -134,15 +150,15 @@
+         for i in range(numCbcBlocks) :
+             cbcBlock    = cbcInput[i*self.blockSize:(i+1)*self.blockSize]
+             cbcMicValue = self.baseCipher.encrypt( xor(cbcMicValue, cbcBlock) )
+-        counter   = 0L
++        counter   = 0
+         # the counter mode preload with counter starting at zero
+-        ctrModePl = chr(self.L-1)+ nonce + pack('>Q', counter)[-self.L:]
++        ctrModePl = chr(self.L-1)+ nonce + pack('>Q', counter)[-self.L:] 
+         ccmMIC = xor(self.baseCipher.encrypt(ctrModePl),cbcMicValue)[:self.M] # first M bytes of xor
+ 
+         ct = ''
+         numCtrBlocks,extra = divmod(len(plainText)+self.blockSize,self.blockSize)
+         while counter < numCtrBlocks :
+-            counter   = counter + 1L
++            counter   = counter + 1
+             ctrModePl = chr(self.L-1) + nonce + pack('>Q', counter)[-self.L:]
+             ct = ct + xor(self.baseCipher.encrypt(ctrModePl), plainText[(counter-1)*16:counter*16] )
+         ct = ct + ccmMIC
+@@ -157,23 +173,24 @@
+         # construct authentication block zero
+         #     flag byte fields
+         Adata      = ((len(addAuthData))>0) << 6  # bit 6 is 1 if auth
+-        Mfield     = ((self.M-2)/2) << 3          # bits 5,4,3 encode macSize
++        Mfield     = ((self.M-2)//2) << 3          # bits 5,4,3 encode macSize
+         Lfield     =  self.L-1                    # bits 2,1,0 encode L size = blockSize-nonceSize-1
+         flagsByte  =  chr(Adata^Mfield^Lfield)
+ 
+         if len(nonce) != self.nonceSize :
+-            raise DecryptError, 'wrong sized nonce'
++            raise DecryptError('wrong sized nonce')
+ 
+         lenMessage = len(cipherText)-self.M
+-        if lenMessage >= 1L<<(8*self.L):
+-            raise DecryptError, 'CCM cipherText too long for given L field size'
++        if lenMessage >= 1<<(8*self.L):
++            raise DecryptError('CCM cipherText too long for given L field size')
+         if lenMessage < 0 :
+-            raise DecryptError, 'Too small of cipherText for MIC size'
++            raise DecryptError('Too small of cipherText for MIC size')
+         packedLenMessage = pack('!Q', lenMessage)[-self.L:]  # pack and truncate to L bytes
+ 
+         pt = ''
+         ct = cipherText[:-self.M]      # trim of MIC field
+-
++        if not isinstance(nonce,str):
++            nonce = ''.join([chr(b) for b in nonce])
+         numCtrBlocks,extra = divmod(len(ct)+self.blockSize,self.blockSize)
+         for counter in range(1, numCtrBlocks+1) :
+             ctrModePl = chr(self.L-1) + nonce + pack('>Q', counter)[-self.L:]
+@@ -183,12 +200,14 @@
+         #------- CBC Mac Calculation
+         blockZero = flagsByte+nonce+packedLenMessage
+         if len(blockZero) != self.baseCipher.blockSize:
+-            raise DecryptError, 'CCM bad size of first block'
++            raise DecryptError('CCM bad size of first block')
+ 
+         cbcInput = blockZero
+         # DB: don't encode auth length if there is no adata
+         if len(addAuthData):
+             authLengthField = self._encodeAuthLength(len(addAuthData))
++            if isinstance(addAuthData[0],int):
++                addAuthData = ''.join([chr(b) for b in addAuthData])
+             cbcInput += authLengthField+addAuthData
+         
+         authPadSize  = self.baseCipher.blockSize-((len(cbcInput)-1)%self.baseCipher.blockSize)-1
+@@ -209,7 +228,7 @@
+         ccmMIC = xor(self.baseCipher.encrypt(ctrModePl0),cbcMicValue)[:self.M] # first 8 bytes of xor
+ 
+         if ccmMIC != cipherText[-self.M:] :
+-            raise IntegrityCheckError, 'CCM Integrity check failed on decrypt'
++            raise IntegrityCheckError('CCM Integrity check failed on decrypt')
+ 
+         return  pt
+ 
+@@ -216,17 +235,17 @@
+     def _encodeAuthLength(self, length):
+         """ construct byte string representing length, returns 2 to 10 bytes """
+         if length < 0 :
+-            raise EncryptError, 'CCM illegal length value'
++            raise EncryptError('CCM illegal length value')
+         elif length == 0:
+-            raise EncryptError, 'CCM auth length zero with auth bit set'
++            raise EncryptError('CCM auth length zero with auth bit set')
+         elif 0 < length < 0xFF00:
+             byteString = pack('!H', length)         # pack into two bytes
+-        elif 0xFF00 <= length < 0x100000000L:
++        elif 0xFF00 <= length < 0x100000000:
+             byteString = pack('!HI',0xFFFE, length) # pack into 0xFFFE + four bytes
+-        elif 0x100000000L <= length < 0x10000000000000000L:
++        elif 0x100000000 <= length < 0x10000000000000000:
+             byteString = pack('!HQ',0xFFFF, length) # pack into 0xFFFF + eigth bytes
+         else:
+-            raise EncryptError, 'CCM length error'
++            raise EncryptError('CCM length error')
+         return byteString
+ 
+     def _decodeAuthLength(self, byteString):
+@@ -234,17 +253,17 @@
+             Only the first 2 to 10 bytes of the byte string are examined """
+         firstTwoOctets == unpack('!H',bytesString[0:2])   # two bytes used for length
+         if firstTwoOctets == 0:
+-            raise DecryptError, 'CCM auth length zero with auth bit set'
++            raise DecryptError('CCM auth length zero with auth bit set')
+         elif 0 < firstTwoOctets < 0xFEFF:
+             messageLength == firstTwoOctets
+         elif 0xFEFF < firstTwoOctets < 0xFFFE:
+-            raise DecryptError, 'CCM auth length illegal values'
++            raise DecryptError('CCM auth length illegal values')
+         elif firstTwoOctets == 0xFFFE:
+             messageLength = unpack('!I',byteString[2:6])  # four bytes used for length
+         elif firstTwoOctets == 0xFFFF:
+             messageLength = unpack('!Q',byteString[2:10]) # eight bytes used for length
+         else:
+-            raise DecryptError, 'CCM auth length error'
++            raise DecryptError('CCM auth length error')
+         return messageLength
+ 
+ 
+Index: crypto/cipher/aes.py
+===================================================================
+--- crypto/cipher/aes.py    (revision 71615)
++++ crypto/cipher/aes.py    (revision 71616)
+@@ -22,7 +22,7 @@
+     def __init__(self, key = None, padding = padWithPadLen(), keySize=16):
+         """ Initialize AES, keySize is in bytes """
+         if  not (keySize == 16 or keySize == 24 or keySize == 32) :
+-            raise BadKeySizeError, 'Illegal AES key size, must be 16, 24, or 32 bytes'
++            raise BadKeySizeError('Illegal AES key size, must be 16, 24, or 32 bytes')
+ 
+         Rijndael.__init__( self, key, padding=padding, keySize=keySize, blockSize=16 )
+ 
+Index: crypto/cipher/base.py
+===================================================================
+--- crypto/cipher/base.py   (revision 71615)
++++ crypto/cipher/base.py   (revision 71616)
+@@ -64,7 +64,7 @@
+         numBlocks, numExtraBytes = divmod(len(self.bytesToDecrypt), self.blockSize)
+         if more == None:  # no more calls to decrypt, should have all the data
+             if numExtraBytes  != 0:
+-                raise DecryptNotBlockAlignedError, 'Data not block aligned on decrypt'
++                raise DecryptNotBlockAlignedError('Data not block aligned on decrypt')
+ 
+         # hold back some bytes in case last decrypt has zero len
+         if (more != None) and (numExtraBytes == 0) and (numBlocks >0) :
+@@ -114,7 +114,7 @@
+     def removePad(self, paddedBinaryString, blockSize):
+         """ Remove padding from a binary string """
+         if not(0<len(paddedBinaryString)):
+-            raise DecryptNotBlockAlignedError, 'Expected More Data'
++            raise DecryptNotBlockAlignedError('Expected More Data')
+         #blocks, numExtraBytes = divmod(len(paddedBinaryString), blockSize)
+         #if numExtraBytes:
+         return paddedBinaryString[:-ord(paddedBinaryString[-1])]
+Index: binascii_plus.py
+===================================================================
+--- binascii_plus.py    (revision 71615)
++++ binascii_plus.py    (revision 71616)
+@@ -8,12 +8,12 @@
+ from   binascii import a2b_hex, b2a_hex
+ import string
+ 
+-viewable = string.letters+string.digits+string.punctuation+' '
++viewable = string.ascii_letters+string.digits+string.punctuation+' '
+ 
+ def a2b_p(s):
+     """ Convert ascii string of hex bytes to a binary string
+         this conversion allows any type of white space"""
+-    s= ''.join(string.split(s))
++    s= ''.join(str.split(s))
+     return a2b_hex(s)
+ 
+ #---------------
+@@ -30,7 +30,10 @@
+ def b2a_pt(binary_string, frnt='        ', gap='   ', text_trailer=1):
+     """ convert a binary string to pretty ascii hex output
+         Optional display of ascii text provided at end of hex dump """
+-    ascii_byte_list =['%.2x'%ord(c) for c in binary_string]
++    if not isinstance(binary_string,str):
++        ascii_byte_list =['%.2x'%c for c in binary_string]
++    else:
++        ascii_byte_list =['%.2x'%ord(c) for c in binary_string]
+     pretty_list = []
+     trailer = []
+     for i in range(len(ascii_byte_list)):
+@@ -45,7 +48,7 @@
+         else:
+             pretty_list += '\n'+frnt
+         pretty_list += ascii_byte_list[i]
+-        if   string.find(viewable,chr(int(ascii_byte_list[i],16))) >= 0: # if printable and not white space
++        if   str.find(viewable,chr(int(ascii_byte_list[i],16))) >= 0: # if printable and not white space
+             trailer += chr(int(ascii_byte_list[i],16))
+         else:
+             trailer += '.'
+
+
+------------------------------------------------------------------------
+r44821 | dbacher | 2011-05-10 15:29:26 -0700 (Tue, 10 May 2011) | 1 line
+Changed paths:
+   M /trunk/tools/cryptopy/crypto/hash/md5Hash.py
+   M /trunk/tools/cryptopy/crypto/hash/sha1Hash.py
+
+use python hashlib module to avoid deprecation warnings
+
+Index: crypto/hash/md5Hash.py
+===================================================================
+--- crypto/hash/md5Hash.py	(revision 44820)
++++ crypto/hash/md5Hash.py	(revision 44821)
+@@ -1,7 +1,7 @@
+ """   md5Hash.py
+       Wrapper for python md5 module to support crypo module standard interface
+ """
+-import md5
++import hashlib
+ from crypto.hash.hash import Hash
+ 
+ class MD5(Hash):
+@@ -14,7 +14,8 @@
+         self.reset()
+ 
+     def reset(self):
+-        self.pymd5 = md5.new()
++        self.pymd5 = hashlib.md5()
++        
+     def update(self,data):
+         """ Update the md5 object with the string arg. Repeated calls are
+             equivalent to a single call with the concatenation of all the
+@@ -21,6 +22,7 @@
+             arguments: m.update(a); m.update(b) is equivalent to m.update(a+b).
+         """
+         self.pymd5.update(data)
++        
+     def digest(self):
+         """ Return the digest of the strings passed to the update()
+             method so far. This is a 20-byte string which may contain
+Index: crypto/hash/sha1Hash.py
+===================================================================
+--- crypto/hash/sha1Hash.py	(revision 44820)
++++ crypto/hash/sha1Hash.py	(revision 44821)
+@@ -5,7 +5,7 @@
+     Copyright (c) 2002 by Paul A. Lambert
+     Read LICENSE.txt for license information.
+ """
+-import sha
++import hashlib
+ from crypto.hash.hash import Hash
+ 
+ class SHA1(Hash):
+@@ -18,7 +18,7 @@
+         self.reset()
+ 
+     def reset(self):
+-        self.pysha1 = sha.new()
++        self.pysha1 = hashlib.sha1()
+ 
+     def update(self,data):
+         """ Update the sha object with the string arg. Repeated calls are
+
+
+------------------------------------------------------------------------
+r44058 | dbacher | 2011-04-05 17:39:15 -0700 (Tue, 05 Apr 2011) | 1 line
+Changed paths:
+   M /trunk/tools/cryptopy/crypto/cipher/base.py
+
+
+avoid zero-padding for data that ends on a block boundary
+
+Index: crypto/cipher/base.py
+===================================================================
+--- crypto/cipher/base.py	(revision 44057)
++++ crypto/cipher/base.py	(revision 44058)
+@@ -105,7 +105,10 @@
+         """ Add padding to a binary string to make it an even multiple
+             of the block size """
+         blocks, numExtraBytes = divmod(len(extraBytes), blockSize)
++        #if numExtraBytes:
+         padLength = blockSize - numExtraBytes
++        #else:
++        #    padLength = 0
+         return extraBytes + padLength*chr(padLength)
+     
+     def removePad(self, paddedBinaryString, blockSize):
+@@ -112,7 +115,11 @@
+         """ Remove padding from a binary string """
+         if not(0<len(paddedBinaryString)):
+             raise DecryptNotBlockAlignedError, 'Expected More Data'
++        #blocks, numExtraBytes = divmod(len(paddedBinaryString), blockSize)
++        #if numExtraBytes:
+         return paddedBinaryString[:-ord(paddedBinaryString[-1])]
++        #else: 
++        #    return paddedBinaryString
+ 
+ class noPadding(Pad):
+     """ No padding. Use this to get ECB behavior from encrypt/decrypt """
+@@ -132,7 +139,10 @@
+         """ Add padding to a binary string to make it an even multiple
+             of the block size """
+         blocks, numExtraBytes = divmod(len(extraBytes), blockSize)
+-        padLength = blockSize - numExtraBytes
++        if numExtraBytes:
++            padLength = blockSize - numExtraBytes
++        else:
++            padLength = 0
+         return extraBytes + padLength*chr(0x00)
+ 
+     def removePad(self, paddedBinaryString, blockSize):
+	 
+	 
+
+------------------------------------------------------------------------
+r43897 | dbacher | 2011-03-30 15:10:30 -0700 (Wed, 30 Mar 2011) | 1 line
+Changed paths:
+   M /trunk/tools/cryptopy/crypto/cipher/ccm.py
+   M /trunk/tools/cryptopy/crypto/cipher/ccm_test.py
+
+fix CCM bug - with no additional authentication data there should be no authlen prefix, commented out bad test cases
+
+
+Index: crypto/cipher/ccm_test.py
+===================================================================
+--- crypto/cipher/ccm_test.py	(revision 43896)
++++ crypto/cipher/ccm_test.py	(revision 43897)
+@@ -130,17 +130,17 @@
+             kct      = """de bf 2c c9 94 e6 5a 70  2c ee e3 19 84 21 39 c3
+                           f2 9a 2e 12 63 11 74 5f  3c """)
+ 
++        # DB: invalid test - fails with authdata fix
++        # CCMtestVector(
++        #     testCase =   "KAT#  1 - AES_CCM 128 M= 8 L= 2",
++        #     macSize  =    8,
++        #     key      =   "04 e5 1c f0 20 2d 4c 59  0f d2 e1 28 a5 7c 50 30",
++        #     nonce    =   "f1 84 44 08 ab ae a5 b8  fc ba 33 2e 78",
++        #     addAuth  = """ """,
++        #     pt       = """ """,
++        #     kct      = """6f b0 8f 1f a0 ec e1 f0 """)
+ 
+         CCMtestVector(
+-            testCase =   "KAT#  1 - AES_CCM 128 M= 8 L= 2",
+-            macSize  =    8,
+-            key      =   "04 e5 1c f0 20 2d 4c 59  0f d2 e1 28 a5 7c 50 30",
+-            nonce    =   "f1 84 44 08 ab ae a5 b8  fc ba 33 2e 78",
+-            addAuth  = """ """,
+-            pt       = """ """,
+-            kct      = """6f b0 8f 1f a0 ec e1 f0 """)
+-
+-        CCMtestVector(
+             testCase =   "KAT#  2 - AES_CCM 128 M= 8 L= 2",
+             macSize  =    8,
+             key      =   "c4 85 98 ee 34 6c 62 1e  c9 7c 1f 67 ce 37 11 85",
+@@ -158,14 +158,15 @@
+             pt       = """ """,
+             kct      = """b8 01 6f 2e fc 56 b2 31 """)
+ 
+-        CCMtestVector(
+-            testCase =   "KAT#  4 - AES_CCM 128 M= 8 L= 2",
+-            macSize  =    8,
+-            key      =   "0c 84 68 50 ee c1 76 2c  88 de af 2e e9 f4 6a 07",
+-            nonce    =   "cc ee 9b fb 82 2d 5d 12  fe 9e 30 8f 7a",
+-            addAuth  = """ """,
+-            pt       = """05 """,
+-            kct      = """7d d0 b5 77 e9 0c 1c de  b5 """)
++        # DB: invalid test - fails with authdata fix
++        # CCMtestVector(
++        #     testCase =   "KAT#  4 - AES_CCM 128 M= 8 L= 2",
++        #     macSize  =    8,
++        #     key      =   "0c 84 68 50 ee c1 76 2c  88 de af 2e e9 f4 6a 07",
++        #     nonce    =   "cc ee 9b fb 82 2d 5d 12  fe 9e 30 8f 7a",
++        #     addAuth  = """ """,
++        #     pt       = """05 """,
++        #     kct      = """7d d0 b5 77 e9 0c 1c de  b5 """)
+ 
+         CCMtestVector(
+             testCase =   "KAT#  5 - AES_CCM 128 M= 4 L= 2",
+@@ -320,18 +321,19 @@
+             kct      = """bf fa bd 07 33 ed 9f 6c  90 7c b6 32 0a bf 32 7e
+                           c3 a5 78 85 5b f2 e2 56  72 c9 3c cc a4 a3 f2 9c """)
+ 
+-        CCMtestVector(
+-            testCase =   "KAT# 19 - AES_CCM 128 M= 8 L= 2",
+-            macSize  =    8,
+-            key      =   "98 8a bd c2 3a 65 bb 5d  cd 99 f9 42 67 d3 0b 45",
+-            nonce    =   "c7 8e 7d fa 21 24 5a 43  90 8f 80 b3 8b",
+-            addAuth  = """ """,
+-            pt       = """0a 33 d2 12 79 8c f1 32  c5 51 db fd 53 27 7e b4
+-                          c9 e5 cc 07 e3 c2 e8 1c  58 2e 7d a6 c4 b1 34 5a
+-                          74 """,
+-            kct      = """f3 1f 8e fa 43 b4 cf 36  1d 20 34 62 05 b0 cc fd
+-                          c1 81 79 17 b4 99 c5 84  3e b6 6e c0 b9 6d 27 e5
+-                          85 9a a9 bd ae a8 00 d1  7a """)
++        # DB: invalid test - fails with authdata fix
++        # CCMtestVector(
++        #     testCase =   "KAT# 19 - AES_CCM 128 M= 8 L= 2",
++        #     macSize  =    8,
++        #     key      =   "98 8a bd c2 3a 65 bb 5d  cd 99 f9 42 67 d3 0b 45",
++        #     nonce    =   "c7 8e 7d fa 21 24 5a 43  90 8f 80 b3 8b",
++        #     addAuth  = """ """,
++        #     pt       = """0a 33 d2 12 79 8c f1 32  c5 51 db fd 53 27 7e b4
++        #                   c9 e5 cc 07 e3 c2 e8 1c  58 2e 7d a6 c4 b1 34 5a
++        #                   74 """,
++        #     kct      = """f3 1f 8e fa 43 b4 cf 36  1d 20 34 62 05 b0 cc fd
++        #                   c1 81 79 17 b4 99 c5 84  3e b6 6e c0 b9 6d 27 e5
++        #                   85 9a a9 bd ae a8 00 d1  7a """)
+ 
+         CCMtestVector(
+             testCase =   "KAT# 20 - AES_CCM 128 M= 8 L= 2",
+@@ -412,14 +414,15 @@
+             pt       = """ """,
+             kct      = """0d 25 b4 0f 5a be 36 19 """)
+ 
+-        CCMtestVector(
+-            testCase =   "KAT# 27 - AES_CCM 128 M= 8 L= 2",
+-            macSize  =    8,
+-            key      =   "17 40 8b dc 9c 5e 13 94  29 35 dd 2e 7d bd 54 37",
+-            nonce    =   "14 7a 47 0d ff ab 27 4c  ab a4 38 5d f2",
+-            addAuth  = """ """,
+-            pt       = """df """,
+-            kct      = """dc 49 af 7a 17 61 ce e6  c7 """)
++        # DB: invalid test - fails with authdata fix
++        # CCMtestVector(
++        #     testCase =   "KAT# 27 - AES_CCM 128 M= 8 L= 2",
++        #     macSize  =    8,
++        #     key      =   "17 40 8b dc 9c 5e 13 94  29 35 dd 2e 7d bd 54 37",
++        #     nonce    =   "14 7a 47 0d ff ab 27 4c  ab a4 38 5d f2",
++        #     addAuth  = """ """,
++        #     pt       = """df """,
++        #     kct      = """dc 49 af 7a 17 61 ce e6  c7 """)
+ 
+         CCMtestVector(
+             testCase =   "KAT# 28 - AES_CCM 128 M= 8 L= 2",
+@@ -517,15 +520,16 @@
+             kct      = """22 1c f0 92 45 71 38 e7  00 21 af 45 d3 31 28 01
+                           69 3a 47 """)
+ 
+-        CCMtestVector(
+-            testCase =   "KAT# 38 - AES_CCM 128 M= 8 L= 2",
+-            macSize  =    8,
+-            key      =   "54 7b 02 1b ef 8c 1c 0f  f1 04 ba 1d bf 0e 2c 0b",
+-            nonce    =   "f7 a8 59 5b d6 5d 23 e9  cb 17 b1 e1 92",
+-            addAuth  = """ """,
+-            pt       = """64 8c ec 53 c4 79 fe 41  53 17 ba 8e """,
+-            kct      = """6f 52 93 85 89 87 15 21  29 d5 dd 85 0d dc 3d 58
+-                          60 fb 8a b2 """)
++        # DB: invalid test - fails with authdata fix
++        # CCMtestVector(
++        #     testCase =   "KAT# 38 - AES_CCM 128 M= 8 L= 2",
++        #     macSize  =    8,
++        #     key      =   "54 7b 02 1b ef 8c 1c 0f  f1 04 ba 1d bf 0e 2c 0b",
++        #     nonce    =   "f7 a8 59 5b d6 5d 23 e9  cb 17 b1 e1 92",
++        #     addAuth  = """ """,
++        #     pt       = """64 8c ec 53 c4 79 fe 41  53 17 ba 8e """,
++        #     kct      = """6f 52 93 85 89 87 15 21  29 d5 dd 85 0d dc 3d 58
++        #                   60 fb 8a b2 """)
+ 
+         CCMtestVector(
+             testCase =   "KAT# 39 - AES_CCM 128 M= 8 L= 2",
+Index: crypto/cipher/ccm.py
+===================================================================
+--- crypto/cipher/ccm.py	(revision 43896)
++++ crypto/cipher/ccm.py	(revision 43897)
+@@ -1,3 +1,4 @@
++# -*- coding: utf-8 -*-
+ """ crypto.cipher.ccm
+
+     CCM block cipher mode
+@@ -7,7 +8,7 @@
+     integrity check can optionally include unencrypted 'addAuthData'.
+     CCM requires a nonce that MUST NEVER repeat for a given key.
+
+-    Copyright (c) 2002 by Paul A. Lambert
++    Copyright © (c) 2002 by Paul A. Lambert
+     Read LICENSE.txt for license information.
+ """
+ from crypto.cipher.base import BlockCipherWithIntegrity, noPadding
+@@ -15,6 +16,8 @@
+ from struct             import unpack, pack
+ from crypto.errors      import InitCryptoError, EncryptError, DecryptError, IntegrityCheckError
+
++from binascii_plus import b2a_p
++
+ class CCM(BlockCipherWithIntegrity):
+     """ The CCM class wraps block ciphers to provide integrity and encryption.
+
+@@ -111,8 +114,12 @@
+         if len(blockZero) != self.baseCipher.blockSize:
+             raise EncryptError, 'CCM bad size of first block'
+
++        cbcInput  = blockZero
++        # DB: don't encode auth length if there is no adata
++        if len(addAuthData):
+         authLengthField = self._encodeAuthLength(len(addAuthData))
+-        cbcInput     = blockZero+authLengthField+addAuthData
++            cbcInput += authLengthField+addAuthData
++
+         authPadSize  = self.baseCipher.blockSize-((len(cbcInput)-1)%self.baseCipher.blockSize)-1
+         cbcInput     = cbcInput + authPadSize*chr(0)    # pad to block size with zeros
+         cbcInput     = cbcInput + plainText
+@@ -178,8 +185,12 @@
+         if len(blockZero) != self.baseCipher.blockSize:
+             raise DecryptError, 'CCM bad size of first block'
+
++        cbcInput = blockZero
++        # DB: don't encode auth length if there is no adata
++        if len(addAuthData):
+         authLengthField = self._encodeAuthLength(len(addAuthData))
+-        cbcInput     = blockZero+authLengthField+addAuthData
++            cbcInput += authLengthField+addAuthData
++
+         authPadSize  = self.baseCipher.blockSize-((len(cbcInput)-1)%self.baseCipher.blockSize)-1
+         cbcInput     = cbcInput + authPadSize*chr(0)    # pad to block size with zeros
+         cbcInput     = cbcInput + pt
+@@ -206,7 +217,9 @@
+         """ construct byte string representing length, returns 2 to 10 bytes """
+         if length < 0 :
+             raise EncryptError, 'CCM illegal length value'
+-        elif 0 <= length < 0xFF00:
++        elif length == 0:
++            raise EncryptError, 'CCM auth length zero with auth bit set'
++        elif 0 < length < 0xFF00:
+             byteString = pack('!H', length)         # pack into two bytes
+         elif 0xFF00 <= length < 0x100000000L:
+             byteString = pack('!HI',0xFFFE, length) # pack into 0xFFFE + four bytes
+
+
+------------------------------------------------------------------------
+r43851 | dbacher | 2011-03-28 17:18:00 -0700 (Mon, 28 Mar 2011) | 1 line
+Changed paths:
+   A /trunk/tools/cryptopy
+   A /trunk/tools/cryptopy/CHANGES.txt
+   A /trunk/tools/cryptopy/LICENSE.txt
+   A /trunk/tools/cryptopy/PKG-INFO
+   A /trunk/tools/cryptopy/README.txt
+   A /trunk/tools/cryptopy/__init__.py
+   A /trunk/tools/cryptopy/binascii_plus.py
+   A /trunk/tools/cryptopy/crypto
+   A /trunk/tools/cryptopy/crypto/__init__.py
+   A /trunk/tools/cryptopy/crypto/app
+   A /trunk/tools/cryptopy/crypto/app/__init__.py
+   A /trunk/tools/cryptopy/crypto/app/filecrypt.py
+   A /trunk/tools/cryptopy/crypto/cipher
+   A /trunk/tools/cryptopy/crypto/cipher/__init__.py
+   A /trunk/tools/cryptopy/crypto/cipher/aes.py
+   A /trunk/tools/cryptopy/crypto/cipher/aes_cbc.py
+   A /trunk/tools/cryptopy/crypto/cipher/aes_cbc_test.py
+   A /trunk/tools/cryptopy/crypto/cipher/aes_sbox_analysis.py
+   A /trunk/tools/cryptopy/crypto/cipher/aes_test.py
+   A /trunk/tools/cryptopy/crypto/cipher/arc4.py
+   A /trunk/tools/cryptopy/crypto/cipher/arc4_test.py
+   A /trunk/tools/cryptopy/crypto/cipher/base.py
+   A /trunk/tools/cryptopy/crypto/cipher/cbc.py
+   A /trunk/tools/cryptopy/crypto/cipher/cbc_test.py
+   A /trunk/tools/cryptopy/crypto/cipher/ccm.py
+   A /trunk/tools/cryptopy/crypto/cipher/ccm_test.py
+   A /trunk/tools/cryptopy/crypto/cipher/icedoll.py
+   A /trunk/tools/cryptopy/crypto/cipher/icedoll_test.py
+   A /trunk/tools/cryptopy/crypto/cipher/rijndael.py
+   A /trunk/tools/cryptopy/crypto/cipher/rijndael_test.py
+   A /trunk/tools/cryptopy/crypto/cipher/test_all_ciphers.py
+   A /trunk/tools/cryptopy/crypto/cipher/tkip_encr.py
+   A /trunk/tools/cryptopy/crypto/cipher/tkip_encr_test.py
+   A /trunk/tools/cryptopy/crypto/cipher/tkip_fake_crc_test.py
+   A /trunk/tools/cryptopy/crypto/cipher/trolldoll.py
+   A /trunk/tools/cryptopy/crypto/cipher/wep.py
+   A /trunk/tools/cryptopy/crypto/cipher/wep_test.py
+   A /trunk/tools/cryptopy/crypto/common.py
+   A /trunk/tools/cryptopy/crypto/entropy
+   A /trunk/tools/cryptopy/crypto/entropy/__init__.py
+   A /trunk/tools/cryptopy/crypto/entropy/pagingEntropy.py
+   A /trunk/tools/cryptopy/crypto/entropy/prn_rijndael.py
+   A /trunk/tools/cryptopy/crypto/entropy/prn_rijndael_test.py
+   A /trunk/tools/cryptopy/crypto/errors.py
+   A /trunk/tools/cryptopy/crypto/hash
+   A /trunk/tools/cryptopy/crypto/hash/__init__.py
+   A /trunk/tools/cryptopy/crypto/hash/hash.py
+   A /trunk/tools/cryptopy/crypto/hash/md5Hash.py
+   A /trunk/tools/cryptopy/crypto/hash/md5Hash_test.py
+   A /trunk/tools/cryptopy/crypto/hash/sha1Hash.py
+   A /trunk/tools/cryptopy/crypto/hash/sha1Hash_test.py
+   A /trunk/tools/cryptopy/crypto/icedoll_test.py
+   A /trunk/tools/cryptopy/crypto/keyedHash
+   A /trunk/tools/cryptopy/crypto/keyedHash/__init__.py
+   A /trunk/tools/cryptopy/crypto/keyedHash/hmacHash.py
+   A /trunk/tools/cryptopy/crypto/keyedHash/hmacHash_test.py
+   A /trunk/tools/cryptopy/crypto/keyedHash/michael.py
+   A /trunk/tools/cryptopy/crypto/keyedHash/michael_test.py
+   A /trunk/tools/cryptopy/crypto/keyedHash/pbkdf2.py
+   A /trunk/tools/cryptopy/crypto/keyedHash/pbkdf2_test.py
+   A /trunk/tools/cryptopy/crypto/keyedHash/prf_dot11.py
+   A /trunk/tools/cryptopy/crypto/keyedHash/prf_dot11_test.py
+   A /trunk/tools/cryptopy/crypto/keyedHash/tkip_key_mixing.py
+   A /trunk/tools/cryptopy/crypto/keyedHash/tkip_key_mixing_test.py
+   A /trunk/tools/cryptopy/crypto/keyedHash/tkip_mic.py
+   A /trunk/tools/cryptopy/crypto/keyedHash/tkip_mic_test.py
+   A /trunk/tools/cryptopy/crypto/passwords
+   A /trunk/tools/cryptopy/crypto/passwords/__init__.py
+   A /trunk/tools/cryptopy/crypto/passwords/passwordfactory.py
+   A /trunk/tools/cryptopy/crypto/passwords/passwordfactory_test.py
+   A /trunk/tools/cryptopy/doc
+   A /trunk/tools/cryptopy/doc/cryptopy-1.ppt
+   A /trunk/tools/cryptopy/fmath
+   A /trunk/tools/cryptopy/fmath/__init__.py
+   A /trunk/tools/cryptopy/fmath/prime.py
+   A /trunk/tools/cryptopy/fmath/prime_test.py
+   A /trunk/tools/cryptopy/fmath/primes_1st_50k.txt
+   A /trunk/tools/cryptopy/fmath/primes_to_5k.py
+   A /trunk/tools/cryptopy/setup.py
+
+importing python crypto module
