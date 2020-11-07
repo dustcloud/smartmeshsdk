@@ -20,10 +20,10 @@ ApiStructField = namedtuple('ApiStructField', 'name type len')
 def parse_field(field, data, index = 0):
     s = index
     e = index + field.len
-    if field.type is 'array':
+    if field.type == 'array':
         desc = '{0}B'.format(field.len)
         val = list(struct.unpack(desc, data[s:e]))
-    elif field.type is 'int' and field.len is 1:
+    elif field.type == 'int' and field.len == 1:
         try:
             val = struct.unpack('B', data[s])[0]
         except TypeError:
@@ -31,9 +31,9 @@ def parse_field(field, data, index = 0):
             if not isinstance(aByte,int):
                 aByte = ord(aByte)
             val = struct.unpack('B', bytes([aByte]))[0]
-    elif field.type is 'int' and field.len is 2:
+    elif field.type == 'int' and field.len == 2:
         val = struct.unpack('!H', data[s:e])[0]
-    elif field.type is 'int' and field.len is 4:
+    elif field.type == 'int' and field.len == 4:
         try:
         val = struct.unpack('!L', data[s:e])[0]
         except TypeError:
@@ -42,7 +42,7 @@ def parse_field(field, data, index = 0):
             if not isinstance(aByte,int):
                 anInt = [ord(b) for b in data[s:e]]
             val = struct.unpack('!L', bytes(anInt))[0]
-    elif field.type is 'boolean':
+    elif field.type == 'boolean':
         val = ord(data[s]) == 1
         pass
     elif inspect.isclass(field.type):
@@ -73,16 +73,16 @@ def serialize(self):
     resp = b''
     for f in self.fields:
         val = self.__getattribute__(f.name)
-        if f.type is 'array':
+        if f.type == 'array':
             desc = '{0}B'.format(f.len)
             resp += struct.pack(desc, *val)
-        elif f.type is 'int' and f.len is 1:
+        elif f.type == 'int' and f.len == 1:
             resp += struct.pack('B', val)
-        elif f.type is 'int' and f.len is 2:
+        elif f.type == 'int' and f.len == 2:
             resp += struct.pack('!H', val)
-        elif f.type is 'int' and f.len is 4:
+        elif f.type == 'int' and f.len == 4:
             resp += struct.pack('!L', val)
-        elif f.type is 'boolean':
+        elif f.type == 'boolean':
             resp += struct.pack('B', val)
         elif inspect.isclass(f.type):
             resp += val.serialize()
