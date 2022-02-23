@@ -28,8 +28,8 @@ if os.name in ['nt']:
         PROGRAM_DATA = os.path.join(os.environ['ALLUSERSPROFILE'],
                                     os.path.split(os.environ['APPDATA'])[1])
 
-    elif platform.win32_ver()[0] in ['7']:
-        # set up paths for Windows 7
+    elif platform.win32_ver()[0] in ['7', '10']:
+        # set up 32-bit paths for Windows 7/10
         if '64' in platform.machine():
             PROGRAM_FILES = os.environ['PROGRAMFILES(X86)']
         else:
