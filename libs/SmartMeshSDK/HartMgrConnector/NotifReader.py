@@ -28,7 +28,7 @@ class NotifSeparator(object):
     from the stream and treats the notification as a string.
 
     In the HartMgrConnector, the notification XML string is parsed by
-    the HartMgrDefinition. 
+    the HartMgrDefinition.
     """
     NOTIF_TYPES = [ 'data', 'event', 'measurement', 'log', 'cli', 'stdMoteReport', 'vendorMoteReport' ]
 
@@ -45,7 +45,7 @@ class NotifSeparator(object):
             if idx != -1 and idx < notif_start:
                 current_notif = nt
                 notif_start = idx
-                
+
         if current_notif:
             end_el = '</%s>' % current_notif
             notif_end = self.buffer.find(end_el)
@@ -63,8 +63,8 @@ class NotifSeparator(object):
         # Parse as many notifications as possible
         while self._parse_one():
             pass
-        
-        
+
+
     def _handle_notif(self, notif_type, notif_str):
         'Pass the notification to the callback handler and clean up'
         log.debug('NOTIF: %s' % notif_str)
@@ -106,7 +106,7 @@ class NotifReader(threading.Thread):
             log.info("Connected to notification channel")
             # send authentication
             log.debug("Sending notif authentication: %s" % self.notif_token)
-            self.notif_socket.send(self._build_auth())
+            self.notif_socket.send(self._build_auth().encode("utf8"))
             self.connected = True
         except socket.error as e:
             log.error('Exception reading from notification channel: ' + str(e))
@@ -121,6 +121,7 @@ class NotifReader(threading.Thread):
                 if not input_data:
                     log.info('Notification channel closed')
                     break
+                input_data = input_data.decode("utf-8")
                 msg = 'Notif input [%d]: %s' % (len(input_data), input_data)
                 log.debug(msg)
                 try:
@@ -146,12 +147,12 @@ if __name__ == '__main__':
 
     DEFAULT_HOST = '10.10.16.126'
     DEFAULT_PORT = 4445
-    
+
     pp = pprint.PrettyPrinter()
-    
+
     mgr = HartMgrConnectorInternal.HartMgrConnectorInternal()
     mgr.connect({'host': DEFAULT_HOST, 'port': DEFAULT_PORT})
-    
+
     notif_token, notif_port = mgr.subscribe('data events')
     print ('Subscribe')
 
