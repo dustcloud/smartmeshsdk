@@ -476,7 +476,7 @@ class JsonServer(object):
         try:
             requests.post(*args,**kwargs)
         except requests.exceptions.ConnectionError:
-            logging.error("Connection error!")
+            pass
         except Exception as err:
             logging.error(err)
             print err
