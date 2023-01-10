@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 
 #============================ adjust path =====================================
 
@@ -21,6 +21,7 @@ import pprint
 import threading
 import json
 import traceback
+import logging
 
 # requirements
 import requests
@@ -33,6 +34,10 @@ from SmartMeshSDK.utils      import JsonManager
 
 # DustCli
 from dustCli                 import DustCli
+
+#============================= setup ==========================================
+
+logging.basicConfig(filename='JsonServer.log',level=logging.DEBUG)
 
 #============================ helpers =========================================
 
@@ -208,10 +213,13 @@ class JsonServer(object):
                 if err[0]==10013:
                     print 'FATAL: cannot open TCP port {0}.'.format(kwargs['port'])
                     print '    Is another application running on that port?'
+                    logging.error('FATAL: cannot open TCP port {0}.'.format(kwargs['port']))
                 else:
-                    print logError(err)
+                    logging.error(err)
+                    print err
             except Exception as err:
-                print logError(err)
+                logging.error(err)
+                print err
             print '    Trying again in {0} seconds'.format(RETRY_PERIOD),
             for _ in range(RETRY_PERIOD):
                 time.sleep(1)
@@ -467,8 +475,9 @@ class JsonServer(object):
         try:
             requests.post(*args,**kwargs)
         except requests.exceptions.ConnectionError:
-            pass
+            logging.error("Connection error!")
         except Exception as err:
+            logging.error(err)
             print err
     
 #============================ main ============================================
