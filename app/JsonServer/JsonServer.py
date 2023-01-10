@@ -47,9 +47,10 @@ pp = pprint.PrettyPrinter(indent=4)
 
 class JsonServer(object):
     
-    def __init__(self, tcpport, autoaddmgr, autodeletemgr, serialport, configfilename):
+    def __init__(self, hostname, tcpport, autoaddmgr, autodeletemgr, serialport, configfilename):
         
         # store params
+        self.hostname             = hostname
         self.tcpport              = tcpport
         self.autoaddmgr           = autoaddmgr
         self.autodeletemgr        = autodeletemgr
@@ -192,7 +193,7 @@ class JsonServer(object):
             target = self._bottle_try_running_forever,
             args   = (self.websrv.run,),
             kwargs = {
-                'host'          : '127.0.0.1',
+                'host'          : self.hostname,
                 'port'          : self.tcpport,
                 'quiet'         : True,
                 'debug'         : False,
@@ -487,6 +488,7 @@ def main(args):
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument('--hostname',       default="0.0.0.0")
     parser.add_argument('--tcpport',        default=8080)
     parser.add_argument('--autoaddmgr',     default=True)
     parser.add_argument('--autodeletemgr',  default=True)
