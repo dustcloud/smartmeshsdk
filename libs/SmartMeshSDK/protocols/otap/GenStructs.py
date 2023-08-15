@@ -35,7 +35,7 @@ def parse_field(field, data, index = 0):
         val = struct.unpack('!H', data[s:e])[0]
     elif field.type == 'int' and field.len == 4:
         try:
-        val = struct.unpack('!L', data[s:e])[0]
+            val = struct.unpack('!L', data[s:e])[0]
         except TypeError:
             aByte = data[s]
             anInt = data[s:e]
