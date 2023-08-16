@@ -70,7 +70,7 @@ def calcFCS(msg):
    
    for b in msg:
       try:
-      c = struct.unpack('B', b)[0]
+          c = struct.unpack('B', b)[0]
       except TypeError:
           c = struct.unpack('B', bytes([b]))[0]
       fcs = (fcs >> 8) ^ crctab[(fcs ^ c) & 0xff]
