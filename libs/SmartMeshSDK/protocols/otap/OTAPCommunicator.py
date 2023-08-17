@@ -241,7 +241,7 @@ class OTAPCommunicator(object):
         log.info('Got Status response from %s' % print_mac(mac))
         log.debug('Data: ' + ' '.join(['%02X' % ord(b) for b in cmd_data]))
         os_resp = OtapStatusResp()
-        os_resp.parse(cmd_data)
+        os_resp.parse(bytes(ord(b) for b in cmd_data))
         log.debug(str(os_resp))
 
         if not self.state == 'Status':
