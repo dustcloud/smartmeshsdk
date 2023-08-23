@@ -158,7 +158,7 @@ def send_data(mac, msg, port):
 
 from collections import namedtuple
 
-Data = namedtuple('Data', 'mac src_port payload payload_str')
+Data = namedtuple('Data', 'mac src_port payload payload_bytes')
 
 class NotifListener(IpMgrSubscribe.IpMgrSubscribe):
     def __init__(self, mgr):
@@ -173,8 +173,8 @@ class NotifListener(IpMgrSubscribe.IpMgrSubscribe):
         try:
             # convert notif data into the OTAP Communicator data structure
             payload = data_tuple.data
-            ps = ''.join([chr(b) for b in payload])
-            data = Data(data_tuple.macAddress, data_tuple.srcPort, payload, ps)
+            pb = bytes(payload)
+            data = Data(data_tuple.macAddress, data_tuple.srcPort, payload, pb)
             self.otap_callback(data)
         except Exception as ex:
             log.error('Exception in handle_data: %s', str(ex))

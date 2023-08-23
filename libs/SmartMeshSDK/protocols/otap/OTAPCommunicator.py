@@ -182,7 +182,7 @@ class OTAPCommunicator(object):
                 # handle OTAP command responses
                 cmd_type = data.payload[index]
                 cmd_len = data.payload[index+1]
-                cmd_data = data.payload_str[index+2:index+2+cmd_len]
+                cmd_data = data.payload_bytes[index+2:index+2+cmd_len]
                 # the result of the received callback indicates whether
                 # the command response was expected -- don't try to handle
                 # unexpected responses
@@ -208,7 +208,7 @@ class OTAPCommunicator(object):
 
     def handshake_callback(self, mac, cmd_data):
         log.info('Got Handshake response from %s' % print_mac(mac))
-        log.debug('Data: ' + ' '.join(['%02X' % ord(b) for b in cmd_data]))
+        log.debug('Data: ' + ' '.join(['%02X' % b for b in cmd_data]))
         oh_resp = parse_obj(OtapHandshakeResp, cmd_data)
         log.debug(str(oh_resp))
 
@@ -239,7 +239,7 @@ class OTAPCommunicator(object):
             
     def status_callback(self, mac, cmd_data):
         log.info('Got Status response from %s' % print_mac(mac))
-        log.debug('Data: ' + ' '.join(['%02X' % ord(b) for b in cmd_data]))
+        log.debug('Data: ' + ' '.join(['%02X' % b for b in cmd_data]))
         os_resp = OtapStatusResp()
         os_resp.parse(cmd_data)
         log.debug(str(os_resp))
@@ -284,7 +284,7 @@ class OTAPCommunicator(object):
             
     def commit_callback(self, mac, cmd_data):
         log.info('Got Commit response from %s' % print_mac(mac))
-        log.debug('Data: ' + ' '.join(['%02X' % ord(b) for b in cmd_data]))
+        log.debug('Data: ' + ' '.join(['%02X' % b for b in cmd_data]))
         oc_resp = parse_obj(OtapCommitResp, cmd_data)
         log.debug(str(oc_resp))
         
